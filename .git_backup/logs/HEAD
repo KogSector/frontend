@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 f25d4e6e1c85709f0260a94eb0dad69c4eb9d309 Rishabh <rishabh.babi@gmail.com> 1766753865 +0530	checkout: moving from (invalid) to main
+f25d4e6e1c85709f0260a94eb0dad69c4eb9d309 f25d4e6e1c85709f0260a94eb0dad69c4eb9d309 Rishabh <rishabh.babi@gmail.com> 1766753932 +0530	checkout: moving from main to remove-frontend
+f25d4e6e1c85709f0260a94eb0dad69c4eb9d309 568b6d4946aa9071978edf652cdc72986d4ac7d1 Rishabh <rishabh.babi@gmail.com> 1766761583 +0530	commit: chore: prepare frontend for standalone deployment - Update start script to use next start instead of ConHub scripts - Add environment configuration
+568b6d4946aa9071978edf652cdc72986d4ac7d1 0000000000000000000000000000000000000000 Rishabh <rishabh.babi@gmail.com> 1766762292 +0530	Branch: renamed refs/heads/remove-frontend to refs/heads/main
+0000000000000000000000000000000000000000 568b6d4946aa9071978edf652cdc72986d4ac7d1 Rishabh <rishabh.babi@gmail.com> 1766762292 +0530	Branch: renamed refs/heads/remove-frontend to refs/heads/main
