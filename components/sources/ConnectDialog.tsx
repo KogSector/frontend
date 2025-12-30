@@ -62,20 +62,50 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               />
             </div>
             <div>
-              <Label htmlFor="repositories">Repositories (comma-separated)</Label>
-              <Textarea
-                id="repositories"
-                placeholder="owner/repo1, owner/repo2"
-                value={config.repositories?.join(', ') || ''}
-                onChange={(e) => setConfig({ 
-                  ...config, 
-                  repositories: e.target.value.split(',').map(r => r.trim()).filter(Boolean)
-                })}
+              <Label htmlFor="repository">Repository</Label>
+              <Input
+                id="repository"
+                placeholder="owner/repo"
+                value={config.repository || ''}
+                onChange={(e) => setConfig({ ...config, repository: e.target.value })}
               />
             </div>
           </div>
         );
-      
+
+      case 'gitlab':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="accessToken">Access Token</Label>
+              <Input
+                id="accessToken"
+                type="password"
+                value={credentials.accessToken || ''}
+                onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="repository">Project Path</Label>
+              <Input
+                id="repository"
+                placeholder="namespace/project"
+                value={config.repository || ''}
+                onChange={(e) => setConfig({ ...config, repository: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="gitlabUrl">GitLab URL (optional, for self-hosted)</Label>
+              <Input
+                id="gitlabUrl"
+                placeholder="https://gitlab.example.com"
+                value={config.gitlab_url || ''}
+                onChange={(e) => setConfig({ ...config, gitlab_url: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+
       case 'bitbucket':
         return (
           <div className="space-y-4">
@@ -97,15 +127,75 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               />
             </div>
             <div>
-              <Label htmlFor="repositories">Repositories (comma-separated)</Label>
-              <Textarea
-                id="repositories"
-                placeholder="workspace/repo1, workspace/repo2"
-                value={config.repositories?.join(', ') || ''}
-                onChange={(e) => setConfig({ 
-                  ...config, 
-                  repositories: e.target.value.split(',').map(r => r.trim()).filter(Boolean)
-                })}
+              <Label htmlFor="workspace">Workspace</Label>
+              <Input
+                id="workspace"
+                placeholder="workspace-name"
+                value={config.workspace || ''}
+                onChange={(e) => setConfig({ ...config, workspace: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="repository">Repository</Label>
+              <Input
+                id="repository"
+                placeholder="repo-slug"
+                value={config.repository || ''}
+                onChange={(e) => setConfig({ ...config, repository: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+
+      case 'google-drive':
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Click Connect to start OAuth flow with Google.
+            </p>
+            <div>
+              <Label htmlFor="folderId">Folder ID (optional)</Label>
+              <Input
+                id="folderId"
+                placeholder="Leave empty for all files"
+                value={config.folder_id || ''}
+                onChange={(e) => setConfig({ ...config, folder_id: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+
+      case 'dropbox':
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Click Connect to start OAuth flow with Dropbox.
+            </p>
+            <div>
+              <Label htmlFor="folderPath">Folder Path (optional)</Label>
+              <Input
+                id="folderPath"
+                placeholder="/Documents (leave empty for root)"
+                value={config.folder_path || ''}
+                onChange={(e) => setConfig({ ...config, folder_path: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+
+      case 'onedrive':
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Click Connect to start OAuth flow with Microsoft.
+            </p>
+            <div>
+              <Label htmlFor="folderPath">Folder Path (optional)</Label>
+              <Input
+                id="folderPath"
+                placeholder="/Documents (leave empty for root)"
+                value={config.folder_path || ''}
+                onChange={(e) => setConfig({ ...config, folder_path: e.target.value })}
               />
             </div>
           </div>
@@ -120,8 +210,8 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 id="urls"
                 placeholder="https://example.com, https://docs.example.com"
                 value={config.urls?.join(', ') || ''}
-                onChange={(e) => setConfig({ 
-                  ...config, 
+                onChange={(e) => setConfig({
+                  ...config,
                   urls: e.target.value.split(',').map(u => u.trim()).filter(Boolean)
                 })}
               />
@@ -140,7 +230,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
         <DialogHeader>
           <DialogTitle>Connect Data Source</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div>
             <Label htmlFor="name">Name</Label>
@@ -160,9 +250,11 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="github">GitHub</SelectItem>
+                <SelectItem value="gitlab">GitLab</SelectItem>
                 <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="google-drive">Google Drive</SelectItem>
-                <SelectItem value="notion">Notion</SelectItem>
+                <SelectItem value="dropbox">Dropbox</SelectItem>
+                <SelectItem value="onedrive">OneDrive</SelectItem>
                 <SelectItem value="url">URLs</SelectItem>
               </SelectContent>
             </Select>
@@ -174,8 +266,8 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleConnect} 
+            <Button
+              onClick={handleConnect}
               disabled={!type || !name || loading}
             >
               {loading ? 'Connecting...' : 'Connect'}
