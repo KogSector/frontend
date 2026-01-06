@@ -55,7 +55,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // use API_CONFIG.baseUrl when a raw URL is required (e.g. for AbortController fetch)
 // otherwise prefer apiClient for requests
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000 
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [connections, setConnections] = useState<Array<{ id: string; platform: string; username?: string; is_active: boolean }> | null>(null)
   const router = useRouter()
 
-  
+
   const saveSession = (token: string, expiresAt: string) => {
     const sessionData: SessionData = {
       token,
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       last_activity: new Date().toISOString()
     }
     localStorage.setItem('auth_session', JSON.stringify(sessionData))
-    localStorage.setItem('auth_token', token) 
+    localStorage.setItem('auth_token', token)
   }
 
   const getSession = (): SessionData | null => {
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const now = new Date().getTime()
     const lastActivity = new Date(session.last_activity).getTime()
     const expiresAt = new Date(session.expires_at).getTime()
-    
+
     return now < expiresAt && (now - lastActivity) < SESSION_TIMEOUT
   }
 
@@ -177,34 +177,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchUserProfile, clearSession, refreshConnections])
 
-  useEffect(() => {
-    const session = getSession()
-    if (session && isSessionValid(session)) {
-      setToken(session.token)
-      updateLastActivity()
-      
-      const timeoutId = setTimeout(() => {
-        setIsLoading(false)
-      }, 3000) 
-      
-      verifyToken(session.token).finally(() => {
-        clearTimeout(timeoutId)
-      })
-    } else {
-      clearSession()
-      setIsLoading(false)
-    }
-  }, [updateLastActivity, verifyToken, clearSession])
+  // Check if auth bypass is enabled (development only)
+  const checkAuthBypass = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(2000),
+      });
 
-  
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      if (data.success && data.data?.enabled && data.data?.demoUser) {
+        console.log('🔓 Auth bypass enabled - using demo user:', data.data.demoUser.email);
+        const demoUser: User = {
+          id: data.data.demoUser.id,
+          email: data.data.demoUser.email,
+          name: data.data.demoUser.name,
+          role: 'admin',
+          subscription_tier: 'enterprise',
+          is_verified: true,
+          created_at: new Date().toISOString(),
+        };
+        setUser(demoUser);
+        setToken('bypass-demo-token');
+        return true;
+      }
+      return false;
+    } catch {
+      // Feature toggle service not available - normal auth flow
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // First, check if auth bypass is enabled (development only)
+      const bypassEnabled = await checkAuthBypass();
+      if (bypassEnabled) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Normal auth flow
+      const session = getSession();
+      if (session && isSessionValid(session)) {
+        setToken(session.token);
+        updateLastActivity();
+
+        const timeoutId = setTimeout(() => {
+          setIsLoading(false);
+        }, 3000);
+
+        verifyToken(session.token).finally(() => {
+          clearTimeout(timeoutId);
+        });
+      } else {
+        clearSession();
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [updateLastActivity, verifyToken, clearSession, checkAuthBypass])
+
+
   useEffect(() => {
     if (token) {
       const handleActivity = () => updateLastActivity()
-      
+
       window.addEventListener('mousedown', handleActivity)
       window.addEventListener('keydown', handleActivity)
       window.addEventListener('scroll', handleActivity)
-      
+
       return () => {
         window.removeEventListener('mousedown', handleActivity)
         window.removeEventListener('keydown', handleActivity)

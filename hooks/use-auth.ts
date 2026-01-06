@@ -13,19 +13,68 @@ interface SocialConnection {
   last_sync: string | null
 }
 
+interface BypassUser {
+  id: string
+  email: string
+  name: string
+  roles: string[]
+}
+
 export const useAuth = () => {
   const auth0 = useAuth0()
-  
+
+  // State for auth bypass mode
+  const [bypassEnabled, setBypassEnabled] = useState(false)
+  const [bypassUser, setBypassUser] = useState<BypassUser | null>(null)
+  const [bypassLoading, setBypassLoading] = useState(true)
+
   // Token state - prefer ConHub token from localStorage, fallback to Auth0 token
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [connections, setConnections] = useState<SocialConnection[]>([])
 
+  // Check for auth bypass on mount
+  useEffect(() => {
+    const checkBypass = async () => {
+      try {
+        const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(2000),
+        });
+
+        if (!response.ok) {
+          setBypassEnabled(false)
+          setBypassLoading(false)
+          return
+        }
+
+        const data = await response.json()
+        if (data.success && data.data?.enabled && data.data?.demoUser) {
+          console.log('🔓 Auth bypass enabled - using demo user:', data.data.demoUser.email)
+          setBypassEnabled(true)
+          setBypassUser(data.data.demoUser)
+          setAccessToken('bypass-demo-token')
+        }
+      } catch {
+        // Feature toggle service not available - normal auth flow
+        setBypassEnabled(false)
+      } finally {
+        setBypassLoading(false)
+      }
+    }
+
+    checkBypass()
+  }, [])
+
   // Check for ConHub token in localStorage first, then fallback to Auth0 token
   useEffect(() => {
+    // Skip if bypass is enabled
+    if (bypassEnabled) return
+
     // First, check if we have a ConHub token in localStorage (from auth0/exchange)
     const storedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
-    
+
     if (storedToken) {
       // Verify the stored token is still valid by checking expiry
       try {
@@ -34,7 +83,7 @@ export const useAuth = () => {
           const session = JSON.parse(sessionStr)
           const expiresAt = new Date(session.expires_at).getTime()
           const now = Date.now()
-          
+
           if (now < expiresAt) {
             // Token is still valid, use it
             if (accessToken !== storedToken) {
@@ -52,7 +101,7 @@ export const useAuth = () => {
         console.error('Error parsing stored session:', e)
       }
     }
-    
+
     // Fallback to Auth0 access token if no valid ConHub token
     if (auth0.isAuthenticated && !auth0.isLoading && !accessToken && !tokenLoading) {
       setTokenLoading(true)
@@ -68,8 +117,8 @@ export const useAuth = () => {
           setTokenLoading(false)
         })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth0.isAuthenticated, auth0.isLoading, tokenLoading])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth0.isAuthenticated, auth0.isLoading, tokenLoading, bypassEnabled])
 
   const login = () => {
     return auth0.loginWithRedirect()
@@ -80,6 +129,10 @@ export const useAuth = () => {
   }
 
   const logoutUser = () => {
+    // Clear bypass state
+    setBypassEnabled(false)
+    setBypassUser(null)
+
     // Clear ConHub tokens from localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token')
@@ -91,6 +144,11 @@ export const useAuth = () => {
   }
 
   const getAccessTokenSilently = useCallback(async () => {
+    // Return bypass token if enabled
+    if (bypassEnabled) {
+      return 'bypass-demo-token'
+    }
+
     // Return cached token if available
     if (accessToken) {
       return accessToken
@@ -106,15 +164,15 @@ export const useAuth = () => {
       console.error('getAccessTokenSilently failed:', err)
     }
     return null
-  }, [accessToken, auth0])
+  }, [accessToken, auth0, bypassEnabled])
 
   // Clear token on logout
   useEffect(() => {
-    if (!auth0.isAuthenticated && accessToken) {
+    if (!auth0.isAuthenticated && !bypassEnabled && accessToken) {
       setAccessToken(null)
       setConnections([])
     }
-  }, [auth0.isAuthenticated, accessToken])
+  }, [auth0.isAuthenticated, accessToken, bypassEnabled])
 
   // Fetch connections when we have a token
   const fetchConnections = useCallback(async () => {
@@ -130,17 +188,30 @@ export const useAuth = () => {
   }, [accessToken])
 
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && !bypassEnabled) {
       fetchConnections()
     }
-  }, [accessToken, fetchConnections])
+  }, [accessToken, fetchConnections, bypassEnabled])
+
+  // Create user object for bypass mode
+  const user = bypassEnabled && bypassUser
+    ? {
+      sub: bypassUser.id,
+      email: bypassUser.email,
+      name: bypassUser.name,
+      picture: undefined,
+      roles: bypassUser.roles,
+    }
+    : auth0.user as any
+
+  // Determine authentication state
+  const isAuthenticated = bypassEnabled || auth0.isAuthenticated
+  const isLoading = bypassLoading || auth0.isLoading
 
   return {
-    user: auth0.user as any,
-    isAuthenticated: auth0.isAuthenticated,
-    // Use Auth0's loading state for route guards; tokenLoading is internal
-    // to access-token caching and should not block page rendering.
-    isLoading: auth0.isLoading,
+    user,
+    isAuthenticated,
+    isLoading,
     login,
     loginWithRedirect,
     logout: logoutUser,
@@ -149,6 +220,8 @@ export const useAuth = () => {
     token: accessToken,
     connections,
     refreshConnections: fetchConnections,
+    // Bypass state for UI components
+    isBypassMode: bypassEnabled,
 
     // Stubbed methods for now; callers may override these with real implementations
     // when backend Auth0-backed profile/password flows are wired up.
@@ -174,4 +247,4 @@ export const useAuth = () => {
     },
   }
 }
- 
+
