@@ -1,6 +1,6 @@
 # Multi-stage build for Next.js frontend
-# Use Node 20 to satisfy engine requirements for some dependencies (e.g., Octokit)
-FROM node:20-alpine AS base
+# Use Node 24 LTS for latest features and long-term support
+FROM node:24-alpine AS base
 
 # Development stage
 FROM base AS development
@@ -27,7 +27,9 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ .
-COPY feature-toggles.json ../
+
+# Create feature-toggles.json if not present (for standalone builds)
+RUN test -f ../feature-toggles.json && cp ../feature-toggles.json ../ 2>/dev/null || echo '{}' > ../feature-toggles.json
 
 # Build the frontend
 RUN npm run build
