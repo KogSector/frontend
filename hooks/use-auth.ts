@@ -129,10 +129,6 @@ export const useAuth = () => {
   }
 
   const logoutUser = () => {
-    // Clear bypass state
-    setBypassEnabled(false)
-    setBypassUser(null)
-
     // Clear ConHub tokens from localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token')
@@ -140,6 +136,21 @@ export const useAuth = () => {
       localStorage.removeItem('refresh_token')
     }
     setAccessToken(null)
+
+    // If in bypass mode, just clear state and redirect - don't call Auth0
+    if (bypassEnabled) {
+      setBypassEnabled(false)
+      setBypassUser(null)
+      // Redirect to landing page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
+      return
+    }
+
+    // Normal Auth0 logout
+    setBypassEnabled(false)
+    setBypassUser(null)
     auth0.logout({ logoutParams: { returnTo: window.location.origin } })
   }
 
