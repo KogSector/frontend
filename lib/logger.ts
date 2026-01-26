@@ -1,5 +1,5 @@
 // ============================================================================
-// ConHub Frontend Observability
+// ConFuse Frontend Observability
 // Provides structured logging, performance tracking, and trace correlation
 // ============================================================================
 
@@ -40,7 +40,7 @@ export interface UserAction {
   url: string;
 }
 
-class ConHubLogger {
+class ConFuseLogger {
   private sessionId: string;
   private traceId: string;
   private userId?: string;
@@ -489,7 +489,7 @@ class ConHubLogger {
     } catch (error) {
 
       if (typeof localStorage !== 'undefined') {
-        const stored = localStorage.getItem('conhub_logs') || '[]';
+        const stored = localStorage.getItem('confuse_logs') || '[]';
         const logs = JSON.parse(stored);
         logs.push(payload);
 
@@ -498,7 +498,7 @@ class ConHubLogger {
           logs.splice(0, logs.length - 10);
         }
 
-        localStorage.setItem('conhub_logs', this.safeStringify(logs));
+        localStorage.setItem('confuse_logs', this.safeStringify(logs));
       }
     }
   }
@@ -507,7 +507,7 @@ class ConHubLogger {
   public async retryFailedLogs() {
     if (typeof localStorage === 'undefined') return;
 
-    const stored = localStorage.getItem('conhub_logs');
+    const stored = localStorage.getItem('confuse_logs');
     if (!stored) return;
 
     const logs = JSON.parse(stored);
@@ -528,12 +528,12 @@ class ConHubLogger {
     }
 
 
-    localStorage.removeItem('conhub_logs');
+    localStorage.removeItem('confuse_logs');
   }
 }
 
 
-export const logger = new ConHubLogger();
+export const logger = new ConFuseLogger();
 
 
 export function useLogger() {
