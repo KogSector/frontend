@@ -1,5 +1,5 @@
 /**
- * ConHub Frontend Observability Hooks
+ * ConFuse Frontend Observability Hooks
  * 
  * Provides React hooks for logging, tracking, and observability throughout the frontend.
  */

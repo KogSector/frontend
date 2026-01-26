@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ['latin'] })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
 
 export const metadata: Metadata = {
-  title: 'ConHub',
+  title: 'ConFuse',
   description: 'Unify your repositories with AI for better microservices development',
   icons: {
     icon: '/favicon.svg',

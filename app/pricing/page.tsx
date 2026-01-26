@@ -166,7 +166,7 @@ export default function Pricing() {
                 Frequently Asked Questions
               </h2>
               <p className="text-muted-foreground">
-                Everything you need to know about ConHub pricing
+                Everything you need to know about ConFuse pricing
               </p>
             </div>
             

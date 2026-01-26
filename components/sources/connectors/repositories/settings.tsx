@@ -344,7 +344,7 @@ export function RepositorySettings() {
             <div className="space-y-0.5">
               <Label>Sync on startup</Label>
               <p className="text-sm text-muted-foreground">
-                Automatically sync all repositories when ConHub starts
+                Automatically sync all repositories when ConFuse starts
               </p>
             </div>
             <Switch defaultChecked />

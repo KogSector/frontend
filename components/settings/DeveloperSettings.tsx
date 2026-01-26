@@ -340,7 +340,7 @@ export function DeveloperSettings() {
               placeholder="https://your-custom-api.com/v1"
             />
             <p className="text-sm text-muted-foreground">
-              Override the default ConHub API endpoint for custom deployments
+              Override the default ConFuse API endpoint for custom deployments
             </p>
           </div>
 

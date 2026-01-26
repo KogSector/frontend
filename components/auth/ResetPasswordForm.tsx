@@ -141,7 +141,7 @@ export function ResetPasswordForm() {
             <Link href="/" className="inline-flex items-center space-x-2 group">
               <Sparkles className="w-8 h-8 text-green-400 group-hover:text-green-300 transition-colors" />
               <span className="text-4xl font-bold font-orbitron bg-gradient-to-r from-green-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                ConHub
+                ConFuse
               </span>
             </Link>
           </div>
@@ -191,7 +191,7 @@ export function ResetPasswordForm() {
           <Link href="/" className="inline-flex items-center space-x-2 group">
             <Sparkles className="w-8 h-8 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
             <span className="text-4xl font-bold font-orbitron bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
-              ConHub
+              ConFuse
             </span>
           </Link>
         </div>
@@ -306,7 +306,7 @@ export function ResetPasswordForm() {
 
         <div className="text-center mt-8">
           <p className="text-gray-400 text-sm">
-            Secure password reset powered by ConHub
+            Secure password reset powered by ConFuse
           </p>
         </div>
       </div>

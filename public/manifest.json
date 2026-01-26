@@ -1,6 +1,6 @@
 {
-  "name": "ConHub",
-  "short_name": "ConHub",
+  "name": "ConFuse",
+  "short_name": "ConFuse",
   "description": "Unify your repositories with AI for better microservices development",
   "start_url": "/",
   "display": "standalone",

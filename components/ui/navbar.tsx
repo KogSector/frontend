@@ -42,7 +42,7 @@
         <div className="flex justify-between items-center h-20">
           
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConHub</span>
+            <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConFuse</span>
           </Link>
 
           {/* --- DESKTOP MENU --- */}

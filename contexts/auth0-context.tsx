@@ -193,12 +193,12 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     })
   }, [auth0Domain, auth0ClientId, auth0Audience, auth0RedirectUri])
 
-  // Handle Auth0 callback (exchange Auth0 token for ConHub token)
+  // Handle Auth0 callback (exchange Auth0 token for ConFuse token)
   const handleAuth0Callback = useCallback(async (auth0AccessToken: string) => {
     try {
       setIsLoading(true)
 
-      // Call ConHub auth service to exchange Auth0 token
+      // Call ConFuse auth service to exchange Auth0 token
       const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:3010'
       const response = await fetch(`${authServiceUrl}/api/auth/auth0/exchange`, {
         method: 'POST',

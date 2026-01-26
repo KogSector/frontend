@@ -54,7 +54,7 @@ export function NotificationSettings() {
             <div className="space-y-0.5">
               <Label>Weekly summary</Label>
               <p className="text-sm text-muted-foreground">
-                Get a weekly summary of your ConHub activity
+                Get a weekly summary of your ConFuse activity
               </p>
             </div>
             <Switch defaultChecked />
@@ -156,7 +156,7 @@ export function NotificationSettings() {
             <div className="space-y-0.5">
               <Label>Enable push notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Receive notifications on your devices even when ConHub is closed
+                Receive notifications on your devices even when ConFuse is closed
               </p>
             </div>
             <Switch />

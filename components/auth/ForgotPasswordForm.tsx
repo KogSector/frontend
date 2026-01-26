@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
             <Link href="/" className="inline-flex items-center space-x-2 group">
               <Sparkles className="w-8 h-8 text-purple-400 group-hover:text-purple-300 transition-colors" />
               <span className="text-4xl font-bold font-orbitron bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                ConHub
+                ConFuse
               </span>
             </Link>
           </div>
@@ -99,7 +99,7 @@ export function ForgotPasswordForm() {
 
           <div className="text-center mt-8">
             <p className="text-gray-400 text-sm">
-              Password reset email powered by ConHub
+              Password reset email powered by ConFuse
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export function ForgotPasswordForm() {
           <Link href="/" className="inline-flex items-center space-x-2 group">
             <Sparkles className="w-8 h-8 text-purple-400 group-hover:text-purple-300 transition-colors" />
             <span className="text-4xl font-bold font-orbitron bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-              ConHub
+              ConFuse
             </span>
           </Link>
         </div>
@@ -192,7 +192,7 @@ export function ForgotPasswordForm() {
 
         <div className="text-center mt-8">
           <p className="text-gray-400 text-sm">
-            Secure password reset powered by ConHub
+            Secure password reset powered by ConFuse
           </p>
         </div>
       </div>

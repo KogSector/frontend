@@ -87,14 +87,14 @@ export function RepositoriesPageClient() {
   const sampleRepositories: Repository[] = [
     {
       id: "1",
-      name: "ConHub",
+      name: "ConFuse",
       description: "A unified platform for connecting repositories, documents, and AI agents",
       language: "TypeScript",
       stars: 42,
       forks: 8,
       lastUpdated: "2 hours ago",
       status: "active",
-      url: "https://github.com/KogSector/ConHub",
+      url: "https://github.com/KogSector/ConFuse",
       provider: "github"
     },
     {

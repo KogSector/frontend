@@ -143,7 +143,7 @@ export function AddAgentModal({ open, onOpenChange, onAgentAdded }: AddAgentModa
         <DialogHeader>
           <DialogTitle>Add AI Agent</DialogTitle>
           <DialogDescription>
-            Connect a new AI agent to ConHub for automated tasks and assistance.
+            Connect a new AI agent to ConFuse for automated tasks and assistance.
           </DialogDescription>
         </DialogHeader>
 

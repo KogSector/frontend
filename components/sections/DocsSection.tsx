@@ -44,7 +44,7 @@ const docSections = [
   {
     icon: Settings,
     title: "Configuration",
-    description: "Customize ConHub to match your workflow with advanced configuration options.",
+    description: "Customize ConFuse to match your workflow with advanced configuration options.",
     topics: ["Context filters", "Access controls", "Webhooks", "API settings"],
     badge: "Config"
   },
@@ -58,7 +58,7 @@ const docSections = [
   {
     icon: Webhook,
     title: "API Reference",
-    description: "Complete API documentation for integrating ConHub into your custom workflows.",
+    description: "Complete API documentation for integrating ConFuse into your custom workflows.",
     topics: ["Authentication", "Endpoints", "Webhooks", "SDKs"],
     badge: "Developer"
   }
@@ -78,7 +78,7 @@ export const DocsSection = () => {
             <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent"> Documentation</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to master ConHub, from connecting your first sources to advanced AI agent configurations.
+            Everything you need to master ConFuse, from connecting your first sources to advanced AI agent configurations.
           </p>
         </div>
 

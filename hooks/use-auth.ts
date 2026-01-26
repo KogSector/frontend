@@ -28,7 +28,7 @@ export const useAuth = () => {
   const [bypassUser, setBypassUser] = useState<BypassUser | null>(null)
   const [bypassLoading, setBypassLoading] = useState(true)
 
-  // Token state - prefer ConHub token from localStorage, fallback to Auth0 token
+  // Token state - prefer ConFuse token from localStorage, fallback to Auth0 token
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [connections, setConnections] = useState<SocialConnection[]>([])
@@ -67,12 +67,12 @@ export const useAuth = () => {
     checkBypass()
   }, [])
 
-  // Check for ConHub token in localStorage first, then fallback to Auth0 token
+  // Check for ConFuse token in localStorage first, then fallback to Auth0 token
   useEffect(() => {
     // Skip if bypass is enabled
     if (bypassEnabled) return
 
-    // First, check if we have a ConHub token in localStorage (from auth0/exchange)
+    // First, check if we have a ConFuse token in localStorage (from auth0/exchange)
     const storedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
 
     if (storedToken) {
@@ -102,7 +102,7 @@ export const useAuth = () => {
       }
     }
 
-    // Fallback to Auth0 access token if no valid ConHub token
+    // Fallback to Auth0 access token if no valid ConFuse token
     if (auth0.isAuthenticated && !auth0.isLoading && !accessToken && !tokenLoading) {
       setTokenLoading(true)
       auth0.getAccessTokenSilently()
@@ -129,7 +129,7 @@ export const useAuth = () => {
   }
 
   const logoutUser = () => {
-    // Clear ConHub tokens from localStorage
+    // Clear ConFuse tokens from localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_session')

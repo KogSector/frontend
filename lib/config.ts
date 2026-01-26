@@ -31,7 +31,7 @@ if (typeof window !== 'undefined') {
 
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('ConHub API Configuration:', {
+    console.log('ConFuse API Configuration:', {
       baseUrl: API_CONFIG.baseUrl,
       timeout: API_CONFIG.timeout,
       environment: process.env.NODE_ENV,
