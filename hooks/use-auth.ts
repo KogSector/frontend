@@ -21,7 +21,18 @@ interface BypassUser {
 }
 
 export const useAuth = () => {
-  const auth0 = useAuth0()
+  // Safely get Auth0 context - may be undefined if no Auth0Provider
+  let auth0: ReturnType<typeof useAuth0> | null = null
+  try {
+    auth0 = useAuth0()
+  } catch {
+    // Auth0 not configured - will rely on bypass mode
+  }
+
+  // Safe defaults when Auth0 is not available
+  const auth0IsLoading = auth0?.isLoading ?? false
+  const auth0IsAuthenticated = auth0?.isAuthenticated ?? false
+  const auth0User = auth0?.user ?? null
 
   // State for auth bypass mode
   const [bypassEnabled, setBypassEnabled] = useState(false)
@@ -36,8 +47,18 @@ export const useAuth = () => {
   // Check for auth bypass on mount
   useEffect(() => {
     const checkBypass = async () => {
+      // Check if user explicitly logged out - don't auto-enable bypass
+      const explicitLogout = typeof window !== 'undefined' && localStorage.getItem('explicit_logout') === 'true'
+      if (explicitLogout) {
+        console.log('🔒 User explicitly logged out - skipping bypass')
+        setBypassEnabled(false)
+        setBypassLoading(false)
+        return
+      }
+
       try {
-        const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
+        const featureToggleUrl = process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL || 'http://localhost:3099';
+        const response = await fetch(`${featureToggleUrl}/api/toggles/authBypass`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           signal: AbortSignal.timeout(2000),
@@ -103,7 +124,7 @@ export const useAuth = () => {
     }
 
     // Fallback to Auth0 access token if no valid ConFuse token
-    if (auth0.isAuthenticated && !auth0.isLoading && !accessToken && !tokenLoading) {
+    if (auth0IsAuthenticated && !auth0IsLoading && !accessToken && !tokenLoading && auth0?.getAccessTokenSilently) {
       setTokenLoading(true)
       auth0.getAccessTokenSilently()
         .then((token) => {
@@ -118,14 +139,22 @@ export const useAuth = () => {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth0.isAuthenticated, auth0.isLoading, tokenLoading, bypassEnabled])
+  }, [auth0IsAuthenticated, auth0IsLoading, tokenLoading, bypassEnabled])
 
   const login = () => {
-    return auth0.loginWithRedirect()
+    // Clear explicit logout flag when user initiates login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('explicit_logout')
+    }
+    return auth0?.loginWithRedirect()
   }
 
   const loginWithRedirect = () => {
-    auth0.loginWithRedirect()
+    // Clear explicit logout flag when user initiates login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('explicit_logout')
+    }
+    auth0?.loginWithRedirect()
   }
 
   const logoutUser = () => {
@@ -134,13 +163,17 @@ export const useAuth = () => {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_session')
       localStorage.removeItem('refresh_token')
+      // Mark explicit logout to prevent auto-bypass on landing page
+      localStorage.setItem('explicit_logout', 'true')
     }
     setAccessToken(null)
 
-    // If in bypass mode, just clear state and redirect - don't call Auth0
-    if (bypassEnabled) {
-      setBypassEnabled(false)
-      setBypassUser(null)
+    // Clear bypass state
+    setBypassEnabled(false)
+    setBypassUser(null)
+
+    // If in bypass mode, just redirect - don't call Auth0
+    if (bypassEnabled || !auth0?.logout) {
       // Redirect to landing page
       if (typeof window !== 'undefined') {
         window.location.href = '/'
@@ -149,9 +182,14 @@ export const useAuth = () => {
     }
 
     // Normal Auth0 logout
-    setBypassEnabled(false)
-    setBypassUser(null)
     auth0.logout({ logoutParams: { returnTo: window.location.origin } })
+  }
+
+  // Function to clear explicit logout flag (call this when user clicks login)
+  const clearLogoutFlag = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('explicit_logout')
+    }
   }
 
   const getAccessTokenSilently = useCallback(async () => {
@@ -166,7 +204,7 @@ export const useAuth = () => {
     }
     // Otherwise fetch fresh
     try {
-      if (auth0.getAccessTokenSilently) {
+      if (auth0?.getAccessTokenSilently) {
         const token = await auth0.getAccessTokenSilently()
         setAccessToken(token)
         return token
@@ -175,15 +213,15 @@ export const useAuth = () => {
       console.error('getAccessTokenSilently failed:', err)
     }
     return null
-  }, [accessToken, auth0, bypassEnabled])
+  }, [accessToken, auth0, bypassEnabled, auth0IsAuthenticated])
 
   // Clear token on logout
   useEffect(() => {
-    if (!auth0.isAuthenticated && !bypassEnabled && accessToken) {
+    if (!auth0IsAuthenticated && !bypassEnabled && accessToken) {
       setAccessToken(null)
       setConnections([])
     }
-  }, [auth0.isAuthenticated, accessToken, bypassEnabled])
+  }, [auth0IsAuthenticated, accessToken, bypassEnabled])
 
   // Fetch connections when we have a token
   const fetchConnections = useCallback(async () => {
@@ -213,11 +251,14 @@ export const useAuth = () => {
       picture: undefined,
       roles: bypassUser.roles,
     }
-    : auth0.user as any
+    : auth0User as any
 
   // Determine authentication state
-  const isAuthenticated = bypassEnabled || auth0.isAuthenticated
-  const isLoading = bypassLoading || auth0.isLoading
+  // If bypass is enabled, we're authenticated regardless of Auth0 state
+  const isAuthenticated = bypassEnabled || auth0IsAuthenticated
+  // If bypass check is done and bypass is enabled, we're not loading anymore
+  // Only wait for Auth0 if bypass is not enabled
+  const isLoading = bypassLoading || (!bypassEnabled && auth0IsLoading)
 
   return {
     user,
@@ -233,6 +274,8 @@ export const useAuth = () => {
     refreshConnections: fetchConnections,
     // Bypass state for UI components
     isBypassMode: bypassEnabled,
+    // Clear logout flag for re-enabling bypass
+    clearLogoutFlag,
 
     // Stubbed methods for now; callers may override these with real implementations
     // when backend Auth0-backed profile/password flows are wired up.

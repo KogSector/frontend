@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileSettings } from '@/components/account/ProfileSettings'
@@ -12,6 +15,7 @@ import { AccountDeletion } from '@/components/account/AccountDeletion'
 export default function AccountPage() {
   const { isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
+  const router = useRouter()
 
   if (!isAuthenticated) {
     return (
@@ -31,6 +35,15 @@ export default function AccountPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push('/dashboard')}
+          className="mb-4 -ml-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
         <h1 className="text-3xl font-bold">Account Settings</h1>
         <p className="text-muted-foreground mt-2">
           Manage your account preferences and security settings.
