@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(2000),
+        signal: AbortSignal.timeout(500),  // Fast-fail: 500ms timeout
       });
 
       if (!response.ok) return false;
