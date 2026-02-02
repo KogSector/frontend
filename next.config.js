@@ -5,10 +5,10 @@ const nextConfig = {
     outputFileTracingRoot: undefined,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false, // Enable ESLint during builds
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false, // Enable TypeScript checking during builds
   },
 }
 
