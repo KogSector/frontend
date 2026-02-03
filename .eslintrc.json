@@ -1,5 +1,7 @@
 {
-  "extends": [],
+  "extends": [
+    "next/core-web-vitals"
+  ],
   "rules": {},
   "root": true
 }
