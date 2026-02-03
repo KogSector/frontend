@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch connected accounts from data service
-    const resp = await dataApiClient.get('/api/data/accounts', { Authorization: authHeader })
-    
+    const resp: any = await dataApiClient.get('/api/data/accounts', { Authorization: authHeader })
+
     if (!resp.success) {
-      return NextResponse.json({ 
-        success: true, 
-        data: { repositories: [] } 
+      return NextResponse.json({
+        success: true,
+        data: { repositories: [] }
       })
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       .map((account: any) => {
         const metadata = account.metadata || {}
         const repoInfo = metadata.repo_info || {}
-        
+
         return {
           id: account.id,
           name: repoInfo.name || account.account_name,
@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
           stars: repoInfo.stars || 0,
           forks: repoInfo.forks || 0,
           lastUpdated: account.last_sync_at ? new Date(account.last_sync_at).toLocaleDateString() : 'Never',
-          status: account.status === 'connected' ? 'active' : 
-                 account.status === 'syncing' ? 'syncing' : 
-                 account.status === 'error' ? 'error' : 'inactive',
+          status: account.status === 'connected' ? 'active' :
+            account.status === 'syncing' ? 'syncing' :
+              account.status === 'error' ? 'error' : 'inactive',
           url: repoInfo.html_url || `https://${account.connector_type}.com/${account.account_identifier}`,
           provider: account.connector_type
         }
@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching repositories:', error)
-    return NextResponse.json({ 
-      success: true, 
-      data: { repositories: [] } 
+    return NextResponse.json({
+      success: true,
+      data: { repositories: [] }
     })
   }
 }
