@@ -1,64 +1,118 @@
 # ConFuse Frontend
 
-Web interface for the ConFuse Knowledge Intelligence Platform. Built with Next.js, React, and Tailwind CSS.
+**Port**: 3000  
+**Technology**: Next.js, React, Tailwind CSS
 
 ## Overview
 
-This is the **web interface** that provides:
-- Dashboard with source status
-- Source connection management
-- Knowledge search interface
-- Settings and API key management
+Web interface for the ConFuse Knowledge Intelligence Platform. Provides:
+
+- **Dashboard**: System status and metrics
+- **Source Management**: Connect and manage data sources
+- **Knowledge Search**: Search across code and documents
+- **Settings**: Configuration and API management
+
+## Features
+
+### Dashboard
+- Real-time system status
+- Processing metrics
+- Source connectivity overview
+
+### Source Management
+- Connect GitHub repositories
+- Link document storage (Google Drive, Notion)
+- Monitor sync status
+- Configure processing options
+
+### Knowledge Search
+- Unified search across code and documents
+- Filter by source, file type, date
+- View file content and metadata
+
+### Settings
+- API key management
+- Service configuration
+- User preferences
 
 ## Architecture
 
-See [docs/README.md](docs/README.md) for complete documentation.
+```
+┌─────────────────────────────────────────────────┐
+│                Frontend (:3000)                 │
+├─────────────────────────────────────────────────┤
+│  Dashboard  │  Search  │  Sources  │  Settings  │
+└─────────────┴─────────┴───────────┴─────────────┘
+        │                │                │
+        ▼                ▼                ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│Auth Middleware│ │Data Connector│ │Search API   │
+│    (3010)    │ │    (8080)    │ │   (TBD)     │
+└─────────────┘ └─────────────┘ └─────────────┘
+```
 
-## Quick Start
+## Development
 
+### Prerequisites
+```bash
+Node.js 18+
+npm or yarn
+```
+
+### Setup
 ```bash
 # Install dependencies
 npm install
 
-# Configure
+# Environment variables
 cp .env.example .env.local
 
-# Development
+# Run development server
 npm run dev
+```
 
-# Build for production
+### Build
+```bash
+# Production build
 npm run build
+
+# Start production server
 npm start
 ```
 
-## Tech Stack
+## Configuration
 
-- **Next.js 14** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Shadcn/UI** - Components
-- **React Query** - Data fetching
+### Environment Variables
+```bash
+# API URLs
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_AUTH_URL=http://localhost:3010
 
-## Pages
+# Authentication
+NEXTAUTH_SECRET=your_secret_key
+NEXTAUTH_URL=http://localhost:3000
 
-| Page | Description |
-|------|-------------|
-| `/` | Dashboard |
-| `/sources` | Source management |
-| `/search` | Knowledge search |
-| `/settings` | Configuration |
+# Features
+NEXT_PUBLIC_ENABLE_SEARCH=true
+NEXT_PUBLIC_ENABLE_SOURCES=true
+```
 
-## Environment Variables
+## Deployment
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_API_URL` | API backend URL |
-| `NEXTAUTH_SECRET` | NextAuth secret |
+### Docker
+```bash
+docker build -t confuse/frontend .
+docker run -p 3000:3000 confuse/frontend
+```
 
-## Documentation
+### Kubernetes
+```bash
+kubectl apply -f k8s/frontend.yaml
+```
 
-See [docs/](docs/) folder for complete documentation.
+## Contributing
 
-## License
-
-MIT - ConFuse Team
+1. Follow Next.js conventions
+2. Use Tailwind CSS for styling
+3. Test responsive design
+4. Update documentation
