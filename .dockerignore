@@ -1,9 +1,16 @@
-node_modules
-.next
-.git
-.env
-.env.*
-npm-debug.log
-README.md
-.gitignore
-.vscode
+# Frontend Service .dockerignore
+# Ignore everything by default
+**
+
+# Allow build context essentials
+!frontend/
+!shared/
+
+# Specific ignores
+frontend/node_modules
+frontend/.next
+frontend/dist
+frontend/.env
+frontend/coverage
+shared/node_modules
+shared/dist

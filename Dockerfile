@@ -31,7 +31,7 @@ RUN npm ci
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# COPY shared-middleware ./shared-middleware
 COPY . .
 
 # Create feature-toggles.json if not present (for standalone builds)

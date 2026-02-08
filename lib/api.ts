@@ -93,7 +93,7 @@ export class ApiClient {
 
   constructor(baseUrl = API_CONFIG.baseUrl, serviceName = 'backend') {
     this.baseUrl = baseUrl;
-    this.authBaseUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3010';
+    this.authBaseUrl = process.env.NEXT_PUBLIC_AUTH_URL || process.env.AUTH_SERVICE_URL || '';
     this.billingEnabled = true;
     this.serviceName = serviceName;
     
@@ -365,7 +365,7 @@ export const apiClient = new ApiClient();
 // Dedicated client for the Data service (repositories, data-sources)
 // Uses NEXT_PUBLIC_DATA_SERVICE_URL or defaults to local dev port 3013
 export const dataApiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_DATA_SERVICE_URL || 'http://localhost:3013'
+  process.env.NEXT_PUBLIC_API_URL || process.env.DATA_SERVICE_URL || ''
 );
 
 // Dedicated client for the Billing service
@@ -373,11 +373,11 @@ export const dataApiClient = new ApiClient(
 export const billingApiClient = new ApiClient(
   process.env.NEXT_PUBLIC_BILLING_SERVICE_URL ||
   process.env.BILLING_SERVICE_URL ||
-  'http://localhost:3011'
+  ''
 );
 
 export const securityApiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_SECURITY_SERVICE_URL || 'http://localhost:3014'
+  process.env.NEXT_PUBLIC_SECURITY_SERVICE_URL || process.env.SECURITY_SERVICE_URL || ''
 );
 
 export async function importDocumentFromProvider(data: {
