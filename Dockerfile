@@ -5,17 +5,8 @@
 # =============================================================================
 
 # Multi-stage build for Next.js frontend
-# Use Node 24 LTS for latest features and long-term support
-FROM node:24-alpine AS base
-
-# Development stage
-FROM base AS development
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
+# Use Node 22 LTS for latest features and long-term support
+FROM node:22-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -23,16 +14,15 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files only
-COPY package*.json ./
-# Install both production and dev dependencies for build time (PostCSS/autoprefixer)
-# Use npm ci for reproducible installs based on the lockfile
-RUN npm ci
+COPY frontend/package*.json ./
+# Install all dependencies for build time (PostCSS/autoprefixer)
+RUN npm install
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-# COPY shared-middleware ./shared-middleware
-COPY . .
+COPY --from=deps /app/node_modules ./node_modules
+COPY frontend ./
 
 # Create feature-toggles.json if not present (for standalone builds)
 RUN echo '{}' > ../feature-toggles.json 2>/dev/null || true
@@ -63,6 +53,6 @@ ENV HOSTNAME="0.0.0.0"
 
 # Health check optimized for Azure Container Apps
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3000 || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
 CMD ["node", "server.js"]
