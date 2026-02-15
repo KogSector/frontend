@@ -74,14 +74,14 @@ export function SettingsProvider({ children, userId = 'default' }: { children: R
   const [state, dispatch] = useReducer(settingsReducer, initialState);
 
   // Helper function to handle API result and dispatch
-  const handleApiResult = <T>(result: ApiResponse, actionType: SettingsAction['type'], fallback: T[] = []) => {
+  const handleApiResult = <T,>(result: ApiResponse, actionType: SettingsAction['type'], fallback: T[] = []) => {
     if (result.success && result.data) {
       dispatch({ type: actionType, payload: (result.data as T[]) || fallback });
     }
   };
 
   // Helper function to refresh specific data type
-  const refreshDataType = async <T>(
+  const refreshDataType = async<T,>(
     apiCall: () => Promise<ApiResponse>,
     actionType: SettingsAction['type'],
     fallback: T[] = []
@@ -96,7 +96,7 @@ export function SettingsProvider({ children, userId = 'default' }: { children: R
 
   const loadAllData = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
-    
+
     try {
       const [settingsResult, tokensResult, webhooksResult, teamResult] = await Promise.all([
         SettingsAPI.getSettings(userId) as Promise<ApiResponse>,
@@ -109,12 +109,12 @@ export function SettingsProvider({ children, userId = 'default' }: { children: R
       if (settingsResult.success && settingsResult.data) {
         dispatch({ type: 'SET_SETTINGS', payload: settingsResult.data as UserSettings });
       }
-      
+
       // Handle other results using helper
       handleApiResult<ApiToken>(tokensResult, 'SET_API_TOKENS');
       handleApiResult<Webhook>(webhooksResult, 'SET_WEBHOOKS');
       handleApiResult<TeamMember>(teamResult, 'SET_TEAM_MEMBERS');
-      
+
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load settings data' });
     } finally {

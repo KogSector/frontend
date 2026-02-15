@@ -108,14 +108,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const payload = {
-      type,
-      url,
-      credentials,
-      config: processedConfig,
+    const repoName = (url && extractRepositoryName(url)) || (config && config['name'] as string) || (config && config['repository'] as string) || 'Unnamed Source'
+
+    // Construct URI based on source type if url is missing
+    let uri = url
+    if (!uri && config) {
+      if (type === 'github' && config['repository']) {
+        uri = `https://github.com/${config['repository']}`
+      } else if (type === 'gitlab' && config['repository']) {
+        const baseUrl = (config['gitlab_url'] as string) || 'https://gitlab.com'
+        const repoPath = (config['repository'] as string).replace(/^\//, '')
+        uri = `${baseUrl.replace(/\/$/, '')}/${repoPath}`
+      } else if (type === 'bitbucket' && config['repository']) {
+        const workspace = config['workspace'] as string
+        const repo = config['repository'] as string
+        uri = workspace ? `https://bitbucket.org/${workspace}/${repo}` : `https://bitbucket.org/${repo}`
+      }
     }
 
-    const resp = await dataApiClient.post('/api/data/sources', payload)
+    // Construct payload matching backend SourceCreateRequest
+    const payload = {
+      type,
+      name: repoName,
+      uri: uri || `upload://${Date.now()}`, // Fallback for non-git sources
+      credentials,
+      metadata: processedConfig,
+    }
+
+    const resp = await dataApiClient.post('/api/v1/sources', payload)
     if (!succeeded(resp)) {
       const err = isApiResp(resp) ? resp.error : undefined
       return NextResponse.json({ success: false, error: err || 'Failed to connect data source' }, { status: 502 })

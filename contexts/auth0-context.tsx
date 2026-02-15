@@ -28,17 +28,9 @@ export interface Auth0ContextType {
   handleAuth0Callback: (auth0Token: string) => Promise<void>
 }
 
-interface AuthResponse {
-  user: User
-  token: string
-  refresh_token: string
-  expires_at: string
-  session_id: string
-}
-
+// Simplified Session Data (Auth0-only)
 interface SessionData {
   token: string
-  refresh_token: string
   expires_at: string
   last_activity: string
 }
@@ -50,7 +42,6 @@ const SESSION_TIMEOUT = 2 * 60 * 60 * 1000 // 2 hours
 export function Auth0Provider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
-  const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
@@ -62,20 +53,17 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   const auth0LogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI || 'http://localhost:3000/'
 
   // Save session to localStorage
-  const saveSession = useCallback((authResponse: AuthResponse) => {
+  const saveSession = useCallback((authToken: string, userProfile: User) => {
     const sessionData: SessionData = {
-      token: authResponse.token,
-      refresh_token: authResponse.refresh_token,
-      expires_at: authResponse.expires_at,
+      token: authToken,
+      expires_at: new Date(Date.now() + SESSION_TIMEOUT).toISOString(),
       last_activity: new Date().toISOString()
     }
     localStorage.setItem('auth_session', JSON.stringify(sessionData))
-    localStorage.setItem('auth_token', authResponse.token)
-    localStorage.setItem('refresh_token', authResponse.refresh_token)
-    
-    setToken(authResponse.token)
-    setRefreshToken(authResponse.refresh_token)
-    setUser(authResponse.user)
+    localStorage.setItem('auth_token', authToken)
+
+    setToken(authToken)
+    setUser(userProfile)
   }, [])
 
   // Get session from localStorage
@@ -93,9 +81,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   const clearSession = useCallback(() => {
     localStorage.removeItem('auth_session')
     localStorage.removeItem('auth_token')
-    localStorage.removeItem('refresh_token')
     setToken(null)
-    setRefreshToken(null)
     setUser(null)
   }, [])
 
@@ -104,7 +90,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     const now = new Date().getTime()
     const lastActivity = new Date(session.last_activity).getTime()
     const expiresAt = new Date(session.expires_at).getTime()
-    
+
     return now < expiresAt && (now - lastActivity) < SESSION_TIMEOUT
   }, [])
 
@@ -112,11 +98,13 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   const fetchUserProfile = useCallback(async (authToken: string) => {
     try {
       const result = await apiClient.get<ApiResponse<User>>(
-        '/api/auth/profile',
+        '/api/auth/me',
         { Authorization: `Bearer ${authToken}` }
       )
-      if (result?.success && result.data) {
-        setUser(result.data)
+      if (result?.success && result.data) { // Check for success wrapper
+        setUser(result.data as any) // Type assertion might be needed if User types mismatch slightly
+      } else if ((result as any)?.user) { // Handle unwrapped response if any
+        setUser((result as any).user)
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
@@ -124,37 +112,12 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     }
   }, [clearSession])
 
-  // Refresh access token
-  const refreshAccessToken = useCallback(async (refreshTok: string) => {
-    try {
-      const result = await apiClient.post<ApiResponse<{ token: string; expires_at: string }>>(
-        '/api/auth/refresh',
-        { refresh_token: refreshTok }
-      )
-      
-      if (result?.success && result.data) {
-        const session = getSession()
-        if (session) {
-          session.token = result.data.token
-          session.expires_at = result.data.expires_at
-          session.last_activity = new Date().toISOString()
-          localStorage.setItem('auth_session', JSON.stringify(session))
-          localStorage.setItem('auth_token', result.data.token)
-          setToken(result.data.token)
-        }
-      }
-    } catch (error) {
-      console.error('Token refresh failed:', error)
-      clearSession()
-    }
-  }, [getSession, clearSession])
 
   // Initialize session on mount
   useEffect(() => {
     const session = getSession()
     if (session && isSessionValid(session)) {
       setToken(session.token)
-      setRefreshToken(session.refresh_token)
       fetchUserProfile(session.token).finally(() => setIsLoading(false))
     } else {
       clearSession()
@@ -193,14 +156,14 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     })
   }, [auth0Domain, auth0ClientId, auth0Audience, auth0RedirectUri])
 
-  // Handle Auth0 callback (exchange Auth0 token for ConFuse token)
+  // Handle Auth0 callback (sync user and store Auth0 token)
   const handleAuth0Callback = useCallback(async (auth0AccessToken: string) => {
     try {
       setIsLoading(true)
 
-      // Call ConFuse auth service to exchange Auth0 token
+      // Call ConFuse auth service to sync user (no exchange, just sync)
       const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:3010'
-      const response = await fetch(`${authServiceUrl}/api/auth/auth0/exchange`, {
+      const response = await fetch(`${authServiceUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${auth0AccessToken}`,
@@ -210,12 +173,14 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || 'Auth0 exchange failed')
+        throw new Error(error.message || 'Auth0 login sync failed')
       }
 
-      const authResponse: AuthResponse = await response.json()
-      saveSession(authResponse)
-      
+      const data = await response.json()
+      // Expecting { user: UserProfile } 
+
+      saveSession(auth0AccessToken, data.user)
+
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error) {
@@ -230,7 +195,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   // Logout
   const logout = useCallback(() => {
     clearSession()
-    
+
     if (auth0Domain && auth0ClientId) {
       // Redirect to Auth0 logout
       const params = new URLSearchParams({
@@ -250,7 +215,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     loginWithRedirect,
     logout,
     token,
-    refreshToken,
+    refreshToken: null, // No longer using refresh tokens on frontend
     handleAuth0Callback
   }
 

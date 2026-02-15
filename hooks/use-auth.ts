@@ -88,47 +88,36 @@ export const useAuth = () => {
     checkBypass()
   }, [])
 
-  // Check for ConFuse token in localStorage first, then fallback to Auth0 token
+  // Get Auth0 access token and sync user
   useEffect(() => {
-    // Skip if bypass is enabled
-    if (bypassEnabled) return
+    // Skip if bypass is enabled or not authenticated
+    if (bypassEnabled || !auth0IsAuthenticated || auth0IsLoading || tokenLoading) return
 
-    // First, check if we have a ConFuse token in localStorage (from auth0/exchange)
-    const storedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
+    // If we already have a token, we might not need to do anything, 
+    // BUT we need to ensure the user is synced to DB at least once per session.
+    // For simplicity, we can just fetch the token and sync if accessToken is not set yet.
 
-    if (storedToken) {
-      // Verify the stored token is still valid by checking expiry
-      try {
-        const sessionStr = localStorage.getItem('auth_session')
-        if (sessionStr) {
-          const session = JSON.parse(sessionStr)
-          const expiresAt = new Date(session.expires_at).getTime()
-          const now = Date.now()
-
-          if (now < expiresAt) {
-            // Token is still valid, use it
-            if (accessToken !== storedToken) {
-              setAccessToken(storedToken)
-            }
-            return
-          } else {
-            // Token expired, clear it
-            localStorage.removeItem('auth_token')
-            localStorage.removeItem('auth_session')
-            localStorage.removeItem('refresh_token')
-          }
-        }
-      } catch (e) {
-        console.error('Error parsing stored session:', e)
-      }
-    }
-
-    // Fallback to Auth0 access token if no valid ConFuse token
-    if (auth0IsAuthenticated && !auth0IsLoading && !accessToken && !tokenLoading && auth0?.getAccessTokenSilently) {
+    if (!accessToken && auth0?.getAccessTokenSilently) {
       setTokenLoading(true)
       auth0.getAccessTokenSilently()
-        .then((token) => {
+        .then(async (token) => {
           setAccessToken(token)
+
+          // SYNC USER TO BACKEND
+          try {
+            // We don't strictly need to await this for the UI to show 'logged in',
+            // but we need it for backend user existence.
+            const authBase = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:3010';
+            await fetch(`${authBase}/api/auth/login`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+          } catch (err) {
+            console.error('Failed to sync user with backend:', err)
+          }
         })
         .catch((err) => {
           console.error('Failed to get Auth0 access token:', err)
@@ -138,8 +127,7 @@ export const useAuth = () => {
           setTokenLoading(false)
         })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth0IsAuthenticated, auth0IsLoading, tokenLoading, bypassEnabled])
+  }, [auth0IsAuthenticated, auth0IsLoading, tokenLoading, bypassEnabled, accessToken, auth0])
 
   const login = () => {
     // Clear explicit logout flag when user initiates login
@@ -157,32 +145,39 @@ export const useAuth = () => {
     auth0?.loginWithRedirect()
   }
 
+  const loginWithPopup = (options?: any) => {
+    if (bypassEnabled) return Promise.resolve();
+    return auth0?.loginWithPopup(options);
+  }
+
   const logoutUser = () => {
     // Clear ConFuse tokens from localStorage
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_session')
-      localStorage.removeItem('refresh_token')
-      // Mark explicit logout to prevent auto-bypass on landing page
-      localStorage.setItem('explicit_logout', 'true')
-    }
-    setAccessToken(null)
-
-    // Clear bypass state
-    setBypassEnabled(false)
-    setBypassUser(null)
-
-    // If in bypass mode, just redirect - don't call Auth0
-    if (bypassEnabled || !auth0?.logout) {
-      // Redirect to landing page
+      // Clear explicit logout flag
       if (typeof window !== 'undefined') {
-        window.location.href = '/'
+        localStorage.removeItem('explicit_logout')
+        // localStorage.setItem('explicit_logout', 'true') // Actually, we probably WANT to set it to true to avoid auto-login loops if desired?
+        // The original code set it to true. I should keep that behavior.
+        localStorage.setItem('explicit_logout', 'true')
       }
-      return
-    }
+      setAccessToken(null)
 
-    // Normal Auth0 logout
-    auth0.logout({ logoutParams: { returnTo: window.location.origin } })
+      // Clear bypass state
+      setBypassEnabled(false)
+      setBypassUser(null)
+
+      // If in bypass mode, just redirect - don't call Auth0
+      if (bypassEnabled || !auth0?.logout) {
+        // Redirect to landing page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/'
+        }
+        return
+      }
+
+      // Normal Auth0 logout
+      auth0.logout({ logoutParams: { returnTo: window.location.origin } })
+    }
   }
 
   // Function to clear explicit logout flag (call this when user clicks login)
@@ -266,6 +261,7 @@ export const useAuth = () => {
     isLoading,
     login,
     loginWithRedirect,
+    loginWithPopup,
     logout: logoutUser,
     getAccessTokenSilently,
     // Auth0 access token (use this for API calls)

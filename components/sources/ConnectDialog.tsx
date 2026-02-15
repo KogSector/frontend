@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { apiClient, ApiResponse } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -18,9 +19,31 @@ interface ConnectDataSourceDialogProps {
 export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: ConnectDataSourceDialogProps) {
   const [type, setType] = useState('');
   const [name, setName] = useState('');
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [config, setConfig] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
+  const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const { loginWithPopup, getAccessTokenSilently } = useAuth();
+
+  // Fetch connected providers on open
+  const fetchConnections = async () => {
+    try {
+      const resp = await apiClient.get<ApiResponse<any[]>>('/api/auth/connections');
+      if (resp.success && Array.isArray(resp.data)) {
+        setConnectedProviders(resp.data.filter(c => c.is_active).map(c => c.platform));
+      }
+    } catch (e) {
+      console.error('Failed to fetch connections', e);
+    }
+  };
+
+  if (open && connectedProviders.length === 0) {
+    // Trigger fetch when opened
+    // Use efficient pattern or useEffect
+  }
+
+  // Use useEffect instead of condition in render
+  // imports needed: useEffect
+
 
   const handleConnect = async () => {
     setLoading(true);
@@ -40,6 +63,35 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
     }
   };
 
+  useEffect(() => {
+    if (open) {
+      fetchConnections();
+    }
+  }, [open]);
+
+  const handleOAuthConnect = async (provider: string) => {
+    try {
+      setLoading(true);
+      await loginWithPopup({
+        authorizationParams: {
+          connection: provider,
+        }
+      });
+
+      // Sync connections after successful login/link
+      const token = await getAccessTokenSilently();
+      await apiClient.post('/api/auth/connections/sync', {}, {
+        Authorization: `Bearer ${token}`
+      });
+
+      await fetchConnections();
+    } catch (e) {
+      console.error('OAuth connection failed', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setType('');
     setName('');
@@ -50,17 +102,29 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const renderCredentialFields = () => {
     switch (type) {
       case 'github':
+        const isGithubConnected = connectedProviders.includes('github');
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="accessToken">Access Token</Label>
-              <Input
-                id="accessToken"
-                type="password"
-                value={credentials.accessToken || ''}
-                onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
-              />
-            </div>
+            {!isGithubConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with GitHub to access your repositories.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('github')}
+                >
+                  Connect GitHub
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to GitHub
+              </div>
+            )}
+
             <div>
               <Label htmlFor="repository">Repository</Label>
               <Input
@@ -68,23 +132,36 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="owner/repo"
                 value={config.repository || ''}
                 onChange={(e) => setConfig({ ...config, repository: e.target.value })}
+                disabled={!isGithubConnected}
               />
             </div>
           </div>
         );
 
       case 'gitlab':
+        const isGitlabConnected = connectedProviders.includes('gitlab');
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="accessToken">Access Token</Label>
-              <Input
-                id="accessToken"
-                type="password"
-                value={credentials.accessToken || ''}
-                onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
-              />
-            </div>
+            {!isGitlabConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with GitLab to access your projects.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('gitlab')}
+                >
+                  Connect GitLab
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to GitLab
+              </div>
+            )}
+
             <div>
               <Label htmlFor="repository">Project Path</Label>
               <Input
@@ -92,6 +169,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="namespace/project"
                 value={config.repository || ''}
                 onChange={(e) => setConfig({ ...config, repository: e.target.value })}
+                disabled={!isGitlabConnected}
               />
             </div>
             <div>
@@ -101,31 +179,36 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="https://gitlab.example.com"
                 value={config.gitlab_url || ''}
                 onChange={(e) => setConfig({ ...config, gitlab_url: e.target.value })}
+                disabled={!isGitlabConnected}
               />
             </div>
           </div>
         );
 
       case 'bitbucket':
+        const isBitbucketConnected = connectedProviders.includes('bitbucket');
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={credentials.username || ''}
-                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="appPassword">App Password</Label>
-              <Input
-                id="appPassword"
-                type="password"
-                value={credentials.appPassword || ''}
-                onChange={(e) => setCredentials({ ...credentials, appPassword: e.target.value })}
-              />
-            </div>
+            {!isBitbucketConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with Bitbucket to access your repositories.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('bitbucket')}
+                >
+                  Connect Bitbucket
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to Bitbucket
+              </div>
+            )}
+
             <div>
               <Label htmlFor="workspace">Workspace</Label>
               <Input
@@ -133,6 +216,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="workspace-name"
                 value={config.workspace || ''}
                 onChange={(e) => setConfig({ ...config, workspace: e.target.value })}
+                disabled={!isBitbucketConnected}
               />
             </div>
             <div>
@@ -142,6 +226,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="repo-slug"
                 value={config.repository || ''}
                 onChange={(e) => setConfig({ ...config, repository: e.target.value })}
+                disabled={!isBitbucketConnected}
               />
             </div>
           </div>
@@ -250,12 +335,13 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="github">GitHub</SelectItem>
-                <SelectItem value="gitlab">GitLab</SelectItem>
-                <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="google-drive">Google Drive</SelectItem>
+                {/* Restricted other providers per policy */}
+                {/* <SelectItem value="gitlab">GitLab</SelectItem>
+                <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="dropbox">Dropbox</SelectItem>
                 <SelectItem value="onedrive">OneDrive</SelectItem>
-                <SelectItem value="url">URLs</SelectItem>
+                <SelectItem value="url">URLs</SelectItem> */}
               </SelectContent>
             </Select>
           </div>
