@@ -1,28 +1,7 @@
 # =============================================================================
 # Frontend (Next.js) - Kubernetes Deployment
-# Covers ALL .env variables via ConfigMap (non-sensitive)
+# Uses dynamically generated Secret from .env file via CI/CD
 # =============================================================================
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: frontend-config
-  namespace: confuse-platform
-data:
-  NODE_ENV: "production"
-  PORT: "3000"
-  # API URLs (internal cluster DNS)
-  NEXT_PUBLIC_API_URL: "http://api-backend:8000"
-  NEXT_PUBLIC_AUTH_URL: "http://auth-middleware:3010"
-  NEXT_PUBLIC_FEATURE_TOGGLE_URL: "http://feature-toggle:3099"
-  NEXT_PUBLIC_MCP_URL: "http://mcp-server:3004"
-  # Auth0 (non-sensitive, public client config)
-  NEXT_PUBLIC_AUTH0_DOMAIN: "dev-pmspwseo1uaudyoi.jp.auth0.com"
-  NEXT_PUBLIC_AUTH0_AUDIENCE: "https://api.confuse.dev"
-  NEXT_PUBLIC_AUTH0_CLIENT_ID: "Ne8pCTrBhnVC0rxa2RaD94eAdKId8SBj"
-  NEXT_PUBLIC_AUTH0_REDIRECT_URI: "https://confuse.platform.example.com"
-  NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI: "https://confuse.platform.example.com/"
 
 ---
 apiVersion: apps/v1
@@ -54,8 +33,8 @@ spec:
         - containerPort: 3000
           name: http
         envFrom:
-        - configMapRef:
-            name: frontend-config
+        - secretRef:
+            name: frontend-secrets
         resources:
           requests:
             memory: "128Mi"
