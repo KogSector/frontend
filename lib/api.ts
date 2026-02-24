@@ -354,7 +354,47 @@ export async function testAgent(id: string): Promise<ApiResponse<{ connected: bo
 
 // -- Dashboard --
 export async function getDashboardStats(): Promise<ApiResponse> {
-  return dataClient.get('/api/dashboard/stats');
+  // This now calls frontend API route, not microservice
+  const token = typeof window !== 'undefined' ? localStorage.getItem('confuse_auth_token') : null;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch('/api/dashboard/stats', { headers });
+  return response.json();
+}
+
+export async function getSystemHealth(): Promise<ApiResponse> {
+  // This now calls frontend API route, not microservice
+  const response = await fetch('/api/dashboard/health', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.json();
+}
+
+// -- Landing Page --
+export async function getLandingStats(): Promise<ApiResponse> {
+  const response = await fetch('/api/landing/stats', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.json();
+}
+
+export async function getLandingFeatures(): Promise<ApiResponse> {
+  const response = await fetch('/api/landing/features', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.json();
 }
 
 // -- Sources --

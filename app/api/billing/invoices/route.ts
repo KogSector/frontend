@@ -1,30 +1,37 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { billingApiClient } from '@/lib/api'
 
 export async function GET(request: NextRequest) {
   try {
-    let authHeader = request.headers.get('authorization') || undefined
-    if (authHeader && /null|undefined/i.test(authHeader)) authHeader = undefined
+    // Return mock invoices data until billing service is created
+    const mockInvoices = [
+      {
+        id: 'INV-MOCK-001',
+        invoice_number: 'INV-2024-001',
+        status: 'paid',
+        amount_due: 29.99,
+        due_date: '2024-09-01',
+        paid_at: '2024-09-01',
+        download_url: '#'
+      },
+      {
+        id: 'INV-MOCK-002',
+        invoice_number: 'INV-2024-002',
+        status: 'paid',
+        amount_due: 29.99,
+        due_date: '2024-10-01',
+        paid_at: '2024-10-01',
+        download_url: '#'
+      }
+    ];
 
-    const url = new URL(request.url)
-    const query = url.searchParams.toString()
-    const endpoint = `/api/billing/invoices${query ? `?${query}` : ''}`
+    return NextResponse.json(mockInvoices);
 
-    const resp = await billingApiClient.get(endpoint, authHeader ? { Authorization: authHeader } : undefined)
-
-    // Unwrap common response shapes to return a plain array as the UI expects
-    let data: unknown = resp as unknown
-    if (typeof data === 'object' && data !== null) {
-      const obj = data as Record<string, unknown>
-      if (Array.isArray(obj['invoices'])) data = obj['invoices']
-      else if (Array.isArray(obj['data'])) data = obj['data']
-    }
-
-    return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching invoices:', error)
-    return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 })
+    console.error('Error fetching invoices:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch invoices' 
+    }, { status: 500 });
   }
 }

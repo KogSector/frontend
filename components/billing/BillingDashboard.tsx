@@ -61,11 +61,13 @@ export function BillingDashboard() {
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
+      
+      // This now calls the frontend API route with mock data
       const response = await fetch('/api/billing/dashboard', { headers })
 
       if (response.ok) {
         const dashboardData = await response.json()
-        setData(dashboardData)
+        setData(dashboardData.data || dashboardData)
       } else {
         setError('Failed to load billing data')
       }

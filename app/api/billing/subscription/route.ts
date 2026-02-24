@@ -1,42 +1,62 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { billingApiClient } from '@/lib/api'
 
 export async function GET(request: NextRequest) {
   try {
-    let authHeader = request.headers.get('authorization') || undefined
-    if (authHeader && /null|undefined/i.test(authHeader)) authHeader = undefined
-    const resp = await billingApiClient.get('/api/billing/subscription', authHeader ? { Authorization: authHeader } : undefined)
-    return NextResponse.json(resp)
+    // Return mock subscription data until billing service is created
+    const mockSubscription = {
+      subscription: null,
+      plan: null
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: mockSubscription
+    });
+
   } catch (error) {
-    console.error('Error fetching subscription:', error)
-    return NextResponse.json({ error: 'Failed to fetch subscription' }, { status: 500 })
+    console.error('Error fetching subscription:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch subscription' 
+    }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    let authHeader = request.headers.get('authorization') || undefined
-    if (authHeader && /null|undefined/i.test(authHeader)) authHeader = undefined
-    const resp = await billingApiClient.post('/api/billing/subscription', body, authHeader ? { Authorization: authHeader } : undefined)
-    return NextResponse.json(resp)
+    // Mock subscription creation until billing service is created
+    return NextResponse.json({
+      success: true,
+      data: {
+        message: 'Subscription creation not yet implemented',
+        status: 'mock'
+      }
+    });
+
   } catch (error) {
-    console.error('Error creating subscription:', error)
-    return NextResponse.json({ error: 'Failed to create subscription' }, { status: 500 })
+    console.error('Error creating subscription:', error);
+    return NextResponse.json({ 
+      error: 'Failed to create subscription' 
+    }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
-    let authHeader = request.headers.get('authorization') || undefined
-    if (authHeader && /null|undefined/i.test(authHeader)) authHeader = undefined
-    const resp = await billingApiClient.put('/api/billing/subscription', body, authHeader ? { Authorization: authHeader } : undefined)
-    return NextResponse.json(resp)
+    // Mock subscription update until billing service is created
+    return NextResponse.json({
+      success: true,
+      data: {
+        message: 'Subscription update not yet implemented',
+        status: 'mock'
+      }
+    });
+
   } catch (error) {
-    console.error('Error updating subscription:', error)
-    return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
+    console.error('Error updating subscription:', error);
+    return NextResponse.json({ 
+      error: 'Failed to update subscription' 
+    }, { status: 500 });
   }
 }
