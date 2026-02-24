@@ -1,7 +1,26 @@
+/**
+ * ConFuse Frontend — API Configuration
+ *
+ * Post api-backend elimination: service-specific URLs.
+ * Each microservice is accessed directly by the frontend.
+ */
 
+export const SERVICE_URLS = {
+  auth: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3010',
+  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8080',
+  unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL || 'http://localhost:8090',
+  relationGraph: process.env.NEXT_PUBLIC_RELATION_GRAPH_URL || 'http://localhost:3003',
+  mcpServer: process.env.NEXT_PUBLIC_MCP_URL || 'http://localhost:3004',
+  embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL || 'http://localhost:8093',
+  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL || 'http://localhost:3099',
+} as const;
 
+/**
+ * @deprecated Use SERVICE_URLS instead. Kept for backward compatibility
+ * during migration. Maps to data-connector as the default service.
+ */
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+  baseUrl: SERVICE_URLS.dataConnector,
   timeout: 10000,
   retries: 3,
   retryDelay: 1000,
@@ -25,18 +44,15 @@ if (typeof window !== 'undefined') {
     }
   };
 
-  if (!isValidUrl(API_CONFIG.baseUrl)) {
-    console.error('Invalid API base URL:', API_CONFIG.baseUrl);
-  }
+  // Validate all service URLs
+  Object.entries(SERVICE_URLS).forEach(([name, url]) => {
+    if (!isValidUrl(url)) {
+      console.error(`Invalid ${name} service URL:`, url);
+    }
+  });
 
-  
   if (process.env.NODE_ENV === 'development') {
-    console.log('ConFuse API Configuration:', {
-      baseUrl: API_CONFIG.baseUrl,
-      timeout: API_CONFIG.timeout,
-      environment: process.env.NODE_ENV,
-      buildTime: new Date().toISOString(),
-    });
+    console.log('ConFuse Service URLs:', SERVICE_URLS);
   }
 }
 

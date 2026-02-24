@@ -1,5 +1,15 @@
-import { API_CONFIG } from './config';
+/**
+ * ConFuse Frontend API Client
+ *
+ * Post api-backend elimination: uses service-specific clients.
+ * Each client targets a different microservice directly.
+ */
+import { SERVICE_URLS, API_CONFIG } from './config';
 import logger, { TRACE_ID_HEADER, SPAN_ID_HEADER, REQUEST_ID_HEADER } from './logger';
+
+// =============================================================================
+// Types
+// =============================================================================
 
 export interface DocumentRecord {
   id: string;
@@ -85,138 +95,106 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// =============================================================================
+// ApiClient (core HTTP class)
+// =============================================================================
+
 export class ApiClient {
   private baseUrl: string;
-  private authBaseUrl: string;
-  private billingEnabled: boolean;
   private serviceName: string;
 
-  constructor(baseUrl = API_CONFIG.baseUrl, serviceName = 'backend') {
+  constructor(baseUrl: string, serviceName = 'unknown') {
     this.baseUrl = baseUrl;
-    this.authBaseUrl = process.env.NEXT_PUBLIC_AUTH_URL || process.env.AUTH_SERVICE_URL || '';
-    this.billingEnabled = true;
     this.serviceName = serviceName;
-    
+
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       logger.debug('API Client initialized', { baseUrl: this.baseUrl, serviceName }, 'api');
     }
   }
 
-  /** Get trace headers for request correlation */
   private getTraceHeaders(): Record<string, string> {
     return logger.getTraceHeaders();
   }
 
-  private resolveBase(endpoint: string): string {
-    if (endpoint.startsWith('/api/auth')) return this.authBaseUrl;
-    return this.baseUrl;
-  }
-
-  private async handleGraphQLResponse<T>(response: Response): Promise<T> {
-    let payload: unknown;
-    try {
-      payload = await response.json();
-    } catch (error) {
-      throw new Error(`Failed to parse GraphQL response: ${response.statusText}`);
+  /**
+   * Get stored auth token for request injection.
+   * Token is expected to be stored by the auth flow (e.g. Auth0 SDK).
+   */
+  private getAuthHeaders(): Record<string, string> {
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('confuse_auth_token');
+    if (token) {
+      return { 'Authorization': `Bearer ${token}` };
     }
-    const obj = payload as { data?: T; errors?: { message?: string }[] };
-    if (!response.ok || obj.errors?.length) {
-      const msg = obj.errors?.map(e => e.message || 'GraphQL error').join('\n') || `HTTP error! status: ${response.status}`;
-      throw new Error(msg);
-    }
-    if (!obj.data) {
-      throw new Error('GraphQL response missing data');
-    }
-    return obj.data;
+    return {};
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     let data: unknown;
     try {
       data = await response.json();
-    } catch (error) {
+    } catch {
       throw new Error(`Failed to parse response: ${response.statusText}`);
     }
-
     if (!response.ok) {
-      const dataObj = typeof data === 'object' && data !== null ? data as Record<string, unknown> : {}
-      const errorMessage = typeof dataObj['error'] === 'string' ? dataObj['error'] : (typeof dataObj['message'] === 'string' ? dataObj['message'] : `HTTP error! status: ${response.status}`)
-      throw new Error(errorMessage)
+      const dataObj = typeof data === 'object' && data !== null ? data as Record<string, unknown> : {};
+      const errorMessage = typeof dataObj['error'] === 'string' ? dataObj['error'] : (typeof dataObj['message'] === 'string' ? dataObj['message'] : `HTTP error! status: ${response.status}`);
+      throw new Error(errorMessage);
     }
-
     return data as T;
   }
 
   async get<T = unknown>(endpoint: string, headers: Record<string, string> = {}): Promise<T> {
     const startTime = performance.now();
     try {
-      const response = await fetch(`${this.resolveBase(endpoint)}${endpoint}`, {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
           ...this.getTraceHeaders(),
           ...headers,
         },
       });
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'GET', duration, response.status);
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'GET', duration, response.status);
       return this.handleResponse<T>(response);
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'GET', duration, 0, error instanceof Error ? error.message : 'Unknown error');
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'GET', duration, 0, error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
 
-  async graphql<T = unknown>(query: string, variables: Record<string, unknown> = {}, headers: Record<string, string> = {}): Promise<T> {
-    const startTime = performance.now();
-    const operationName = query.match(/(?:query|mutation)\s+(\w+)/)?.[1] || 'anonymous';
-    try {
-      const response = await fetch(`${this.baseUrl}/api/graphql`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getTraceHeaders(),
-          ...headers,
-        },
-        body: JSON.stringify({ query, variables }),
-        credentials: 'include',
-      });
-      const duration = performance.now() - startTime;
-      logger.trackAPICall(`/api/graphql:${operationName}`, 'POST', duration, response.status);
-      return this.handleGraphQLResponse<T>(response);
-    } catch (error) {
-      const duration = performance.now() - startTime;
-      logger.trackAPICall(`/api/graphql:${operationName}`, 'POST', duration, 0, error instanceof Error ? error.message : 'Unknown error');
-      throw error;
-    }
-  }
   async post<T = unknown>(endpoint: string, data: unknown, headers: Record<string, string> = {}): Promise<T> {
     const startTime = performance.now();
     try {
-      const response = await fetch(`${this.resolveBase(endpoint)}${endpoint}`, {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
           ...this.getTraceHeaders(),
           ...headers,
         },
         body: JSON.stringify(data),
       });
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'POST', duration, response.status);
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'POST', duration, response.status);
       return this.handleResponse<T>(response);
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'POST', duration, 0, error instanceof Error ? error.message : 'Unknown error');
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'POST', duration, 0, error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
+
   async postForm<T = unknown>(endpoint: string, form: FormData, headers: Record<string, string> = {}): Promise<T> {
     try {
-      const response = await fetch(`${this.resolveBase(endpoint)}${endpoint}`, {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
+          ...this.getAuthHeaders(),
           ...headers,
         },
         body: form,
@@ -227,158 +205,199 @@ export class ApiClient {
       throw error;
     }
   }
+
   async put<T = unknown>(endpoint: string, data: unknown, headers: Record<string, string> = {}): Promise<T> {
     const startTime = performance.now();
     try {
-      const response = await fetch(`${this.resolveBase(endpoint)}${endpoint}`, {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
           ...this.getTraceHeaders(),
           ...headers,
         },
         body: JSON.stringify(data),
       });
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'PUT', duration, response.status);
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'PUT', duration, response.status);
       return this.handleResponse<T>(response);
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'PUT', duration, 0, error instanceof Error ? error.message : 'Unknown error');
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'PUT', duration, 0, error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
+
   async delete<T = unknown>(endpoint: string, headers: Record<string, string> = {}): Promise<T> {
     const startTime = performance.now();
     try {
-      const response = await fetch(`${this.resolveBase(endpoint)}${endpoint}`, {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
           ...this.getTraceHeaders(),
           ...headers,
         },
       });
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'DELETE', duration, response.status);
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'DELETE', duration, response.status);
       return this.handleResponse<T>(response);
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.trackAPICall(endpoint, 'DELETE', duration, 0, error instanceof Error ? error.message : 'Unknown error');
+      logger.trackAPICall(`[${this.serviceName}] ${endpoint}`, 'DELETE', duration, 0, error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
+
   async health(): Promise<ApiResponse> {
     return this.get('/health');
   }
 
-  
-  async createUrl(data: {
-    url: string;
-    title?: string;
-    description?: string;
-    tags?: string[];
-  }): Promise<ApiResponse> {
-    return this.post('/api/urls', data);
-  }
-
-  async getUrls(): Promise<ApiResponse> {
-    return this.get('/api/urls');
-  }
-
-  async deleteUrl(id: string): Promise<ApiResponse> {
-    return this.delete(`/api/urls/${id}`);
-  }
-
-  
-  async createDocument(data: {
-    name: string;
-    source: string;
-    doc_type: string;
-    size?: string;
-    tags?: string[];
-  }): Promise<ApiResponse<DocumentRecord>> {
-    return this.post('/api/documents', data);
-  }
-
-  async getDocuments(search?: string): Promise<ApiResponse<{data: DocumentRecord[], total: number}>> {
-    const params = search ? `?search=${encodeURIComponent(search)}` : '';
-    return this.get(`/api/documents${params}`);
-  }
-
-  async deleteDocument(id: string): Promise<ApiResponse> {
-    return this.delete(`/api/documents/${id}`);
-  }
-
-  async getDocumentAnalytics(): Promise<ApiResponse> {
-    return this.get('/api/documents/analytics');
-  }
-
-  
-  async checkBackendHealth(): Promise<boolean> {
+  async checkHealth(): Promise<boolean> {
     try {
       const response = await this.health() as unknown as { status?: string; success?: boolean };
-      // Health endpoint returns { status: "healthy" } not { success: true }
       return response.status === 'healthy' || response.success === true;
-    } catch (error) {
-      console.error('Backend health check failed:', error);
+    } catch {
       return false;
     }
   }
-
-  
-  async getAgents(): Promise<ApiResponse<AgentRecord[]>> {
-    return this.get('/api/agents');
-  }
-
-  async getAgent(id: string): Promise<ApiResponse<AgentRecord>> {
-    return this.get(`/api/agents/${id}`);
-  }
-
-  async createAgent(data: CreateAgentRequest): Promise<ApiResponse<AgentRecord>> {
-    return this.post('/api/agents', data);
-  }
-
-  async updateAgent(id: string, data: UpdateAgentRequest): Promise<ApiResponse<AgentRecord>> {
-    return this.put(`/api/agents/${id}`, data);
-  }
-
-  async deleteAgent(id: string): Promise<ApiResponse> {
-    return this.delete(`/api/agents/${id}`);
-  }
-
-  async getAgentContext(id: string): Promise<ApiResponse> {
-    return this.get(`/api/agents/${id}/context`);
-  }
-
-  async invokeAgent(id: string, data: AgentInvokeRequest): Promise<ApiResponse<AgentInvokeResponse>> {
-    return this.post(`/api/agents/${id}/invoke`, data);
-  }
-
-  async testAgent(id: string): Promise<ApiResponse<{connected: boolean}>> {
-    return this.post(`/api/agents/${id}/test`, {});
-  }
 }
 
-export const apiClient = new ApiClient();
+// =============================================================================
+// Service-Specific Client Instances
+// =============================================================================
 
-// Dedicated client for the Data service (repositories, data-sources)
-// Uses NEXT_PUBLIC_DATA_SERVICE_URL or defaults to local dev port 3013
-export const dataApiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_API_URL || process.env.DATA_SERVICE_URL || ''
-);
+/** Auth middleware service (login, token validation, RBAC) */
+export const authClient = new ApiClient(SERVICE_URLS.auth, 'auth');
 
-// Dedicated client for the Billing service
-// Uses NEXT_PUBLIC_BILLING_SERVICE_URL, falls back to BILLING_SERVICE_URL, then local dev port 3011
-export const billingApiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_BILLING_SERVICE_URL ||
-  process.env.BILLING_SERVICE_URL ||
-  ''
-);
+/** Data connector service (sources, agents, documents, URLs, repos, dashboard) */
+export const dataClient = new ApiClient(SERVICE_URLS.dataConnector, 'data-connector');
 
-export const securityApiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_SECURITY_SERVICE_URL || process.env.SECURITY_SERVICE_URL || ''
-);
+/** Unified processor service (document/code processing, embeddings) */
+export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'unified-processor');
+
+/** Relation graph service (search, relationships, entity evolution) */
+export const graphClient = new ApiClient(SERVICE_URLS.relationGraph, 'relation-graph');
+
+/** MCP server (Agent protocol) */
+export const mcpClient = new ApiClient(SERVICE_URLS.mcpServer, 'mcp-server');
+
+/** Embeddings service */
+export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
+
+/** Feature toggle service */
+export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+
+/**
+ * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
+ * Kept for backward-compat during migration. Points to data-connector.
+ */
+export const apiClient = dataClient;
+
+// =============================================================================
+// Data Connector API (agents, documents, URLs, repos, dashboard, sources)
+// =============================================================================
+
+// -- URLs --
+export async function createUrl(data: { url: string; title?: string; description?: string; tags?: string[] }): Promise<ApiResponse> {
+  return dataClient.post('/api/urls', data);
+}
+export async function getUrls(): Promise<ApiResponse> {
+  return dataClient.get('/api/urls');
+}
+export async function deleteUrl(id: string): Promise<ApiResponse> {
+  return dataClient.delete(`/api/urls/${id}`);
+}
+
+// -- Documents --
+export async function createDocument(data: { name: string; source: string; doc_type: string; size?: string; tags?: string[] }): Promise<ApiResponse<DocumentRecord>> {
+  return dataClient.post('/api/documents', data);
+}
+export async function getDocuments(search?: string): Promise<ApiResponse<{ data: DocumentRecord[], total: number }>> {
+  const params = search ? `?search=${encodeURIComponent(search)}` : '';
+  return dataClient.get(`/api/documents${params}`);
+}
+export async function deleteDocument(id: string): Promise<ApiResponse> {
+  return dataClient.delete(`/api/documents/${id}`);
+}
+export async function getDocumentAnalytics(): Promise<ApiResponse> {
+  return dataClient.get('/api/documents/analytics');
+}
+
+// -- Agents --
+export async function getAgents(): Promise<ApiResponse<AgentRecord[]>> {
+  return dataClient.get('/api/agents');
+}
+export async function getAgent(id: string): Promise<ApiResponse<AgentRecord>> {
+  return dataClient.get(`/api/agents/${id}`);
+}
+export async function createAgent(data: CreateAgentRequest): Promise<ApiResponse<AgentRecord>> {
+  return dataClient.post('/api/agents', data);
+}
+export async function updateAgent(id: string, data: UpdateAgentRequest): Promise<ApiResponse<AgentRecord>> {
+  return dataClient.put(`/api/agents/${id}`, data);
+}
+export async function deleteAgent(id: string): Promise<ApiResponse> {
+  return dataClient.delete(`/api/agents/${id}`);
+}
+export async function getAgentContext(id: string): Promise<ApiResponse> {
+  return dataClient.get(`/api/agents/${id}/context`);
+}
+export async function invokeAgent(id: string, data: AgentInvokeRequest): Promise<ApiResponse<AgentInvokeResponse>> {
+  return dataClient.post(`/api/agents/${id}/invoke`, data);
+}
+export async function testAgent(id: string): Promise<ApiResponse<{ connected: boolean }>> {
+  return dataClient.post(`/api/agents/${id}/test`, {});
+}
+
+// -- Dashboard --
+export async function getDashboardStats(): Promise<ApiResponse> {
+  return dataClient.get('/api/dashboard/stats');
+}
+
+// -- Sources --
+export async function getSources(): Promise<ApiResponse> {
+  return dataClient.get('/api/v1/sources');
+}
+export async function createSource(data: unknown): Promise<ApiResponse> {
+  return dataClient.post('/api/v1/sources', data);
+}
+
+// -- Repositories --
+export async function getRepositories(): Promise<ApiResponse> {
+  return dataClient.get('/api/repositories');
+}
+export async function createRepository(data: unknown): Promise<ApiResponse> {
+  return dataClient.post('/api/repositories', data);
+}
+export async function deleteRepository(id: string): Promise<ApiResponse> {
+  return dataClient.delete(`/api/repositories/${id}`);
+}
+
+// =============================================================================
+// Relation Graph API (search)
+// =============================================================================
+
+export async function hybridSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
+  return graphClient.post('/api/v1/search', { query, ...options });
+}
+export async function vectorSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
+  return graphClient.post('/api/v1/temporal-search', { query, ...options });
+}
+
+// =============================================================================
+// Auth API
+// =============================================================================
+
+export async function listAuthConnections(): Promise<ApiResponse> {
+  return authClient.get('/api/auth/connections');
+}
+
+// =============================================================================
+// Utility
+// =============================================================================
 
 export async function importDocumentFromProvider(data: {
   provider: string;
@@ -387,49 +406,18 @@ export async function importDocumentFromProvider(data: {
   mime_type?: string;
   size?: number;
 }): Promise<ApiResponse> {
-  return dataApiClient.post('/api/data/documents/import', data);
+  return dataClient.post('/api/data/documents/import', data);
 }
 
-export async function listConnections(): Promise<ApiResponse> {
-  return securityApiClient.get('/api/security/connections');
-}
-
-export async function listAuthConnections(): Promise<ApiResponse> {
-  return apiClient.get('/api/auth/connections');
-}
-
-export async function connectProvider(platform: string): Promise<ApiResponse<{ account?: { status: string; credentials?: { auth_url?: string }}}>> {
-  return securityApiClient.post('/api/security/connections/connect', { platform });
-}
-
-export async function listProviderFiles(provider: string): Promise<ApiResponse<{ id: string; name: string; mime_type: string; size: number }[]>> {
-  return securityApiClient.get(`/api/security/connections/${provider}/files`);
-}
-
-// Convenience helper: fetch current user via GraphQL when auth is enabled
-export async function fetchCurrentUserViaGraphQL() {
-  const query = `
-    query Me { me { userId roles } }
-  `;
-  try {
-    const data = await apiClient.graphql<{ me: { userId: string | null; roles: string[] } }>(query);
-    return data.me;
-  } catch (err) {
-    // In environments where auth is disabled, backend may return default claims.
-    // Gracefully return undefined to keep UI stable.
-    console.warn('GraphQL me query failed:', err);
-    return undefined;
+export function unwrapResponse<T = unknown>(resp: unknown): T | undefined {
+  if (typeof resp === 'object' && resp !== null) {
+    const r = resp as Record<string, unknown>;
+    if ('data' in r) return r.data as T;
   }
+  return resp as T | undefined;
 }
 
 /**
- * Safely extract the `data` field from an API response or return the value itself.
- * Avoids use of `any` in callers by operating on unknown.
+ * @deprecated Use dataClient directly. Kept for backward compat.
  */
-export function unwrapResponse<T = unknown>(resp: unknown): T | undefined {
-  if (typeof resp === 'object' && resp !== null) {
-    const r = resp as Record<string, unknown>
-    if ('data' in r) return r.data as T
-  }
-  return resp as T | undefined
-}
+export const dataApiClient = dataClient;
