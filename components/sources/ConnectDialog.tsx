@@ -20,6 +20,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const [type, setType] = useState('');
   const [name, setName] = useState('');
   const [config, setConfig] = useState<Record<string, any>>({});
+  const [credentials, setCredentials] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const { loginWithPopup, getAccessTokenSilently } = useAuth();
@@ -336,12 +337,11 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               <SelectContent>
                 <SelectItem value="github">GitHub</SelectItem>
                 <SelectItem value="google-drive">Google Drive</SelectItem>
-                {/* Restricted other providers per policy */}
-                {/* <SelectItem value="gitlab">GitLab</SelectItem>
+                <SelectItem value="gitlab">GitLab</SelectItem>
                 <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="dropbox">Dropbox</SelectItem>
                 <SelectItem value="onedrive">OneDrive</SelectItem>
-                <SelectItem value="url">URLs</SelectItem> */}
+                <SelectItem value="url">URLs</SelectItem>
               </SelectContent>
             </Select>
           </div>

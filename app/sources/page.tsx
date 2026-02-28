@@ -34,10 +34,15 @@ export default function DataSourcesPage() {
       const response = await fetch('/api/data-sources');
       const data = await response.json();
       if (data.success) {
-        setDataSources(data.dataSources);
+        // API route returns { success, data: { dataSources: [] } }
+        const sources = data.data?.dataSources ?? data.dataSources ?? [];
+        setDataSources(Array.isArray(sources) ? sources : []);
+      } else {
+        setDataSources([]);
       }
     } catch (error) {
       console.error('Error fetching data sources:', error);
+      setDataSources([]);
     } finally {
       setLoading(false);
     }
@@ -59,7 +64,7 @@ export default function DataSourcesPage() {
 
   const deleteDataSource = async (sourceId: string) => {
     if (!confirm('Are you sure you want to delete this data source?')) return;
-    
+
     try {
       const response = await fetch(`/api/data-sources/${sourceId}`, {
         method: 'DELETE'
@@ -120,7 +125,7 @@ export default function DataSourcesPage() {
             </CardContent>
           </Card>
         </Link>
-        
+
         <Link href="/sources/documents">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="flex items-center p-6">
@@ -132,7 +137,7 @@ export default function DataSourcesPage() {
             </CardContent>
           </Card>
         </Link>
-        
+
         <Link href="/sources/chats">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="flex items-center p-6">
@@ -172,7 +177,7 @@ export default function DataSourcesPage() {
                   <p className="text-red-500">Error: {source.error}</p>
                 )}
               </div>
-              
+
               <div className="flex space-x-2">
                 <Button
                   size="sm"
