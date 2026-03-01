@@ -14,7 +14,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files only
-COPY frontend/package*.json ./
+COPY package*.json ./
 # Install all dependencies for build time (PostCSS/autoprefixer)
 RUN npm install
 
@@ -22,7 +22,7 @@ RUN npm install
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY frontend ./
+COPY . ./
 
 # Create feature-toggles.json if not present (for standalone builds)
 RUN echo '{}' > ../feature-toggles.json 2>/dev/null || true

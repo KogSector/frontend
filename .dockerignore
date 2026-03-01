@@ -1,16 +1,13 @@
 # Frontend Service .dockerignore
-# Ignore everything by default
-**
-
-# Allow build context essentials
-!frontend/
-!shared/
-
-# Specific ignores
-frontend/node_modules
-frontend/.next
-frontend/dist
-frontend/.env
-frontend/coverage
-shared/node_modules
-shared/dist
+# Ignore cache and temp files
+node_modules/
+.next/
+dist/
+.env
+.env.*
+coverage/
+.git/
+.gitignore
+README.md
+Dockerfile*
+.dockerignore
