@@ -6,6 +6,8 @@ build/
 coverage/
 .env
 .env.*
+.env.map
+.env.secret
 !.env.example
 npm-debug.log
 yarn-error.log

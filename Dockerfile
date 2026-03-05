@@ -14,7 +14,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files only
-COPY package*.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 # Install all dependencies for build time (PostCSS/autoprefixer)
 RUN npm install
 
