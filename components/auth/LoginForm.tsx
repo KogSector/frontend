@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth0 } from '@/contexts/auth0-context'
 
 // Restore your actual project UI components
 import { Button } from '@/components/ui/button'
@@ -71,20 +71,21 @@ export function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Use the REAL Auth0 hook
+  // Use our custom Auth0 hook
   const { loginWithRedirect } = useAuth0()
 
   const handleSocialLogin = async (provider: string) => {
+    console.log('🔘 Social login button clicked:', provider)
     setError('')
     setIsLoading(true)
 
     try {
-      await loginWithRedirect({
-        authorizationParams: {
-          connection: provider, // 'github' or 'google-oauth2'
-        }
-      });
+      // Use provider name directly as connection
+      console.log('🔄 Calling loginWithRedirect with provider:', provider)
+      await loginWithRedirect(provider)
+      console.log('✅ loginWithRedirect completed')
     } catch (err) {
+      console.error('❌ Social login error:', err)
       setIsLoading(false)
       setError(`Failed to sign in with ${provider}`)
     }

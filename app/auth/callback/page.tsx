@@ -5,41 +5,57 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth0 } from '@/contexts/auth0-context'
 
 export default function AuthCallbackPage() {
-  const params = useSearchParams()
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const params = useSearchParams()
   const { handleAuth0Callback } = useAuth0()
-  const [error, setError] = useState('')
-  const [processing, setProcessing] = useState(true)
-  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
+    console.log('🔄 Auth callback page loaded')
+    console.log('📍 Current URL:', window.location.href)
+    
     const code = params.get('code')
     const state = params.get('state')
     const errorParam = params.get('error')
     const errorDescription = params.get('error_description')
 
+    console.log('🔍 Auth callback params:', { 
+      code: code ? 'present' : 'missing', 
+      state: state ? 'present' : 'missing', 
+      error: errorParam, 
+      errorDescription 
+    })
+
     // Check for errors in URL
     if (errorParam) {
-      console.error('Auth callback error:', errorParam, errorDescription)
+      console.error('❌ Auth callback error:', errorParam, errorDescription)
       setError(errorDescription || errorParam)
-      setProcessing(false)
       return
     }
 
     // Handle Auth0 authorization code
     if (code && state) {
+      console.log('✅ Code and state present, proceeding with token exchange')
+      
       // Verify state matches
       const storedState = localStorage.getItem('auth0_state')
+      console.log('🔐 Stored state:', storedState, 'Received state:', state)
+      
       if (state !== storedState) {
+        console.error('❌ State mismatch - possible CSRF attack')
         setError('Invalid state parameter - possible CSRF attack')
-        setProcessing(false)
         return
       }
 
       // Exchange code for token and handle callback
       const exchangeCode = async () => {
         try {
-          const tokenResponse = await fetch(`https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/oauth/token`, {
+          console.log('🔄 Starting token exchange with code:', code?.substring(0, 10) + '...')
+          
+          const tokenUrl = `https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/oauth/token`
+          console.log('🌐 Token exchange URL:', tokenUrl)
+          
+          const tokenResponse = await fetch(tokenUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -54,68 +70,47 @@ export default function AuthCallbackPage() {
             }),
           })
 
+          console.log('📊 Token exchange response status:', tokenResponse.status)
+          
           if (!tokenResponse.ok) {
+            const errorData = await tokenResponse.text()
+            console.error('❌ Token exchange failed:', errorData)
             throw new Error('Token exchange failed')
           }
 
           const tokenData = await tokenResponse.json()
-          const accessToken = tokenData.access_token
+          console.log('✅ Token received:', Object.keys(tokenData))
+          console.log('🔑 ID token present:', tokenData.id_token ? 'yes' : 'no')
+          console.log('🔑 Access token present:', tokenData.access_token ? 'yes' : 'no')
+          
+          // Use ID token for verification, not access token
+          const idToken = tokenData.id_token || tokenData.access_token
+          console.log('🎯 Using token type:', tokenData.id_token ? 'ID token' : 'Access token')
 
           // Clean up stored values
           localStorage.removeItem('auth0_state')
           localStorage.removeItem('auth0_code_verifier')
 
-          // Handle the callback with the access token
-          await handleAuth0Callback(accessToken)
-          setProcessing(false)
-          setSuccess(true)
+          // Handle the callback with ID token
+          console.log('🔄 Calling handleAuth0Callback...')
+          await handleAuth0Callback(idToken)
           
-          // Auto redirect to dashboard like normal apps
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 1500) // Show success message briefly
+          // Redirect immediately to dashboard - no loading screen
+          console.log('➡️ Redirecting to dashboard...')
+          router.push('/dashboard')
           
         } catch (e: any) {
-          console.error('Auth0 token exchange error:', e)
+          console.error('❌ Auth0 token exchange error:', e)
           setError(e?.message || 'Authentication failed')
-          setProcessing(false)
         }
       }
 
       exchangeCode()
     } else {
+      console.error('❌ Missing authorization code or state')
       setError('Missing authorization code or state')
-      setProcessing(false)
     }
   }, [params, handleAuth0Callback])
-
-  // Show loading while processing
-  if (processing && !error && !success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Completing authentication...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Show success message briefly before redirect
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md">
-          <div className="text-green-500 text-5xl mb-4">✓</div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
-            Authentication Successful
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Redirecting to dashboard...</p>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
-        </div>
-      </div>
-    )
-  }
 
   // Show error if any
   if (error) {

@@ -21,7 +21,7 @@ export interface Auth0ContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  loginWithRedirect: () => void
+  loginWithRedirect: (provider?: string) => void
   logout: () => void
   token: string | null
   refreshToken: string | null
@@ -49,6 +49,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   const auth0Domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN
   const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID
   const auth0Audience = process.env.NEXT_PUBLIC_AUTH0_AUDIENCE
+  const auth0Issuer = process.env.NEXT_PUBLIC_AUTH0_ISSUER
   const auth0RedirectUri = process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
   const auth0LogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI || 'http://localhost:3000/'
 
@@ -126,18 +127,29 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   }, [getSession, isSessionValid, fetchUserProfile, clearSession])
 
   // Login with Auth0 redirect
-  const loginWithRedirect = useCallback(() => {
+  const loginWithRedirect = useCallback(async (provider?: string) => {
+    console.log('🔐 loginWithRedirect called with provider:', provider)
+
     if (!auth0Domain || !auth0ClientId || !auth0Audience) {
-      console.error('Auth0 configuration missing')
+      console.error('❌ Auth0 configuration missing:', { auth0Domain, auth0ClientId, auth0Audience })
       return
     }
 
-    // Generate random state for CSRF protection
-    const state = Math.random().toString(36).substring(7)
+    console.log('🔧 Auth0 config:', {
+      domain: auth0Domain,
+      clientId: auth0ClientId?.substring(0, 10) + '...',
+      audience: auth0Audience,
+      redirectUri: auth0RedirectUri
+    })
+
+    // Generate and store state for CSRF protection
+    const state = generateState()
+    console.log('🎲 Generated state:', state)
     localStorage.setItem('auth0_state', state)
 
     // Generate code verifier and challenge for PKCE
     const codeVerifier = generateCodeVerifier()
+    console.log('🔐 Generated code verifier:', codeVerifier.substring(0, 10) + '...')
     localStorage.setItem('auth0_code_verifier', codeVerifier)
 
     generateCodeChallenge(codeVerifier).then(codeChallenge => {
@@ -152,17 +164,28 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
         code_challenge_method: 'S256'
       })
 
-      window.location.href = `https://${auth0Domain}/authorize?${params.toString()}`
+      // Pass connection parameter to go directly to the provider
+      if (provider) {
+        params.append('connection', provider)
+      }
+
+      const authUrl = `https://${auth0Domain}/authorize?${params.toString()}`
+      console.log('🌐 Redirecting to Auth0 URL:', authUrl)
+
+      window.location.href = authUrl
     })
   }, [auth0Domain, auth0ClientId, auth0Audience, auth0RedirectUri])
 
   // Handle Auth0 callback (sync user and store Auth0 token)
   const handleAuth0Callback = useCallback(async (auth0AccessToken: string) => {
     try {
+      console.log('handleAuth0Callback called with token:', auth0AccessToken?.substring(0, 20) + '...')
       setIsLoading(true)
 
       // Call ConFuse auth service to sync user (no exchange, just sync)
-      const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:3010'
+      const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3010'
+      console.log('Calling auth service at:', authServiceUrl)
+
       const response = await fetch(`${authServiceUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -171,12 +194,16 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
         }
       })
 
+      console.log('Auth service response status:', response.status)
+
       if (!response.ok) {
         const error = await response.json()
+        console.error('Auth service error:', error)
         throw new Error(error.message || 'Auth0 login sync failed')
       }
 
       const data = await response.json()
+      console.log('Auth service response data:', data)
       // Expecting { user: UserProfile } 
 
       saveSession(auth0AccessToken, data.user)
@@ -242,6 +269,12 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
   const data = encoder.encode(verifier)
   const hash = await crypto.subtle.digest('SHA-256', data)
   return base64UrlEncode(new Uint8Array(hash))
+}
+
+function generateState(): string {
+  const array = new Uint8Array(16)
+  crypto.getRandomValues(array)
+  return base64UrlEncode(array)
 }
 
 function base64UrlEncode(array: Uint8Array): string {
