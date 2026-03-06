@@ -1,7 +1,6 @@
 import NextAuth, { NextAuthOptions, Session } from "next-auth"
 import { JWT } from "next-auth/jwt"
-import GithubProvider from "next-auth/providers/github"
-import GoogleProvider from "next-auth/providers/google"
+import Auth0Provider from "next-auth/providers/auth0"
 import { apiClient } from '@/lib/api'
 
 type ApiResp = { success?: boolean; data?: Record<string, unknown>; error?: string }
@@ -19,58 +18,18 @@ function getData<T = unknown>(resp: unknown): T | undefined {
   return undefined
 }
 
-// Bitbucket OAuth provider configuration
-const BitbucketProvider = (options: {
-  clientId: string
-  clientSecret: string
-}) => ({
-  id: "bitbucket",
-  name: "Bitbucket",
-  type: "oauth" as const,
-  authorization: {
-    url: "https://bitbucket.org/site/oauth2/authorize",
-    params: { scope: "account email" }
-  },
-  token: "https://bitbucket.org/site/oauth2/access_token",
-  userinfo: "https://api.bitbucket.org/2.0/user",
-  clientId: options.clientId,
-  clientSecret: options.clientSecret,
-  profile(profile) {
-    return {
-      id: profile.uuid,
-      name: profile.display_name,
-      email: profile.email,
-      image: profile.links?.avatar?.href,
-    }
-  },
-})
-
 export const authOptions: NextAuthOptions = {
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-      authorization: {
-        params: {
-          scope: "read:user user:email",
-        },
-      },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    Auth0Provider({
+      clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!,
+      clientSecret: process.env.AUTH0_CLIENT_SECRET!,
+      issuer: process.env.NEXT_PUBLIC_AUTH0_DOMAIN!,
       authorization: {
         params: {
           scope: "openid email profile",
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE!,
         },
       },
-    }),
-    BitbucketProvider({
-      clientId: process.env.BITBUCKET_CLIENT_ID || "",
-      clientSecret: process.env.BITBUCKET_CLIENT_SECRET || "",
     }),
   ],
   
