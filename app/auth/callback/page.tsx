@@ -49,7 +49,7 @@ export default function AuthCallbackPage() {
           return
         }
         sessionStorage.setItem(popupKey, '1')
-        
+
         window.opener.postMessage({ type: 'oauth-code', provider, code }, '*')
         setProcessing(false)
         // Close popup after a short delay to ensure message is sent
@@ -59,7 +59,7 @@ export default function AuthCallbackPage() {
 
       // Not a popup - do the exchange directly (same-window flow)
       const storedToken = localStorage.getItem('auth_token')
-      
+
       // If no token, user needs to log in first
       if (!storedToken) {
         setError('Please log in first before connecting external accounts')
@@ -90,14 +90,14 @@ export default function AuthCallbackPage() {
       }
       exchangeProvider()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, providerExchanged])
 
   // Handle Auth0 callback - the SDK handles the code exchange automatically
   // We just need to wait for authentication and then exchange for ConFuse token
   useEffect(() => {
     const provider = params.get('provider')
-    
+
     // Skip if this is a provider OAuth flow
     if (provider) return
 
@@ -117,10 +117,10 @@ export default function AuthCallbackPage() {
         try {
           // Get Auth0 access token
           const auth0Token = await getAccessTokenSilently()
-          
-          // Exchange Auth0 token for ConFuse token
+
+          // Exchange Auth0 token for ConFuse user profile and handle session
           const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:3010'
-          const exchangeResponse = await fetch(`${authServiceUrl}/api/auth/auth0/exchange`, {
+          const exchangeResponse = await fetch(`${authServiceUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${auth0Token}`,
@@ -130,21 +130,20 @@ export default function AuthCallbackPage() {
 
           if (!exchangeResponse.ok) {
             const errorData = await exchangeResponse.json()
-            throw new Error(errorData.message || 'ConFuse token exchange failed')
+            throw new Error(errorData.message || 'ConFuse authentication failed')
           }
 
           const authResponse = await exchangeResponse.json()
-          
-          // Save session to localStorage
+
+          // Save session to localStorage. The backend now directly uses Auth0 tokens, 
+          // so we only store the Auth0 token and user profile details.
           const sessionData = {
-            token: authResponse.token,
-            refresh_token: authResponse.refresh_token,
-            expires_at: authResponse.expires_at,
-            last_activity: new Date().toISOString()
+            // we don't need refresh_token specifically here since Auth0Provider handles it
+            last_activity: new Date().toISOString(),
+            user: authResponse.user
           }
           localStorage.setItem('auth_session', JSON.stringify(sessionData))
-          localStorage.setItem('auth_token', authResponse.token)
-          localStorage.setItem('refresh_token', authResponse.refresh_token)
+          localStorage.setItem('auth_token', auth0Token)
 
           setExchanged(true)
           // Redirect to dashboard
