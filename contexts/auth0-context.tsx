@@ -147,10 +147,11 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
 
       saveSession(auth0AccessToken, data.user)
       router.push('/dashboard')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth0 callback error:', error)
       clearSession()
-      router.push('/?error=auth_failed')
+      const errorMessage = error?.message || String(error)
+      router.push(`/?error=auth_failed&detail=${encodeURIComponent(errorMessage)}`)
     } finally {
       setIsSyncing(false)
     }
