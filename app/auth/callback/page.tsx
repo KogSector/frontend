@@ -1,116 +1,34 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth0 } from '@/contexts/auth0-context'
+import { useAuth0 as useAuth0React } from '@auth0/auth0-react'
 
 export default function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const params = useSearchParams()
-  const { handleAuth0Callback } = useAuth0()
+
+  // The global context (handles backend sync & final redirect)
+  const { isAuthenticated, isLoading: contextLoading } = useAuth0()
+
+  // The underlying @auth0/auth0-react hook (handles URL params)
+  const { error: auth0Error, isLoading: sdkLoading } = useAuth0React()
 
   useEffect(() => {
-    console.log('🔄 Auth callback page loaded')
-    console.log('📍 Current URL:', window.location.href)
-    
-    const code = params.get('code')
-    const state = params.get('state')
-    const errorParam = params.get('error')
-    const errorDescription = params.get('error_description')
-
-    console.log('🔍 Auth callback params:', { 
-      code: code ? 'present' : 'missing', 
-      state: state ? 'present' : 'missing', 
-      error: errorParam, 
-      errorDescription 
-    })
-
-    // Check for errors in URL
-    if (errorParam) {
-      console.error('❌ Auth callback error:', errorParam, errorDescription)
-      setError(errorDescription || errorParam)
+    if (auth0Error) {
+      console.error('❌ Auth0 login error:', auth0Error)
+      setError(auth0Error.message)
       return
     }
 
-    // Handle Auth0 authorization code
-    if (code && state) {
-      console.log('✅ Code and state present, proceeding with token exchange')
-      
-      // Verify state matches
-      const storedState = localStorage.getItem('auth0_state')
-      console.log('🔐 Stored state:', storedState, 'Received state:', state)
-      
-      if (state !== storedState) {
-        console.error('❌ State mismatch - possible CSRF attack')
-        setError('Invalid state parameter - possible CSRF attack')
-        return
-      }
-
-      // Exchange code for token and handle callback
-      const exchangeCode = async () => {
-        try {
-          console.log('🔄 Starting token exchange with code:', code?.substring(0, 10) + '...')
-          
-          const tokenUrl = `https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/oauth/token`
-          console.log('🌐 Token exchange URL:', tokenUrl)
-          
-          const tokenResponse = await fetch(tokenUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              grant_type: 'authorization_code',
-              client_id: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
-              client_secret: process.env.AUTH0_CLIENT_SECRET,
-              code: code,
-              redirect_uri: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI,
-              code_verifier: localStorage.getItem('auth0_code_verifier')
-            }),
-          })
-
-          console.log('📊 Token exchange response status:', tokenResponse.status)
-          
-          if (!tokenResponse.ok) {
-            const errorData = await tokenResponse.text()
-            console.error('❌ Token exchange failed:', errorData)
-            throw new Error('Token exchange failed')
-          }
-
-          const tokenData = await tokenResponse.json()
-          console.log('✅ Token received:', Object.keys(tokenData))
-          console.log('🔑 ID token present:', tokenData.id_token ? 'yes' : 'no')
-          console.log('🔑 Access token present:', tokenData.access_token ? 'yes' : 'no')
-          
-          // Use ID token for verification, not access token
-          const idToken = tokenData.id_token || tokenData.access_token
-          console.log('🎯 Using token type:', tokenData.id_token ? 'ID token' : 'Access token')
-
-          // Clean up stored values
-          localStorage.removeItem('auth0_state')
-          localStorage.removeItem('auth0_code_verifier')
-
-          // Handle the callback with ID token
-          console.log('🔄 Calling handleAuth0Callback...')
-          await handleAuth0Callback(idToken)
-          
-          // Redirect immediately to dashboard - no loading screen
-          console.log('➡️ Redirecting to dashboard...')
-          router.push('/dashboard')
-          
-        } catch (e: any) {
-          console.error('❌ Auth0 token exchange error:', e)
-          setError(e?.message || 'Authentication failed')
-        }
-      }
-
-      exchangeCode()
-    } else {
-      console.error('❌ Missing authorization code or state')
-      setError('Missing authorization code or state')
+    // Context will handle the redirect once fully authenticated and synced.
+    // If we land here and aren't loading, but also aren't authenticated, the user probably went directly to the callback URL.
+    if (!sdkLoading && !contextLoading && !isAuthenticated && !error) {
+      console.log('⚠️ Not authenticated on callback page, redirecting to login...')
+      router.push('/auth/login')
     }
-  }, [params, handleAuth0Callback])
+  }, [isAuthenticated, contextLoading, sdkLoading, auth0Error, error, router])
 
   // Show error if any
   if (error) {
@@ -133,5 +51,10 @@ export default function AuthCallbackPage() {
     )
   }
 
-  return null
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+      <p className="text-muted-foreground">Completing login...</p>
+    </div>
+  )
 }
