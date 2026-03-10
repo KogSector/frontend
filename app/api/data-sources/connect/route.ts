@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dataApiClient, apiClient, unwrapResponse } from '@/lib/api'
+import { dataApiClient, authClient, unwrapResponse } from '@/lib/api'
 
 
 function extractRepositoryName(url: string): string | null {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       const authHeader = request.headers.get('Authorization') || ''
       try {
         const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
-        const resp = await apiClient.get('/api/auth/connections', headers)
+        const resp = await authClient.get('/api/auth/connections', headers)
         const list = unwrapResponse<Array<{ platform: string; is_active: boolean }>>(resp) || []
         const connected = list.some(c => c.is_active && c.platform === type)
         if (!connected) {

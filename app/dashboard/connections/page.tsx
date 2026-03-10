@@ -4,9 +4,8 @@ import { SocialConnections } from '@/components/social/SocialConnections';
 
 export default function ConnectionsPage() {
   return (
-    <div className="container mx-auto py-6">
+    <div className="min-h-screen bg-background">
       <SocialConnections />
     </div>
   );
 }
-

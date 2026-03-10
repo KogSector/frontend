@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   try {
     // Get user from auth header
     const authHeader = request.headers.get('authorization')
-    
+
     // Aggregate data from multiple services
     const [reposResponse, docsResponse, urlsResponse, agentsResponse, usersResponse] = await Promise.allSettled([
       dataClient.get('/api/repositories'),
@@ -42,15 +42,15 @@ export async function GET(request: NextRequest) {
     ])
 
     // Extract data safely with proper typing
-    const repos = reposResponse.status === 'fulfilled' && reposResponse.value ? 
+    const repos = reposResponse.status === 'fulfilled' && reposResponse.value ?
       (reposResponse.value as APIResponse<DashboardStats[]>).data || [] : []
-    const docs = docsResponse.status === 'fulfilled' && docsResponse.value ? 
-      (docsResponse.value as APIResponse<{total: number}>).data || { total: 0 } : { total: 0 }
-    const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ? 
+    const docs = docsResponse.status === 'fulfilled' && docsResponse.value ?
+      (docsResponse.value as APIResponse<{ total: number }>).data || { total: 0 } : { total: 0 }
+    const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
       (urlsResponse.value as APIResponse<DashboardStats[]>).data || [] : []
-    const agents = agentsResponse.status === 'fulfilled' && agentsResponse.value ? 
+    const agents = agentsResponse.status === 'fulfilled' && agentsResponse.value ?
       (agentsResponse.value as APIResponse<DashboardStats[]>).data || [] : []
-    const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ? 
+    const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
       (usersResponse.value as APIResponse<UserStats>).data : {} as UserStats
 
     // Calculate dashboard stats
@@ -72,33 +72,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: stats
-    })
+    return NextResponse.json(stats)
 
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)
-    
+
     // Return fallback data on error
     return NextResponse.json({
-      success: true,
-      data: {
-        repositories: 0,
-        documents: 0,
-        urls: 0,
-        agents: 0,
-        connections: 0,
-        context_requests: 0,
-        security_score: 0,
-        total_users: 0,
-        active_users: 0,
-        system_health: 0,
-        usage_metrics: {
-          api_calls: 0,
-          storage_used: 0,
-          bandwidth_used: 0
-        }
+      repositories: 0,
+      documents: 0,
+      urls: 0,
+      agents: 0,
+      connections: 0,
+      context_requests: 0,
+      security_score: 0,
+      total_users: 0,
+      active_users: 0,
+      system_health: 0,
+      usage_metrics: {
+        api_calls: 0,
+        storage_used: 0,
+        bandwidth_used: 0
       }
     })
   }

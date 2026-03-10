@@ -4,9 +4,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, RefreshCw, Plus } from 'lucide-react';
+import { Trash2, RefreshCw, Plus, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient, securityApiClient, unwrapResponse } from '@/lib/api';
+import { authClient, unwrapResponse } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
@@ -16,9 +16,7 @@ import GitLabIcon from '@/components/icons/GitLabIcon'
 import BitbucketIcon from '@/components/icons/BitbucketIcon'
 import SlackIcon from '@/components/icons/SlackIcon'
 import GoogleDriveIcon from '@/components/icons/GoogleDriveIcon'
-import GmailIcon from '@/components/icons/GmailIcon'
 import DropboxIcon from '@/components/icons/DropboxIcon'
-import LinkedInIcon from '@/components/icons/LinkedInIcon'
 import NotionIcon from '@/components/icons/NotionIcon'
 import JiraIcon from '@/components/icons/JiraIcon'
 import ConfluenceIcon from '@/components/icons/ConfluenceIcon'
@@ -26,7 +24,7 @@ import CustomAppsIcon from '@/components/icons/CustomAppsIcon'
 
 interface SocialConnection {
   id: string;
-  platform: 'slack' | 'notion' | 'google_drive' | 'gmail' | 'dropbox' | 'linkedin' | 'github' | 'bitbucket' | 'gitlab' | 'jira' | 'confluence' | 'custom_apps';
+  platform: 'slack' | 'notion' | 'google_drive' | 'gmail' | 'dropbox' | 'linkedin' | 'github' | 'bitbucket' | 'gitlab' | 'jira' | 'confluence' | 'custom_apps' | 'google' | 'windowslive';
   username: string;
   is_active: boolean;
   connected_at: string;
@@ -37,9 +35,8 @@ const PLATFORM_CONFIGS = {
   slack: { name: 'Slack', description: 'Connect to sync messages and channels', icon: (cls: string) => <SlackIcon className={cls} /> },
   notion: { name: 'Notion', description: 'Sync pages and databases', icon: (cls: string) => <NotionIcon className={cls} /> },
   google_drive: { name: 'Google Drive', description: 'Access files and documents', icon: (cls: string) => <GoogleDriveIcon className={cls} /> },
-  gmail: { name: 'Gmail', description: 'Sync email conversations', icon: (cls: string) => <GmailIcon className={cls} /> },
+  onedrive: { name: 'OneDrive', description: 'Access files and documents', icon: (cls: string) => <Cloud className={cls} /> },
   dropbox: { name: 'Dropbox', description: 'Sync files and folders', icon: (cls: string) => <DropboxIcon className={cls} /> },
-  linkedin: { name: 'LinkedIn', description: 'Connect professional network', icon: (cls: string) => <LinkedInIcon className={cls} /> },
   github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} /> },
   bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} /> },
   gitlab: { name: 'GitLab', description: 'Connect your GitLab account', icon: (cls: string) => <GitLabIcon className={cls} /> },
@@ -57,7 +54,7 @@ export function SocialConnections() {
   // Track whether initial load has completed to avoid skeleton flash on subsequent fetches
   const hasLoadedRef = useRef(false);
   const { toast } = useToast();
-  const { token, refreshConnections } = useAuth();
+  const { token, refreshConnections, loginWithPopup } = useAuth();
 
   const fetchConnections = useCallback(async (options?: { initial?: boolean }) => {
     // Do not hit the services until we have an Auth0 access token;
@@ -75,31 +72,18 @@ export function SocialConnections() {
 
     try {
       const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
-      
-      // Fetch from both auth service (GitHub/Bitbucket/GitLab OAuth) and security service
-      const [authResp, securityResp] = await Promise.allSettled([
-        apiClient.get('/api/auth/connections', headers),
-        securityApiClient.get('/api/security/connections', headers)
-      ]);
-      
-      // Merge connections from both sources, avoiding duplicates by platform
-      const authData = authResp.status === 'fulfilled' 
-        ? (unwrapResponse<SocialConnection[]>(authResp.value) ?? [])
-        : [];
-      const securityData = securityResp.status === 'fulfilled'
-        ? (unwrapResponse<SocialConnection[]>(securityResp.value) ?? [])
-        : [];
-      
-      // Use a Map to dedupe by platform (auth service takes precedence for OAuth providers)
+
+      const authResp = await authClient.get('/api/auth/connections', headers);
+
+      const authData = unwrapResponse<SocialConnection[]>(authResp) ?? [];
+
       const connectionMap = new Map<string, SocialConnection>();
-      securityData.forEach(conn => connectionMap.set(conn.platform, conn));
-      authData.forEach(conn => connectionMap.set(conn.platform, conn)); // Auth overwrites security
+      authData.forEach((conn: any) => connectionMap.set(conn.platform, conn));
 
       const merged = Array.from(connectionMap.values());
       console.log('[SocialConnections] fetched connections', {
         tokenPresent: !!token,
         authData,
-        securityData,
         merged,
       });
 
@@ -126,9 +110,9 @@ export function SocialConnections() {
       if (typeof dataUnknown !== 'object' || dataUnknown === null || !('type' in dataUnknown)) {
         return
       }
-      
+
       const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string }
-      
+
       if (data.type === 'oauth-connected') {
         // Legacy: popup already did the exchange
         fetchConnections()
@@ -140,7 +124,7 @@ export function SocialConnections() {
           return
         }
         processedCodesRef.current.add(codeKey)
-        
+
         // New: popup sent us the code, we do the exchange here (we have the token)
         // IMPORTANT: Use the same token source as other API calls (useAuth's token)
         // to ensure consistent user_id across all flows. Fall back to localStorage
@@ -156,7 +140,7 @@ export function SocialConnections() {
             return
           }
           const headers: Record<string, string> = { Authorization: `Bearer ${effectiveToken}` }
-          await apiClient.post('/api/auth/oauth/exchange', { provider: data.provider, code: data.code }, headers)
+          await authClient.post('/api/auth/oauth/exchange', { provider: data.provider, code: data.code }, headers)
           toast({
             title: "Success",
             description: `${data.provider} connected successfully!`,
@@ -167,7 +151,7 @@ export function SocialConnections() {
         } catch (error: any) {
           console.error('OAuth exchange error:', error)
           const errorMsg = error?.message || `Failed to connect ${data.provider}`
-          
+
           // Provide specific guidance for common OAuth errors
           if (errorMsg.includes('bad_verification_code') || errorMsg.includes('incorrect or expired')) {
             toast({
@@ -201,40 +185,33 @@ export function SocialConnections() {
     return () => window.removeEventListener('message', handler)
   }, [fetchConnections, toast]);
 
-  
+
 
   const connectPlatform = async (platform: string) => {
     try {
-      // OAuth providers handled through auth service
-      const oauthProviders = ['github', 'bitbucket', 'gitlab', 'google', 'google_drive'];
-      const providerForAuth = platform === 'google_drive' ? 'google' : platform;
-      
-      if (oauthProviders.includes(platform)) {
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const resp = await apiClient.get<{ url: string; state: string }>(`/api/auth/oauth/url?provider=${providerForAuth}`, headers)
-        const { url: authUrl } = resp
-        if (authUrl) {
-          // Open popup - the callback page will send the code via postMessage
-          // and we'll handle the exchange in the message handler above
-          window.open(authUrl, '_blank', 'width=500,height=700')
-        } else {
-          toast({ title: 'Error', description: `Failed to get ${platform} auth URL. Please check OAuth configuration.`, variant: 'destructive' })
+      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'github' || platform === 'bitbucket' || platform === 'gitlab') {
+        // Use Auth0 to link the social provider
+        let connectionName = platform;
+        let authorizationParams: any = {};
+
+        if (platform === 'google_drive') {
+          connectionName = 'google-oauth2';
+          authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
+        } else if (platform === 'onedrive') {
+          connectionName = 'windowslive';
         }
-        return
+
+        authorizationParams.connection = connectionName;
+
+        await loginWithPopup({
+          authorizationParams
+        });
+        await syncPlatform('dummy_popup', platform);
+        return;
       }
-      
-      // Other platforms via security service
-      const resp = await securityApiClient.post('/api/security/connections/connect', { platform });
-      const payload = unwrapResponse<{ credentials?: { auth_url?: string }; account?: { credentials?: { auth_url?: string } } }>(resp) ?? {}
-      const authUrl = payload?.credentials?.auth_url || payload?.account?.credentials?.auth_url
-      if (authUrl) {
-        window.open(authUrl, '_blank', 'width=500,height=600')
-        setTimeout(() => {
-          fetchConnections();
-        }, 3000);
-      } else {
-        toast({ title: 'Error', description: `Failed to connect to ${platform}`, variant: 'destructive' });
-      }
+
+      toast({ title: 'Error', description: `Platform ${platform} connection is not fully implemented yet.`, variant: 'destructive' });
+
     } catch (error) {
       console.error('Error connecting platform:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -245,21 +222,9 @@ export function SocialConnections() {
   const disconnectPlatform = async (connectionId: string, platform: string) => {
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      // Route to the correct service based on platform type
-      // VCS providers (github, bitbucket, gitlab) are managed by auth service
-      // Other platforms (gmail, google_drive, dropbox, slack, etc.) are managed by security service
-      const vcsProviders = ['github', 'bitbucket', 'gitlab'];
-      const isVcsProvider = vcsProviders.includes(platform);
-      
-      if (isVcsProvider) {
-        // Only call auth service for VCS providers
-        await apiClient.delete(`/api/auth/connections/${connectionId}`, headers);
-      } else {
-        // Only call security service for other platforms
-        await securityApiClient.delete(`/api/security/connections/${connectionId}`, headers);
-      }
-      
+
+      await authClient.delete(`/api/auth/connections/${platform}`, headers);
+
       setConnections(prev => prev.filter(conn => conn.id !== connectionId));
       toast({
         title: "Success",
@@ -278,7 +243,8 @@ export function SocialConnections() {
   const syncPlatform = async (connectionId: string, platform: string) => {
     setSyncing(connectionId);
     try {
-      await securityApiClient.post(`/api/security/connections/oauth/callback`, { platform, code: 'dummy' });
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      await authClient.post(`/api/auth/connections/sync`, {}, headers);
       toast({
         title: "Success",
         description: `${PLATFORM_CONFIGS[platform as keyof typeof PLATFORM_CONFIGS].name} synced successfully`
@@ -336,19 +302,23 @@ export function SocialConnections() {
           </div>
         </div>
       </div>
-      <div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <p className="text-muted-foreground">
           Connect your accounts to enhance context and collaboration across platforms
         </p>
-      </div>
 
-      {/* All Platforms Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* All Platforms Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {(Object.keys(PLATFORM_CONFIGS) as Array<keyof typeof PLATFORM_CONFIGS>).map((platform) => {
           const config = PLATFORM_CONFIGS[platform];
-          const connection = connections.find(c => c.platform === platform);
+
+          let targetPlatform = platform as string;
+          if (platform === 'google_drive') targetPlatform = 'google';
+          if (platform === 'onedrive') targetPlatform = 'windowslive';
+
+          let connection = connections.find(c => c.platform === targetPlatform);
           const isConnected = connection?.is_active;
-          
+
           return (
             <Card key={platform} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
@@ -396,6 +366,7 @@ export function SocialConnections() {
             </Card>
           );
         })}
+      </div>
       </div>
     </div>
   );

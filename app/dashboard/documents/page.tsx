@@ -9,7 +9,7 @@ import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/ui/footer";
 import { useToast } from "@/hooks/use-toast";
-import { dataApiClient } from "@/lib/api";
+import { dataApiClient, getDocuments, deleteDocument } from "@/lib/api";
 import Link from "next/link";
 import { 
   Plus, 
@@ -45,7 +45,7 @@ export default function DocumentsPage() {
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const result = await dataApiClient.getDocuments();
+      const result = await getDocuments();
       if (result.success) {
         
         setDocuments(Array.isArray(result.data) ? result.data : result.data?.data || []);
@@ -68,9 +68,9 @@ export default function DocumentsPage() {
     }
   }, [toast]);
 
-  const deleteDocument = async (id: string) => {
+  const handleDeleteDocument = async (id: string) => {
     try {
-      const result = await dataApiClient.deleteDocument(id);
+      const result = await deleteDocument(id);
       if (result.success) {
         setDocuments(prev => prev.filter(doc => doc.id !== id));
         toast({
@@ -96,7 +96,7 @@ export default function DocumentsPage() {
   useEffect(() => {
     const init = async () => {
       // Check backend health first to avoid JSON parse errors when API returns HTML or is down
-      const healthy = await dataApiClient.checkBackendHealth();
+      const healthy = await dataApiClient.checkHealth();
       if (healthy) {
         await fetchDocuments();
       } else {
@@ -258,7 +258,7 @@ export default function DocumentsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteDocument(doc.id)}
+                        onClick={() => handleDeleteDocument(doc.id)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="w-4 h-4" />

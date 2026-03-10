@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
-import { dataApiClient, apiClient, unwrapResponse } from '@/lib/api'
+import { dataApiClient, authClient, unwrapResponse } from '@/lib/api'
 
 type ApiResp = { success?: boolean; error?: string; data?: unknown }
 
@@ -32,19 +32,34 @@ export async function POST(request: Request) {
     }
 
     const authHeader = request.headers.get('Authorization') || ''
+
+    let provider = 'github'
+    if (repoUrl.includes('gitlab.com')) provider = 'gitlab'
+    if (repoUrl.includes('bitbucket.org')) provider = 'bitbucket'
+
     try {
       const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
-      const resp = await apiClient.get('/api/auth/connections', headers)
+      const resp = await authClient.get('/api/auth/connections', headers)
       const list = unwrapResponse<Array<{ platform: string; is_active: boolean }>>(resp) || []
-      const hasRequired = list.some(c => c.is_active && (c.platform === 'github' || c.platform === 'gitlab' || c.platform === 'bitbucket'))
+      const hasRequired = list.some(c => c.is_active && c.platform === provider)
       if (!hasRequired) {
-        return NextResponse.json({ error: 'Please connect GitHub, GitLab, or Bitbucket in Social Connections first.' }, { status: 403 })
+        return NextResponse.json({ error: `Please connect ${provider} in Social Connections first.` }, { status: 403 })
+      }
+
+      // If no credentials supplied, fetch OAuth token from auth-middleware
+      if (!credentials || Object.keys(credentials).length === 0) {
+        const tokenResp = await authClient.get(`/api/auth/connections/${provider}/token`, headers)
+        const tokenData = unwrapResponse<{ access_token: string }>(tokenResp)
+        if (tokenData && tokenData.access_token) {
+          body.credentials = { access_token: tokenData.access_token }
+        }
       }
     } catch (e) {
+      console.error('Failed to get connection token:', e)
       return NextResponse.json({ error: 'Authentication required or backend unavailable' }, { status: 401 })
     }
 
-    const branchesData = await dataApiClient.post('/api/repositories/fetch-branches', { repoUrl, credentials })
+    const branchesData = await dataApiClient.post('/api/repositories/fetch-branches', { repoUrl, credentials: body.credentials })
     if (!succeeded(branchesData)) {
       const err = isApiResp(branchesData) ? branchesData.error : undefined
       return NextResponse.json({ error: err || 'Failed to fetch branches' }, { status: 502 })

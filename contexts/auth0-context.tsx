@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { apiClient, ApiResponse } from '@/lib/api'
+import { authClient, ApiResponse } from '@/lib/api'
 import { useAuth0 as useAuth0React } from '@auth0/auth0-react'
 
 export interface User {
@@ -21,6 +21,7 @@ export interface Auth0ContextType {
   isAuthenticated: boolean
   isLoading: boolean
   loginWithRedirect: (provider?: string) => Promise<void>
+  loginWithPopup: (options?: any) => Promise<void>
   logout: () => void
   token: string | null
   refreshToken: string | null
@@ -46,6 +47,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
 
   const {
     loginWithRedirect: auth0LoginWithRedirect,
+    loginWithPopup: auth0LoginWithPopup,
     logout: auth0Logout,
     isLoading: auth0IsLoading,
     isAuthenticated: auth0IsAuthenticated,
@@ -101,7 +103,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
   // Fetch user profile
   const fetchUserProfile = useCallback(async (authToken: string) => {
     try {
-      const result = await apiClient.get<ApiResponse<User>>(
+      const result = await authClient.get<ApiResponse<User>>(
         '/api/auth/me',
         { Authorization: `Bearer ${authToken}` }
       )
@@ -216,6 +218,7 @@ export function Auth0Provider({ children }: { children: ReactNode }) {
     isAuthenticated: auth0IsAuthenticated && !!user && !!token,
     isLoading: auth0IsLoading || isSyncing,
     loginWithRedirect,
+    loginWithPopup: auth0LoginWithPopup,
     logout,
     token,
     refreshToken: null,

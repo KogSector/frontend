@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { dataApiClient, apiClient, ApiResponse, unwrapResponse } from '@/lib/api';
+import { dataApiClient, authClient, apiClient, ApiResponse, unwrapResponse } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,7 +102,38 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
   const [availableFileExtensions, setAvailableFileExtensions] = useState<string[]>(DEFAULT_FILE_EXTENSIONS);
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
-  const isProviderSelected = provider === 'github' || provider === 'gitlab' || provider === 'bitbucket';
+  // Get connected providers
+  const connectedProviders = useMemo(() => {
+    if (!connections || !Array.isArray(connections)) return [];
+    return connections
+      .filter(c => c.is_active)
+      .map(c => {
+        // Map platform names
+        if (c.platform === 'google') return 'google_drive';
+        if (c.platform === 'windowslive') return 'onedrive';
+        return c.platform;
+      });
+  }, [connections]);
+
+  const allProviders = [
+    { value: 'github', label: 'GitHub', icon: GitHubIcon },
+    { value: 'gitlab', label: 'GitLab', icon: GitLabIcon },
+    { value: 'bitbucket', label: 'BitBucket', icon: BitbucketIcon }
+  ];
+
+  const isProviderConnected = (provider: string) => {
+    return connectedProviders.includes(provider);
+  };
+
+  const getProviderItemProps = (provider: string) => {
+    const isConnected = isProviderConnected(provider);
+    return {
+      value: provider,
+      disabled: !isConnected,
+      className: !isConnected ? 'opacity-50 cursor-not-allowed' : ''
+    };
+  };
+  const isProviderSelected = provider && isProviderConnected(provider);
   const hasBranches = branches.length > 0;
 
   // Reset form when modal closes
@@ -115,11 +146,11 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
   const isUrlValid = useMemo(() => {
     if (!repositoryUrl) return false;
     try {
-      
+
       new URL(repositoryUrl);
       return true;
     } catch (e) {
-      
+
       if (repositoryUrl.startsWith('git@')) {
         return repositoryUrl.includes(':') && repositoryUrl.length > 10;
       }
@@ -154,7 +185,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     }
   };
 
-  
+
   const extractRepoName = (url: string): string => {
     try {
       const urlObj = new URL(url);
@@ -175,12 +206,12 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     console.log('[FRONTEND] repositoryUrl:', repositoryUrl);
     console.log('[FRONTEND] provider:', provider);
     console.log('[FRONTEND] isProviderSelected:', isProviderSelected);
-    
+
     if (!repositoryUrl || !isProviderSelected) {
       setFetchBranchesError("Please enter a repository URL and select a provider first.");
       return;
     }
-    
+
     console.log('[FRONTEND] isUrlValid:', isUrlValid);
     const connected = await ensureProviderConnected();
     if (!connected) {
@@ -191,98 +222,46 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       setFetchBranchesError("Please enter a valid repository URL.");
       return;
     }
-    
+
     console.log('[FRONTEND] credentials:', credentials);
-    
+
     setIsFetchingBranches(true);
     setFetchBranchesError(null);
     setBranches([]);
     setIsValidated(false);
 
     try {
-      const repoCheck = await dataApiClient.post<{ provider?: string; name?: string; full_name?: string; success?: boolean; error?: string; message?: string }>('/api/repositories/oauth/check', { 
-        provider,
-        repo_url: repositoryUrl.trim()
-      }, token ? { Authorization: `Bearer ${token}` } : {})
+      const response = await fetch('/api/repositories/fetch-branches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ repoUrl: repositoryUrl.trim() })
+      });
 
-      console.log('[FRONTEND] repoCheck response:', repoCheck);
+      const result = await response.json();
 
-      const repoCheckAny = repoCheck as any;
-      if (repoCheckAny && repoCheckAny.success === false) {
-        // Use error code to provide specific guidance
-        const errorCode = repoCheckAny.code;
-        let message: string;
-        
-        switch (errorCode) {
-          case 'no_connection':
-            message = `No ${provider === 'github' ? 'GitHub' : provider === 'gitlab' ? 'GitLab' : 'BitBucket'} connection found. Please connect in Social Connections first.`;
-            setNeedsSocialConnect(provider);
-            break;
-          case 'token_expired':
-            message = `Your ${provider === 'github' ? 'GitHub' : provider === 'gitlab' ? 'GitLab' : 'BitBucket'} token has expired. Please reconnect in Social Connections.`;
-            setNeedsSocialConnect(provider);
-            break;
-          case 'github_bad_credentials':
-            message = 'GitHub authentication failed. Your token may be invalid or revoked. Please reconnect GitHub in Social Connections.';
-            setNeedsSocialConnect(provider);
-            break;
-          case 'github_insufficient_permissions':
-            message = 'Your GitHub token does not have permission to access this repository. Please reconnect with the required scopes.';
-            setNeedsSocialConnect(provider);
-            break;
-          default:
-            message = repoCheckAny.error || repoCheckAny.message || 'Repository access check failed. Please verify the URL and permissions.';
+      if (!response.ok || (result && result.error)) {
+        let message = result?.error || 'Repository access check failed. Please verify the URL and permissions.';
+        if (message.toLowerCase().includes('connect') && message.toLowerCase().includes('social connections')) {
+          setNeedsSocialConnect(provider);
         }
-        
         setFetchBranchesError(message);
         setBranches([]);
         setIsValidated(false);
         return;
       }
 
-      const repoName = repoCheck.name || repoCheck.full_name
-      if (repoName) {
-        setName(prev => prev || repoName)
-      }
-
-      // Extract languages from repo check response to infer file extensions
-      const repoLanguages: string[] = repoCheckAny.languages || [];
-      const inferredExtensions = repoLanguages.length > 0 
-        ? languagesToExtensions(repoLanguages) 
+      const fetchedBranches = result.branches || [];
+      const default_branch = result.defaultBranch;
+      const inferredExtensions = result.file_extensions && result.file_extensions.length > 0
+        ? result.file_extensions.map((ext: string) => ext.startsWith('.') ? ext : `.${ext}`)
         : DEFAULT_FILE_EXTENSIONS;
 
-      let fetchedBranches: string[] = []
-      let default_branch: string | undefined
+      const repoName = extractRepoName(repositoryUrl.trim())
+      setName(prev => prev || repoName)
 
-      if (provider === 'github') {
-        const slug = extractRepoName(repositoryUrl.trim())
-        const gh = await dataApiClient.get<{ success?: boolean; data?: { branches?: string[] }; error?: string; message?: string }>(`/api/repositories/oauth/branches?provider=github&repo=${encodeURIComponent(slug)}`, token ? { Authorization: `Bearer ${token}` } : {})
-        console.log('[FRONTEND] github branches response:', gh);
-
-        const ghAny = gh as any;
-        const ghError = ghAny?.error || ghAny?.message;
-        if (ghAny && ghAny.success === false && ghError) {
-          setFetchBranchesError(ghError);
-          setBranches([]);
-          setIsValidated(false);
-          return;
-        }
-
-        const ghBranches = ghAny && ghAny.data && Array.isArray(ghAny.data.branches) ? (ghAny.data.branches as string[]) : ghAny.branches
-        fetchedBranches = Array.isArray(ghBranches) ? ghBranches : []
-      } else if (provider === 'bitbucket') {
-        const slug = extractRepoName(repositoryUrl.trim())
-        const bb = await dataApiClient.get<{ success?: boolean; data?: { branches?: string[] } }>(`/api/repositories/oauth/branches?provider=bitbucket&repo=${encodeURIComponent(slug)}`, token ? { Authorization: `Bearer ${token}` } : {})
-        const bbBranches = bb && (bb as any).data && Array.isArray((bb as any).data.branches) ? (bb as any).data.branches as string[] : (bb as any).branches
-        fetchedBranches = Array.isArray(bbBranches) ? bbBranches : []
-      } else if (provider === 'gitlab') {
-        const slug = extractRepoName(repositoryUrl.trim())
-        const gl = await dataApiClient.get<{ success?: boolean; data?: { branches?: string[]; default_branch?: string } }>(`/api/repositories/oauth/branches?provider=gitlab&repo=${encodeURIComponent(slug)}`, token ? { Authorization: `Bearer ${token}` } : {})
-        const glData = (gl as any).data || gl
-        fetchedBranches = Array.isArray(glData?.branches) ? glData.branches : []
-        default_branch = typeof glData?.default_branch === 'string' ? glData.default_branch : undefined
-      }
-      
       if (!fetchedBranches || fetchedBranches.length === 0) {
         setFetchBranchesError("No branches found. Please check the repository URL and permissions.");
         setBranches([]);
@@ -290,9 +269,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       } else {
         setBranches(fetchedBranches);
         const inferredDefault = default_branch || (fetchedBranches.includes('main') ? 'main' : (fetchedBranches.includes('master') ? 'master' : fetchedBranches[0]))
-        // Update config with inferred extensions from repo languages
-        setConfig(prev => ({ 
-          ...prev, 
+        // Update config with inferred extensions
+        setConfig(prev => ({
+          ...prev,
           defaultBranch: inferredDefault || prev.defaultBranch,
           fileExtensions: inferredExtensions
         }));
@@ -304,8 +283,8 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       console.error('[FRONTEND] Branch fetching error:', err);
       let errorMessage = err instanceof Error ? err.message : String(err);
       console.error('[FRONTEND] Error message:', errorMessage);
-      
-      
+
+
       if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
         errorMessage = "Authentication failed. Please check your credentials and token permissions.";
       } else if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
@@ -315,7 +294,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       } else if (errorMessage.includes('rate limit')) {
         errorMessage = "API rate limit exceeded. Please wait a few minutes before trying again.";
       }
-      
+
       setFetchBranchesError(errorMessage);
       setBranches([]);
       setIsValidated(false);
@@ -332,25 +311,39 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
   const handleConnect = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const connected = await ensureProviderConnected();
       if (!connected) {
         setError(`Please connect ${provider === 'github' ? 'GitHub' : provider === 'gitlab' ? 'GitLab' : 'BitBucket'} in Social Connections before connecting.`);
         return;
       }
-      const payload = { 
-        type: provider, 
+      let finalCredentials = { ...credentials };
+      if (!finalCredentials.access_token) {
+        try {
+          const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+          const tokenResp = await authClient.get<{ success?: boolean; access_token?: string }>(`/api/auth/connections/${provider}/token`, headers);
+          const tokenData = unwrapResponse<{ access_token: string }>(tokenResp);
+          if (tokenData && tokenData.access_token) {
+            finalCredentials = { access_token: tokenData.access_token };
+          }
+        } catch (e) {
+          console.warn('Failed to fetch token during connection:', e);
+        }
+      }
+
+      const payload = {
+        type: provider,
         url: repositoryUrl,
-        credentials, 
-        config: { 
-          ...config, 
+        credentials: finalCredentials,
+        config: {
+          ...config,
           name: name || extractRepoName(repositoryUrl) || `${provider}-${Date.now()}`
-        } 
+        }
       };
 
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.post<ApiResponse>('/api/data/sources', payload, headers);
+      const resp = await dataApiClient.post<ApiResponse>('/api/v1/sources', payload, headers);
       if (resp.success) {
         const backendAlreadyStartedSync = (resp as any)?.syncStarted === true;
         if (backendAlreadyStartedSync) {
@@ -358,7 +351,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         } else {
           // Backward compatibility: if backend didn't start sync, trigger it here
           console.log('[ConnectRepo] Connection successful, triggering auto-sync (fallback)...');
-          
+
           try {
             const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
             const syncPayload = {
@@ -371,7 +364,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
               fetch_issues: config.fetchIssues ?? true,
               fetch_prs: config.fetchPrs ?? true,
             };
-            
+
             // Fire sync in background - don't block the UI
             dataApiClient.post('/api/github/sync', syncPayload, headers)
               .then((syncResp: any) => {
@@ -384,20 +377,20 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
               .catch((syncErr: any) => {
                 console.warn('[ConnectRepo] Auto-sync error:', syncErr);
               });
-            
+
             console.log('[ConnectRepo] Auto-sync triggered in background');
           } catch (syncError) {
             // Don't fail the connection if sync fails - it can be retried
             console.warn('[ConnectRepo] Failed to trigger auto-sync:', syncError);
           }
         }
-        
+
         onSuccess();
         onOpenChange(false);
         resetForm();
       } else {
         const errorMessage = resp.error || 'Failed to connect repository';
-        
+
         if (errorMessage.includes('token')) {
           setError(`${errorMessage}\n\nPlease check:\n• Token is not expired\n• Token has correct permissions\n• For public repos: use 'public_repo' scope\n• For private repos: use 'repo' scope`);
         } else if (errorMessage.includes('not found') || errorMessage.includes('Access denied')) {
@@ -462,7 +455,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
             Connect a GitHub, GitLab, or Bitbucket repository to index and search your code.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-8">
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-md border border-destructive/20">
@@ -513,29 +506,30 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
 
           <div className="space-y-3">
             <Label htmlFor="provider" className="text-sm font-medium">Repository Provider</Label>
-            <Select value={provider} onValueChange={setProvider}>
+            <Select value={provider} onValueChange={(value) => isProviderConnected(value) && setProvider(value)}>
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select a repository provider" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="github">
-                  <div className="flex items-center gap-2">
-                    <GitHubIcon className="w-4 h-4" />
-                    GitHub
-                  </div>
-                </SelectItem>
-                <SelectItem value="gitlab">
-                  <div className="flex items-center gap-2">
-                    <GitLabIcon className="w-4 h-4" />
-                    GitLab
-                  </div>
-                </SelectItem>
-                <SelectItem value="bitbucket">
-                  <div className="flex items-center gap-2">
-                    <BitbucketIcon className="w-4 h-4" />
-                    BitBucket
-                  </div>
-                </SelectItem>
+                {allProviders.map(({ value, label, icon: Icon }) => {
+                  const isConnected = isProviderConnected(value);
+                  return (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      disabled={!isConnected}
+                      className={!isConnected ? 'opacity-50 cursor-not-allowed' : ''}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 ${!isConnected ? 'grayscale' : ''}`} />
+                        <span className={!isConnected ? 'text-gray-500' : ''}>
+                          {label}
+                          {!isConnected && ' (Not Connected)'}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -548,8 +542,8 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                   id="repositoryUrl"
                   placeholder={
                     provider === 'gitlab' ? 'https://gitlab.com/user/repo.git' :
-                    provider === 'bitbucket' ? 'https://bitbucket.org/user/repo.git' :
-                    'https://github.com/user/repo.git'
+                      provider === 'bitbucket' ? 'https://bitbucket.org/user/repo.git' :
+                        'https://github.com/user/repo.git'
                   }
                   value={repositoryUrl}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setRepositoryUrl(e.target.value)}
@@ -587,7 +581,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
           {isValidated && (
             <div className="space-y-6 border-t pt-6">
               <h4 className="font-medium text-base">Configuration Options</h4>
-              
+
               <div className="grid gap-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -624,8 +618,8 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
 
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Default Branch</Label>
-                  <Select 
-                    value={config.defaultBranch} 
+                  <Select
+                    value={config.defaultBranch}
                     onValueChange={(value) => setConfig({ ...config, defaultBranch: value })}
                     disabled={!hasBranches}
                   >
@@ -659,10 +653,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                     </span>
                     Advanced Settings
                   </button>
-                  
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    showAdvancedSettings ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
+
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showAdvancedSettings ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
                     <div className="space-y-4 pt-2">
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">File Extensions to Index</Label>
@@ -674,7 +667,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                               className="cursor-pointer text-xs"
                               onClick={() => {
                                 const extensions = config.fileExtensions || [];
-                                const newExtensions = extensions.includes(ext) 
+                                const newExtensions = extensions.includes(ext)
                                   ? extensions.filter((x) => x !== ext)
                                   : [...extensions, ext];
                                 setConfig({ ...config, fileExtensions: newExtensions });
@@ -699,12 +692,12 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleConnect} 
+            <Button
+              onClick={handleConnect}
               disabled={!isValidated || !isProviderSelected || !repositoryUrl || loading}
             >
-            {loading ? 'Connecting...' : 'Connect Repository'}
-          </Button>
+              {loading ? 'Connecting...' : 'Connect Repository'}
+            </Button>
           </div>
         </div>
       </DialogContent>

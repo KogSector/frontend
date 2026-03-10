@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth0 } from '@/contexts/auth0-context'
-import { apiClient, unwrapResponse } from '@/lib/api'
+import { authClient, unwrapResponse } from '@/lib/api'
 
 interface SocialConnection {
   id: string
@@ -23,7 +23,7 @@ export const useAuth = () => {
     if (!authContext.token) return
     try {
       const headers = { Authorization: `Bearer ${authContext.token}` }
-      const resp = await apiClient.get('/api/auth/connections', headers)
+      const resp = await authClient.get('/api/auth/connections', headers)
       const data = unwrapResponse<SocialConnection[]>(resp) ?? []
       setConnections(data)
     } catch (err) {
@@ -45,10 +45,7 @@ export const useAuth = () => {
     isLoading: authContext.isLoading,
     login: authContext.loginWithRedirect,
     loginWithRedirect: authContext.loginWithRedirect,
-    loginWithPopup: async (options?: any) => {
-      console.warn('loginWithPopup is not supported in this configuration, falling back to loginWithRedirect')
-      await authContext.loginWithRedirect()
-    },
+    loginWithPopup: authContext.loginWithPopup,
     logout: authContext.logout,
     getAccessTokenSilently: async () => authContext.token,
     token: authContext.token,

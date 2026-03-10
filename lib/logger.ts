@@ -49,7 +49,7 @@ class ConFuseLogger {
   private performanceBuffer: PerformanceMetric[] = [];
   private userActionBuffer: UserAction[] = [];
   private maxBufferSize = 100;
-  private flushInterval = 30000; 
+  private flushInterval = 30000;
   private isProduction: boolean;
   private logLevel: string;
   private serviceName = 'frontend';
@@ -59,13 +59,13 @@ class ConFuseLogger {
     this.traceId = this.generateTraceId();
     this.isProduction = process.env.NODE_ENV === 'production';
     this.logLevel = process.env.NEXT_PUBLIC_LOG_LEVEL || 'info';
-    
+
     setInterval(() => this.flush(), this.flushInterval);
-    
+
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeunload', () => this.flush());
       window.addEventListener('unload', () => this.flush());
-      
+
       this.trackPagePerformance();
       this.setupUserActionTracking();
       this.setupErrorTracking();
@@ -172,7 +172,7 @@ class ConFuseLogger {
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : ''
     };
 
-    
+
     if (!this.isProduction) {
       const consoleMethod = console[level] || console.log;
       consoleMethod(`[${level.toUpperCase()}] ${source}: ${message}`, context || '');
@@ -194,7 +194,7 @@ class ConFuseLogger {
     this.performanceBuffer.push(perfMetric);
     this.checkBufferLimit();
 
-    
+
     if (metric.includes('duration')) {
       const threshold = metric === 'page_load_duration' ? 2500 : 1000;
       if (value > threshold) {
@@ -223,7 +223,7 @@ class ConFuseLogger {
   private trackPagePerformance() {
     if (typeof window === 'undefined' || !window.performance) return;
 
-    
+
     window.addEventListener('load', () => {
       setTimeout(() => {
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
@@ -233,7 +233,7 @@ class ConFuseLogger {
           this.trackPerformance('first_byte', navigation.responseStart - navigation.fetchStart);
         }
 
-        
+
         if ('PerformanceObserver' in window) {
           const lcpObserver = new PerformanceObserver((list) => {
             const entries = list.getEntries();
@@ -242,7 +242,7 @@ class ConFuseLogger {
           });
           lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
 
-          
+
           const fidObserver = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
               // 'first-input' entries are PerformanceEventTiming which include processingStart
@@ -263,7 +263,7 @@ class ConFuseLogger {
   private setupUserActionTracking() {
     if (typeof window === 'undefined') return;
 
-    
+
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       const elementInfo = this.getElementInfo(target);
@@ -273,7 +273,7 @@ class ConFuseLogger {
       });
     });
 
-    
+
     document.addEventListener('submit', (event) => {
       const target = event.target as HTMLFormElement;
       const elementInfo = this.getElementInfo(target);
@@ -283,7 +283,7 @@ class ConFuseLogger {
       });
     });
 
-    
+
     document.addEventListener('focusin', (event) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
@@ -298,7 +298,7 @@ class ConFuseLogger {
   private setupErrorTracking() {
     if (typeof window === 'undefined') return;
 
-    
+
     window.addEventListener('error', (event) => {
       this.error('JavaScript error', {
         message: event.message,
@@ -309,7 +309,7 @@ class ConFuseLogger {
       }, 'global-error');
     });
 
-    
+
     window.addEventListener('unhandledrejection', (event) => {
       this.error('Unhandled promise rejection', {
         reason: event.reason,
@@ -377,7 +377,7 @@ class ConFuseLogger {
     // Start a new trace for each major navigation
     this.newTrace();
     this.info('Route change', { from, to, duration }, 'navigation');
-    
+
     if (duration) {
       this.trackPerformance('route_change_duration', duration, { from, to });
     }
@@ -386,10 +386,10 @@ class ConFuseLogger {
   /** Setup route change tracking for Next.js */
   private setupRouteTracking() {
     if (typeof window === 'undefined') return;
-    
+
     // Track initial page view
     this.trackPageView(window.location.pathname);
-    
+
     // Listen for popstate (browser back/forward)
     window.addEventListener('popstate', () => {
       this.trackPageView(window.location.pathname);
@@ -488,26 +488,29 @@ class ConFuseLogger {
       });
     } catch (error) {
 
-      if (typeof localStorage !== 'undefined') {
-        const stored = localStorage.getItem('confuse_logs') || '[]';
-        const logs = JSON.parse(stored);
-        logs.push(payload);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const stored = window.localStorage.getItem('confuse_logs') || '[]';
+          const logs = JSON.parse(stored);
+          logs.push(payload);
 
+          if (logs.length > 10) {
+            logs.splice(0, logs.length - 10);
+          }
 
-        if (logs.length > 10) {
-          logs.splice(0, logs.length - 10);
+          window.localStorage.setItem('confuse_logs', this.safeStringify(logs));
+        } catch (e) {
+          // Ignore storage errors safely
         }
-
-        localStorage.setItem('confuse_logs', this.safeStringify(logs));
       }
     }
   }
 
 
   public async retryFailedLogs() {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
 
-    const stored = localStorage.getItem('confuse_logs');
+    const stored = window.localStorage.getItem('confuse_logs');
     if (!stored) return;
 
     const logs = JSON.parse(stored);
@@ -528,7 +531,7 @@ class ConFuseLogger {
     }
 
 
-    localStorage.removeItem('confuse_logs');
+    window.localStorage.removeItem('confuse_logs');
   }
 }
 
@@ -544,17 +547,17 @@ export function useLogger() {
 export async function apiCall(url: string, options: RequestInit = {}) {
   const startTime = performance.now();
   const method = options.method || 'GET';
-  
+
   try {
     const response = await fetch(url, options);
     const duration = performance.now() - startTime;
-    
+
     logger.trackAPICall(url, method, duration, response.status);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     return response;
   } catch (error) {
     const duration = performance.now() - startTime;
