@@ -14,7 +14,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./node_modules/@types"],
     "plugins": [
       {
         "name": "next"
