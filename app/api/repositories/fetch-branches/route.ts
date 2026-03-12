@@ -49,7 +49,9 @@ export async function POST(request: Request) {
       // If no credentials supplied, fetch OAuth token from auth-middleware
       if (!credentials || Object.keys(credentials).length === 0) {
         const tokenResp = await authClient.get(`/api/auth/connections/${provider}/token`, headers)
+        console.error('[fetch-branches] tokenResp:', JSON.stringify(tokenResp))
         const tokenData = unwrapResponse<{ access_token: string }>(tokenResp)
+        console.error('[fetch-branches] tokenData:', JSON.stringify(tokenData))
         if (tokenData && tokenData.access_token) {
           body.credentials = { access_token: tokenData.access_token }
         }
@@ -59,7 +61,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Authentication required or backend unavailable' }, { status: 401 })
     }
 
+    console.error('[fetch-branches] credentials being sent:', JSON.stringify(body.credentials))
     const branchesData = await dataApiClient.post('/api/repositories/fetch-branches', { repoUrl, credentials: body.credentials })
+    console.error('[fetch-branches] branchesData:', JSON.stringify(branchesData))
     if (!succeeded(branchesData)) {
       const err = isApiResp(branchesData) ? branchesData.error : undefined
       return NextResponse.json({ error: err || 'Failed to fetch branches' }, { status: 502 })
