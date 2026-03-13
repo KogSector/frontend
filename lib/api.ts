@@ -138,7 +138,9 @@ export class ApiClient {
     }
     if (!response.ok) {
       const dataObj = typeof data === 'object' && data !== null ? data as Record<string, unknown> : {};
-      const errorMessage = typeof dataObj['error'] === 'string' ? dataObj['error'] : (typeof dataObj['message'] === 'string' ? dataObj['message'] : `HTTP error! status: ${response.status}`);
+      const errorMessage = typeof dataObj['detail'] === 'string' 
+        ? dataObj['detail'] 
+        : (typeof dataObj['error'] === 'string' ? dataObj['error'] : (typeof dataObj['message'] === 'string' ? dataObj['message'] : `HTTP error! status: ${response.status}`));
       throw new Error(errorMessage);
     }
     return data as T;
@@ -407,7 +409,7 @@ export async function createSource(data: unknown): Promise<ApiResponse> {
 
 // -- Repositories --
 export async function getRepositories(): Promise<ApiResponse> {
-  return dataClient.get('/api/repositories');
+  return dataClient.get('/api/v1/sources');
 }
 export async function createRepository(data: unknown): Promise<ApiResponse> {
   return dataClient.post('/api/repositories', data);

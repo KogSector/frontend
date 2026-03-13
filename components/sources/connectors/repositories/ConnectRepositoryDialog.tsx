@@ -334,11 +334,17 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
 
       const payload = {
         type: provider,
-        url: repositoryUrl,
+        name: name || extractRepoName(repositoryUrl) || `${provider}-${Date.now()}`,
+        uri: repositoryUrl,
         credentials: finalCredentials,
-        config: {
-          ...config,
-          name: name || extractRepoName(repositoryUrl) || `${provider}-${Date.now()}`
+        branch: config.defaultBranch || 'main',
+        include_patterns: ["**/*"],
+        exclude_patterns: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__', 'vendor', '.venv', 'venv'],
+        metadata: {
+          fetch_issues: config.fetchIssues,
+          fetch_prs: config.fetchPrs,
+          auto_sync: config.autoSync,
+          file_extensions: config.fileExtensions
         }
       };
 
@@ -401,9 +407,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
           setError(errorMessage);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error connecting repository:', error);
-      setError('Network error occurred while connecting repository. Please check if all services are running and try again.');
+      setError(error.message || 'Network error occurred while connecting repository. Please check if all services are running and try again.');
     } finally {
       setLoading(false);
     }

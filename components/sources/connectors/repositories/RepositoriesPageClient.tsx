@@ -133,9 +133,11 @@ export function RepositoriesPageClient() {
       // Fetch real repository data from the API with auth header
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
+      console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
         setRepositories(resp.data.repositories);
       } else {
+        console.log('[fetchRepositories] Conditions failed:', { success: resp.success, hasData: !!resp.data, hasRepos: !!resp.data?.repositories });
         // If no repositories found, show empty state
         setRepositories([]);
       }
@@ -357,7 +359,7 @@ export function RepositoriesPageClient() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {repositories.reduce((sum, repo) => sum + repo.stars, 0)}
+                {repositories.reduce((sum, repo) => sum + (repo.stars || 0), 0)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Community recognition
@@ -374,7 +376,7 @@ export function RepositoriesPageClient() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {repositories.reduce((sum, repo) => sum + repo.forks, 0)}
+                {repositories.reduce((sum, repo) => sum + (repo.forks || 0), 0)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Community contributions
@@ -432,18 +434,18 @@ export function RepositoriesPageClient() {
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(repo.status)}`}></div>
                       <p className="text-xs text-muted-foreground truncate min-w-0 flex-1">{repo.description}</p>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <div className={`w-2 h-2 rounded-full ${languageColors[(repo.language || 'Unknown') as keyof typeof languageColors] || 'bg-gray-500'}`}></div>
+                          <span className="truncate">{repo.language || 'Unknown'}</span>
+                        </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
-                        <div className={`w-2 h-2 rounded-full ${languageColors[repo.language as keyof typeof languageColors] || 'bg-gray-500'}`}></div>
-                        <span className="truncate">{repo.language}</span>
+                        <span>{repo.stars || 0}</span>
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
-                        <span>{repo.stars}</span>
+                        <span>{repo.forks || 0}</span>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <span>{repo.forks}</span>
-                      </div>
-                      <span className="truncate">Updated {repo.lastUpdated}</span>
+                      <span className="truncate">Updated {repo.lastUpdated || 'recently'}</span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Button variant="outline" size="sm" asChild>

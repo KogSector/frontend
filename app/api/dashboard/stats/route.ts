@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
     ])
 
     // Extract data safely with proper typing
-    const repos = reposResponse.status === 'fulfilled' && reposResponse.value ?
-      (reposResponse.value as APIResponse<DashboardStats[]>).data || [] : []
+    const reposData = reposResponse.status === 'fulfilled' && reposResponse.value ?
+      (reposResponse.value as any).data?.repositories || [] : []
     const docs = docsResponse.status === 'fulfilled' && docsResponse.value ?
       (docsResponse.value as APIResponse<{ total: number }>).data || { total: 0 } : { total: 0 }
     const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
@@ -55,11 +55,11 @@ export async function GET(request: NextRequest) {
 
     // Calculate dashboard stats
     const stats = {
-      repositories: Array.isArray(repos) ? repos.length : 0,
+      repositories: reposData.length || 0,
       documents: docs.total || 0,
       urls: Array.isArray(urls) ? urls.length : 0,
       agents: Array.isArray(agents) ? agents.length : 0,
-      connections: calculateConnections(repos, urls),
+      connections: calculateConnections(reposData, urls),
       context_requests: userStatsData?.context_requests || 1247, // Fallback value
       security_score: userStatsData?.security_score || 98, // Fallback value
       total_users: userStatsData?.total_users || 0,
