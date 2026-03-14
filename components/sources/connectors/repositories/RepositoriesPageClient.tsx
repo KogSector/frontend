@@ -192,16 +192,22 @@ export function RepositoriesPageClient() {
   const deleteRepository = async () => {
     if (!selectedRepoId) return;
     try {
-      
+      setLoading(true);
       console.log(`Deleting repository ${selectedRepoId}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-      fetchRepositories();
-      fetchDataSources();
+      
+      const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const resp = await dataApiClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
+      
+      console.log('Delete response:', resp);
+      
+      await fetchRepositories();
+      await fetchDataSources();
     } catch (error) {
       console.error('Error deleting repository:', error);
     } finally {
       setShowDeleteConfirm(false);
       setSelectedRepoId(null);
+      setLoading(false);
     }
   };
 

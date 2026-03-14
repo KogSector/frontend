@@ -6,49 +6,57 @@ import { dataApiClient } from '@/lib/api'
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization required' }, { status: 401 })
-    }
+    console.log('[API /api/repositories] GET called, authHeader present:', !!authHeader)
 
-    // Fetch connected accounts from data service
-    const resp: any = await dataApiClient.get('/api/data/accounts', { Authorization: authHeader })
+    // Fetch repositories directly from data-connector's /api/repositories endpoint
+    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    let resp: any
 
-    if (!resp.success) {
+    try {
+      resp = await dataApiClient.get('/api/repositories', headers)
+      console.log('[API /api/repositories] data-connector response:', JSON.stringify(resp))
+    } catch (fetchErr: any) {
+      console.error('[API /api/repositories] Failed to fetch from data-connector:', fetchErr?.message || fetchErr)
+      // Return empty array gracefully
       return NextResponse.json({
         success: true,
         data: { repositories: [] }
       })
     }
 
-    // Transform connected accounts to repository format
-    const repositories = (resp.data?.accounts || [])
-      .filter((account: any) => ['github', 'gitlab', 'bitbucket'].includes(account.connector_type))
-      .map((account: any) => {
-        const metadata = account.metadata || {}
-        const repoInfo = metadata.repo_info || {}
+    // data-connector returns { success, message, data: { repositories: [...] } }
+    if (resp && resp.success && resp.data?.repositories) {
+      const repositories = resp.data.repositories.map((repo: any) => ({
+        id: repo.id,
+        name: repo.name || 'Unknown',
+        description: `${repo.provider || 'git'} repository`,
+        language: 'Unknown',
+        stars: 0,
+        forks: 0,
+        lastUpdated: repo.updated_at ? new Date(repo.updated_at).toLocaleDateString() : 'recently',
+        status: repo.status === 'active' ? 'active' :
+          repo.status === 'syncing' ? 'syncing' :
+            repo.status === 'error' ? 'error' : 'inactive',
+        url: repo.url || '',
+        provider: repo.provider || 'github',
+        defaultBranch: repo.branch || 'main',
+      }))
 
-        return {
-          id: account.id,
-          name: repoInfo.name || account.account_name,
-          description: repoInfo.description || `${account.connector_type} repository`,
-          language: (repoInfo.languages && repoInfo.languages[0]) || 'Unknown',
-          stars: repoInfo.stars || 0,
-          forks: repoInfo.forks || 0,
-          lastUpdated: account.last_sync_at ? new Date(account.last_sync_at).toLocaleDateString() : 'Never',
-          status: account.status === 'connected' ? 'active' :
-            account.status === 'syncing' ? 'syncing' :
-              account.status === 'error' ? 'error' : 'inactive',
-          url: repoInfo.html_url || `https://${account.connector_type}.com/${account.account_identifier}`,
-          provider: account.connector_type
-        }
+      console.log('[API /api/repositories] Returning', repositories.length, 'repositories')
+
+      return NextResponse.json({
+        success: true,
+        data: { repositories }
       })
+    }
 
+    console.log('[API /api/repositories] No repositories in response, returning empty')
     return NextResponse.json({
       success: true,
-      data: { repositories }
+      data: { repositories: [] }
     })
-  } catch (error) {
-    console.error('Error fetching repositories:', error)
+  } catch (error: any) {
+    console.error('[API /api/repositories] Error:', error?.message || error)
     return NextResponse.json({
       success: true,
       data: { repositories: [] }

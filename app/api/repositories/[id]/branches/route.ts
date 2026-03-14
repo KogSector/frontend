@@ -32,20 +32,19 @@ export async function GET(
       return NextResponse.json({ error: 'Repository ID is required.' }, { status: 400 })
     }
 
-    // TODO: Implement actual API call to fetch branches for the specific connected repository
-    // This should call the data service to get branches for the repository by ID
-    const branchesData = await dataApiClient.get(`/api/data/sources/${repositoryId}/branches`)
+    // Call the data-connector to get branches for the repository by ID
+    const branchesData = await dataApiClient.get(`/api/repositories/${repositoryId}/branches`)
     
     if (!succeeded(branchesData)) {
       const err = isApiResp(branchesData) ? branchesData.error : undefined
       return NextResponse.json({ error: err || 'Failed to fetch branches' }, { status: 502 })
     }
 
-    const branches = getData<{ branches?: string[]; default_branch?: string }>(branchesData)
+    const branchResponse = getData<{ branches?: string[]; default_branch?: string }>(branchesData)
 
     return NextResponse.json({
-      branches: branches?.branches || ['main', 'master', 'develop'],
-      defaultBranch: branches?.default_branch || 'main',
+      branches: branchResponse?.branches || ['main', 'master', 'develop'],
+      defaultBranch: branchResponse?.default_branch || 'main',
     })
   } catch (error) {
     console.error('Failed to fetch repository branches:', error)

@@ -25,11 +25,15 @@ function isApiResp(obj: unknown): obj is ApiResp {
 }
 
 function succeeded(resp: unknown): boolean {
-  return isApiResp(resp) && resp.success === true
+  if (!isApiResp(resp)) return false
+  // dataApiClient throws on non-2xx status, so if we get here and it has an id, it succeeded
+  return resp.success === true || (typeof resp.id === 'string' && resp.id.length > 0)
 }
 
 function getData<T = unknown>(resp: unknown): T | undefined {
-  if (isApiResp(resp) && 'data' in resp) return resp.data as T
+  if (!isApiResp(resp)) return undefined
+  if ('data' in resp) return resp.data as T
+  if ('id' in resp) return resp as T
   return undefined
 }
 

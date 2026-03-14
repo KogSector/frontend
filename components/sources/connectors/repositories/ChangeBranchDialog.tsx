@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiClient, ApiResponse } from '@/lib/api';
+import { apiClient, dataApiClient, ApiResponse } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ChangeBranchDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function ChangeBranchDialog({
   const [branches, setBranches] = useState<string[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
 
   useEffect(() => {
     if (open && repositoryId) {
@@ -68,9 +70,17 @@ export function ChangeBranchDialog({
 
     setLoading(true);
     try {
-      
       console.log(`Changing branch for repo ${repositoryId} to ${selectedBranch}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      
+      const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const resp = await dataApiClient.patch<ApiResponse>(
+        `/api/repositories/${repositoryId}`,
+        { branch: selectedBranch },
+        tokenHeader
+      );
+      
+      console.log('Change branch response:', resp);
+      
       onSuccess();
       onOpenChange(false);
     } catch (error) {

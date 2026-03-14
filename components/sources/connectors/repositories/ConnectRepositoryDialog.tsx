@@ -349,9 +349,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       };
 
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.post<ApiResponse>('/api/v1/sources', payload, headers);
-      if (resp.success) {
-        const backendAlreadyStartedSync = (resp as any)?.syncStarted === true;
+      const resp = await dataApiClient.post<any>('/api/v1/sources', payload, headers);
+      if (resp && resp.id) {
+        const backendAlreadyStartedSync = resp?.syncStarted === true;
         if (backendAlreadyStartedSync) {
           console.log('[ConnectRepo] Connection successful, backend started indexing');
         } else {
@@ -374,10 +374,10 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
             // Fire sync in background - don't block the UI
             dataApiClient.post('/api/github/sync', syncPayload, headers)
               .then((syncResp: any) => {
-                if (syncResp.success) {
-                  console.log('[ConnectRepo] Auto-sync completed:', syncResp);
+                if (syncResp && (syncResp.success || syncResp.job_id)) {
+                  console.log('[ConnectRepo] Auto-sync completed/started:', syncResp);
                 } else {
-                  console.warn('[ConnectRepo] Auto-sync failed:', syncResp.error_message || syncResp.error);
+                  console.warn('[ConnectRepo] Auto-sync failed:', syncResp?.error_message || syncResp?.error);
                 }
               })
               .catch((syncErr: any) => {
@@ -395,7 +395,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         onOpenChange(false);
         resetForm();
       } else {
-        const errorMessage = resp.error || 'Failed to connect repository';
+        const errorMessage = resp?.error || resp?.detail || 'Failed to connect repository';
 
         if (errorMessage.includes('token')) {
           setError(`${errorMessage}\n\nPlease check:\n• Token is not expired\n• Token has correct permissions\n• For public repos: use 'public_repo' scope\n• For private repos: use 'repo' scope`);
