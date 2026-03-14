@@ -135,7 +135,17 @@ export function RepositoriesPageClient() {
       const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
       console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
-        setRepositories(resp.data.repositories);
+        const uniqueRepos: Repository[] = [];
+        const seenUrls = new Set<string>();
+        for (const repo of resp.data.repositories) {
+          if (!repo.url) continue;
+          const normalizedUrl = repo.url.replace(/\.git$/, '').toLowerCase();
+          if (!seenUrls.has(normalizedUrl)) {
+            seenUrls.add(normalizedUrl);
+            uniqueRepos.push(repo);
+          }
+        }
+        setRepositories(uniqueRepos);
       } else {
         console.log('[fetchRepositories] Conditions failed:', { success: resp.success, hasData: !!resp.data, hasRepos: !!resp.data?.repositories });
         // If no repositories found, show empty state

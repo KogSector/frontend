@@ -647,49 +647,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                   )}
                 </div>
 
-                {/* Advanced Settings */}
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                    className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-                  >
-                    <span className={`transform transition-transform duration-200 ${showAdvancedSettings ? 'rotate-90' : ''}`}>
-                      ▶
-                    </span>
-                    Advanced Settings
-                  </button>
 
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showAdvancedSettings ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                    }`}>
-                    <div className="space-y-4 pt-2">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">File Extensions to Index</Label>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {(availableFileExtensions.length > 0 ? availableFileExtensions : DEFAULT_FILE_EXTENSIONS).map((ext) => (
-                            <Badge
-                              key={ext}
-                              variant={config.fileExtensions?.includes(ext) ? "default" : "outline"}
-                              className="cursor-pointer text-xs"
-                              onClick={() => {
-                                const extensions = config.fileExtensions || [];
-                                const newExtensions = extensions.includes(ext)
-                                  ? extensions.filter((x) => x !== ext)
-                                  : [...extensions, ext];
-                                setConfig({ ...config, fileExtensions: newExtensions });
-                              }}
-                            >
-                              {ext}
-                            </Badge>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Select file types to include in indexing. Click badges to toggle.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
