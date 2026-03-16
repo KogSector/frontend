@@ -46,7 +46,7 @@ export function ChangeBranchDialog({
       const resp = await apiClient.get<ApiResponse<{ branches: string[]; defaultBranch: string }>>(
         `/api/repositories/${repoId}/branches`
       );
-      
+
       if (resp.success && resp.data) {
         setBranches(resp.data.branches || ['main', 'master', 'develop']);
         setSelectedBranch(currentBranch || resp.data.defaultBranch || 'main');
@@ -71,16 +71,16 @@ export function ChangeBranchDialog({
     setLoading(true);
     try {
       console.log(`Changing branch for repo ${repositoryId} to ${selectedBranch}`);
-      
+
       const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const resp = await dataApiClient.patch<ApiResponse>(
         `/api/repositories/${repositoryId}`,
         { branch: selectedBranch },
         tokenHeader
       );
-      
+
       console.log('Change branch response:', resp);
-      
+
       onSuccess();
       onOpenChange(false);
     } catch (error) {

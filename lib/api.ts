@@ -100,6 +100,9 @@ export interface ApiResponse<T = unknown> {
 // =============================================================================
 
 export class ApiClient {
+  patch<T>(arg0: string, arg1: { branch: string; }, tokenHeader: Record<string, string>) {
+    throw new Error('Method not implemented.');
+  }
   private baseUrl: string;
   private serviceName: string;
 
@@ -138,8 +141,8 @@ export class ApiClient {
     }
     if (!response.ok) {
       const dataObj = typeof data === 'object' && data !== null ? data as Record<string, unknown> : {};
-      const errorMessage = typeof dataObj['detail'] === 'string' 
-        ? dataObj['detail'] 
+      const errorMessage = typeof dataObj['detail'] === 'string'
+        ? dataObj['detail']
         : (typeof dataObj['error'] === 'string' ? dataObj['error'] : (typeof dataObj['message'] === 'string' ? dataObj['message'] : `HTTP error! status: ${response.status}`));
       throw new Error(errorMessage);
     }
@@ -361,11 +364,11 @@ export async function getDashboardStats(): Promise<ApiResponse> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   const response = await fetch('/api/dashboard/stats', { headers });
   return response.json();
 }
