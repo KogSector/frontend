@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient, dataApiClient, ApiResponse } from '@/lib/api';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth';
 
 interface ChangeBranchDialogProps {
   open: boolean;

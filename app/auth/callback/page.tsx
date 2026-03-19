@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth0 } from '@/contexts/auth0-context'
+import { useAuth } from '@/contexts/auth'
 import { useAuth0 as useAuth0React } from '@auth0/auth0-react'
 
 export default function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // The global context (handles backend sync & final redirect)
-  const { isAuthenticated, isLoading: contextLoading } = useAuth0()
+  // The consolidated context (handles backend sync & final redirect)
+  const { isAuthenticated, isLoading: contextLoading, handleAuth0Callback } = useAuth()
 
   // The underlying @auth0/auth0-react hook (handles URL params)
   const { error: auth0Error, isLoading: sdkLoading } = useAuth0React()

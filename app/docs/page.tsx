@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '@/contexts/auth'
 // Link not used in this file
 import { 
   BookOpen, 

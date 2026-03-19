@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Bell, Mail, Smartphone, AlertCircle, CheckCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/auth'
 import { useToast } from '@/hooks/use-toast'
 
 interface NotificationPreferences {

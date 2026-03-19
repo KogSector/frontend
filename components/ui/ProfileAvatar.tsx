@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/DropdownMenu";
 import { User, LogOut, CreditCard } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '@/contexts/auth';
 
 export function ProfileAvatar() {
   const { user, logout, isAuthenticated } = useAuth()

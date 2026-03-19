@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { ChangeEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { dataApiClient, authClient, apiClient, ApiResponse, unwrapResponse } from '@/lib/api';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

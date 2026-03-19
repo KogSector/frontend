@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth0 } from '@/contexts/auth0-context'
+import { useAuth } from '@/contexts/auth'
 
 // Restore your actual project UI components
 import { Button } from '@/components/ui/button'
@@ -72,7 +72,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
 
   // Use our custom Auth0 hook
-  const { loginWithRedirect } = useAuth0()
+  const { loginWithRedirect } = useAuth()
 
   const handleSocialLogin = async (provider: string) => {
     console.log('🔘 Social login button clicked:', provider)

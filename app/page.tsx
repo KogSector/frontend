@@ -6,7 +6,7 @@ import { FeaturesSection } from "@/components/sections/FeaturesSection";
 import { Footer } from "@/components/ui/footer";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { Navbar } from "@/components/ui/navbar";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '@/contexts/auth'
 
 const LOADING_TIMEOUT_MS = 3000; // Max 3 seconds for loading
 

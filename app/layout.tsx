@@ -6,9 +6,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Providers } from './providers'
 
-// 👇 1. IMPORT THE AUTH0 WRAPPER
-import Auth0ProviderWithNavigate from '@/components/Auth0ProviderWithNavigate'
-
 const inter = Inter({ subsets: ['latin'] })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
 
@@ -37,16 +34,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} ${orbitron.variable}`}>
-        {/* 👇 2. WRAP EVERYTHING INSIDE AUTH0 PROVIDER */}
-        <Auth0ProviderWithNavigate>
-          <Providers>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              {children}
-            </TooltipProvider>
-          </Providers>
-        </Auth0ProviderWithNavigate>
+        <Providers>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            {children}
+          </TooltipProvider>
+        </Providers>
       </body>
     </html>
   )

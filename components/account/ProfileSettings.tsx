@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/contexts/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -128,13 +128,13 @@ export function ProfileSettings() {
               
               <div className="flex items-center gap-4">
                 <Badge variant={getSubscriptionColor(user?.subscription_tier || 'free')}>
-                  {user?.subscription_tier?.charAt(0).toUpperCase() + user?.subscription_tier?.slice(1)} Plan
+                  {(user?.subscription_tier?.charAt(0)?.toUpperCase() || 'F') + (user?.subscription_tier?.slice(1) || 'ree')} Plan
                 </Badge>
                 <Badge variant={user?.is_verified ? 'default' : 'secondary'}>
                   {user?.is_verified ? 'Verified' : 'Unverified'}
                 </Badge>
                 <Badge variant="outline">
-                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                  {(user?.role?.charAt(0)?.toUpperCase() || 'U') + (user?.role?.slice(1) || 'ser')}
                 </Badge>
               </div>
             </div>

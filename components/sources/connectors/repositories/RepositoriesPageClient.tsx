@@ -28,7 +28,7 @@ import {
 import { ConnectRepositoryDialog } from "./ConnectRepositoryDialog";
 import { dataApiClient, ApiResponse } from '@/lib/api';
 import { ChangeBranchDialog } from "./ChangeBranchDialog";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth';
 
 interface Repository {
   id: string;

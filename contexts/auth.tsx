@@ -2,7 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { apiClient, ApiResponse, unwrapResponse } from '@/lib/api';
+import { apiClient, authClient, ApiResponse, unwrapResponse } from '@/lib/api'
+import { useAuth0 as useAuth0React } from '@auth0/auth0-react'
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface User {
   id: string
@@ -21,12 +26,20 @@ export interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  // Traditional auth methods
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => void
   updateProfile: (data: Partial<User>) => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  // Auth0 methods
+  loginWithRedirect: (provider?: string) => Promise<void>
+  loginWithPopup: (options?: any) => Promise<void>
+  handleAuth0Callback: (auth0Token: string) => Promise<void>
+  getAccessTokenSilently: () => Promise<string>
+  // Common properties
   token: string | null
+  refreshToken: string | null
   connections: Array<{ id: string; platform: string; username?: string; is_active: boolean }> | null
   refreshConnections: () => Promise<void>
 }
@@ -51,31 +64,55 @@ interface SessionData {
   last_activity: string
 }
 
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// use API_CONFIG.baseUrl when a raw URL is required (e.g. for AbortController fetch)
-// otherwise prefer apiClient for requests
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000 // 2 hours
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(true)
   const [connections, setConnections] = useState<Array<{ id: string; platform: string; username?: string; is_active: boolean }> | null>(null)
   const router = useRouter()
 
+  // Auth0 SDK integration
+  const {
+    loginWithRedirect: auth0LoginWithRedirect,
+    loginWithPopup: auth0LoginWithPopup,
+    logout: auth0Logout,
+    isLoading: auth0IsLoading,
+    isAuthenticated: auth0IsAuthenticated,
+    getAccessTokenSilently
+  } = useAuth0React()
 
-  const saveSession = (token: string, expiresAt: string) => {
+  const auth0LogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI || 'http://localhost:3000/'
+
+  // ============================================================================
+  // SESSION MANAGEMENT
+  // ============================================================================
+
+  const saveSession = useCallback((authToken: string, userProfile?: User) => {
     const sessionData: SessionData = {
-      token,
-      expires_at: expiresAt,
+      token: authToken,
+      expires_at: new Date(Date.now() + SESSION_TIMEOUT).toISOString(),
       last_activity: new Date().toISOString()
     }
     localStorage.setItem('auth_session', JSON.stringify(sessionData))
-    localStorage.setItem('auth_token', token)
-  }
+    localStorage.setItem('auth_token', authToken)
+    localStorage.setItem('confuse_auth_token', authToken)
 
-  const getSession = (): SessionData | null => {
+    setToken(authToken)
+    if (userProfile) {
+      setUser(userProfile)
+    }
+  }, [])
+
+  const getSession = useCallback((): SessionData | null => {
     try {
       const sessionStr = localStorage.getItem('auth_session')
       if (!sessionStr) return null
@@ -83,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return null
     }
-  }
+  }, [])
 
   const updateLastActivity = useCallback(() => {
     const session = getSession()
@@ -93,22 +130,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const isSessionValid = (session: SessionData): boolean => {
+  const isSessionValid = useCallback((session: SessionData): boolean => {
     const now = new Date().getTime()
     const lastActivity = new Date(session.last_activity).getTime()
     const expiresAt = new Date(session.expires_at).getTime()
 
     return now < expiresAt && (now - lastActivity) < SESSION_TIMEOUT
-  }
+  }, [])
 
   const clearSession = useCallback(() => {
     localStorage.removeItem('auth_session')
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('confuse_auth_token')
     setToken(null)
     setUser(null)
+    setConnections(null)
   }, [])
 
-  // Fetch the user profile using the current token
+  // ============================================================================
+  // USER PROFILE MANAGEMENT
+  // ============================================================================
+
   const fetchUserProfile = useCallback(async (authToken: string) => {
     try {
       const result = await apiClient.get<ApiResponse<User>>('/api/auth/profile', { Authorization: `Bearer ${authToken}` })
@@ -119,11 +161,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
-      localStorage.removeItem('auth_token')
-      setToken(null)
-      setUser(null)
+      clearSession()
     }
-  }, [])
+  }, [clearSession])
 
   const refreshConnections = useCallback(async () => {
     if (!token) {
@@ -140,7 +180,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token])
 
-  // Verify the token with the backend and update session/user state accordingly
+  // ============================================================================
+  // TOKEN VERIFICATION
+  // ============================================================================
+
   const verifyToken = useCallback(async (tokenToVerify: string) => {
     try {
       const controller = new AbortController()
@@ -177,7 +220,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchUserProfile, clearSession, refreshConnections])
 
-  // Check if auth bypass is enabled (development only)
+  // ============================================================================
+  // AUTH0 INTEGRATION
+  // ============================================================================
+
+  const handleAuth0Callback = useCallback(async (auth0AccessToken: string) => {
+    try {
+      console.log('handleAuth0Callback called with token:', auth0AccessToken?.substring(0, 20) + '...')
+      setIsSyncing(true)
+
+      // Call ConFuse auth service to sync user
+      const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3010'
+      console.log('Calling auth service at:', authServiceUrl)
+
+      const response = await fetch(`${authServiceUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${auth0AccessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      console.log('Auth service response status:', response.status)
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Auth service error:', error)
+        throw new Error(error.message || 'Auth0 login sync failed')
+      }
+
+      const data = await response.json()
+      console.log('Auth service response data:', data)
+
+      saveSession(auth0AccessToken, data.user)
+      await refreshConnections()
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Auth0 callback error:', error)
+      clearSession()
+      const errorMessage = error?.message || String(error)
+      router.push(`/?error=auth_failed&detail=${encodeURIComponent(errorMessage)}`)
+    } finally {
+      setIsSyncing(false)
+    }
+  }, [saveSession, clearSession, router, refreshConnections])
+
+  // ============================================================================
+  // AUTH BYPASS (DEVELOPMENT)
+  // ============================================================================
+
   const checkAuthBypass = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
@@ -211,6 +302,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ============================================================================
+  // INITIALIZATION AND SESSION RESTORATION
+  // ============================================================================
+
   useEffect(() => {
     const initAuth = async () => {
       // First, check if auth bypass is enabled (development only)
@@ -220,29 +315,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Normal auth flow
-      const session = getSession();
-      if (session && isSessionValid(session)) {
-        setToken(session.token);
-        updateLastActivity();
-
-        const timeoutId = setTimeout(() => {
-          setIsLoading(false);
-        }, 3000);
-
-        verifyToken(session.token).finally(() => {
-          clearTimeout(timeoutId);
-        });
+      // Check if Auth0 is authenticated
+      if (auth0IsAuthenticated) {
+        const session = getSession();
+        if (session && isSessionValid(session)) {
+          // We already have a valid internal session
+          setToken(session.token);
+          updateLastActivity();
+          if (!user) {
+            fetchUserProfile(session.token).finally(() => setIsSyncing(false));
+          } else {
+            setIsSyncing(false);
+          }
+        } else {
+          // We need to fetch the token and sync the profile with backend via handleAuth0Callback
+          getAccessTokenSilently()
+            .then(async (authToken) => {
+              await handleAuth0Callback(authToken);
+            })
+            .catch((err) => {
+              console.error('Failed to get token silently to restore session', err);
+              clearSession();
+              setIsSyncing(false);
+            });
+        }
       } else {
-        clearSession();
-        setIsLoading(false);
+        // Check for traditional auth session
+        const session = getSession();
+        if (session && isSessionValid(session)) {
+          setToken(session.token);
+          updateLastActivity();
+
+          const timeoutId = setTimeout(() => {
+            setIsLoading(false);
+          }, 3000);
+
+          verifyToken(session.token).finally(() => {
+            clearTimeout(timeoutId);
+          });
+        } else {
+          clearSession();
+          setIsLoading(false);
+        }
       }
     };
 
     initAuth();
-  }, [updateLastActivity, verifyToken, clearSession, checkAuthBypass])
+  }, [
+    auth0IsAuthenticated, 
+    auth0IsLoading, 
+    getSession, 
+    isSessionValid, 
+    fetchUserProfile, 
+    clearSession, 
+    getAccessTokenSilently, 
+    user, 
+    handleAuth0Callback, 
+    verifyToken, 
+    updateLastActivity, 
+    checkAuthBypass
+  ])
 
-
+  // Update activity on user interaction
   useEffect(() => {
     if (token) {
       const handleActivity = () => updateLastActivity()
@@ -259,6 +393,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token, updateLastActivity])
 
+  // ============================================================================
+  // AUTHENTICATION METHODS
+  // ============================================================================
+
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
@@ -268,7 +406,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data && data.user && data.token) {
         setUser(data.user)
         setToken(data.token)
-        saveSession(data.token, data.expires_at)
+        saveSession(data.token)
         await refreshConnections()
         router.push('/dashboard')
       } else {
@@ -291,7 +429,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (authData && authData.user && authData.token) {
         setUser(authData.user)
         setToken(authData.token)
-        saveSession(authData.token, authData.expires_at)
+        saveSession(authData.token)
         await refreshConnections()
         router.push('/dashboard')
       } else {
@@ -303,11 +441,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const logout = () => {
-    clearSession()
-    router.push('/')
   }
 
   const updateProfile = async (data: Partial<User>) => {
@@ -345,16 +478,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const logout = useCallback(() => {
+    clearSession()
+    
+    // If Auth0 is authenticated, logout via Auth0 SDK
+    if (auth0IsAuthenticated) {
+      auth0Logout({
+        logoutParams: { returnTo: auth0LogoutRedirectUri }
+      });
+    } else {
+      router.push('/')
+    }
+  }, [clearSession, auth0IsAuthenticated, auth0Logout, auth0LogoutRedirectUri, router])
+
+  const loginWithRedirect = useCallback(async (provider?: string) => {
+    console.log('🔐 loginWithRedirect called with provider:', provider)
+
+    await auth0LoginWithRedirect({
+      authorizationParams: provider ? { connection: provider } : undefined
+    });
+  }, [auth0LoginWithRedirect])
+
+  // ============================================================================
+  // CONTEXT VALUE
+  // ============================================================================
+
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
-    isLoading,
+    isAuthenticated: !!user && !!token,
+    isLoading: isLoading || isSyncing,
+    // Traditional auth methods
     login,
     register,
     logout,
     updateProfile,
     changePassword,
+    // Auth0 methods
+    loginWithRedirect,
+    loginWithPopup: auth0LoginWithPopup,
+    handleAuth0Callback,
+    getAccessTokenSilently,
+    // Common properties
     token,
+    refreshToken: null,
     connections,
     refreshConnections,
   }
@@ -368,4 +534,9 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
+}
+
+// Legacy export for backward compatibility
+export function useAuth0() {
+  return useAuth()
 }

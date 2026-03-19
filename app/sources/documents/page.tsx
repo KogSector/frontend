@@ -10,7 +10,7 @@ import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
 import { dataApiClient } from "@/lib/api";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 
 interface DocumentSource {

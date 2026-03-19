@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/contexts/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, Star, Zap, Building } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { billingApiClient } from '@/lib/api'
+import { apiClient } from '@/lib/api'
 
 interface SubscriptionPlan {
   id: string
@@ -36,7 +36,7 @@ export function SubscriptionPlans() {
 
   const fetchPlans = async () => {
     try {
-      const plansData = await billingApiClient.get<SubscriptionPlan[]>('/api/billing/plans')
+      const plansData = await apiClient.get<SubscriptionPlan[]>('/api/billing/plans')
       setPlans(plansData)
     } catch (error) {
       console.error('Failed to fetch plans:', error)

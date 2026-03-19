@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Code, Brain, Database, RefreshCw, GitBranch, Sparkles, Zap, Rocket, Star, ArrowRight, Play } from "lucide-react";
 import { Globe } from "@/components/ui/globe";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '@/contexts/auth';
 
 // Animation helper - animations are always enabled for better UX
 const anim = (cls: string) => cls;

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, RefreshCw, Plus, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { authClient, unwrapResponse } from '@/lib/api';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth';
 import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';

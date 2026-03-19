@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { apiClient, ApiResponse } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const [credentials, setCredentials] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
-  const { loginWithPopup, getAccessTokenSilently } = useAuth();
+  const { loginWithPopup } = useAuth();
 
   // Fetch connected providers on open
   const fetchConnections = async () => {
