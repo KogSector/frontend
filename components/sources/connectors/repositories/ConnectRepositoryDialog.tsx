@@ -169,7 +169,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         return true
       }
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await apiClient.get('/api/auth/connections', headers);
+      const resp = await authClient.get('/api/auth/connections', headers);
       const list = unwrapResponse<Array<{ platform: string; is_active: boolean }>>(resp) || [];
       const connected = list.some((c) => c.platform === provider && c.is_active);
       if (!connected) {
@@ -231,13 +231,35 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     setIsValidated(false);
 
     try {
+      let fetchCredentials = { ...credentials };
+      if (!isBasicAuth(provider) && isProviderConnected(provider)) {
+        const fetchHeaders: Record<string, string> = {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+        try {
+          const tokenResp = await authClient.get<ApiResponse<any>>(`/api/auth/connections/${provider}/token`, fetchHeaders);
+          const tokenData = unwrapResponse<any>(tokenResp);
+          if (tokenData && tokenData.access_token) {
+            fetchCredentials = {
+              ...fetchCredentials,
+              access_token: tokenData.access_token
+            };
+          }
+        } catch (err) {
+          console.error("Failed to fetch token for branches check", err);
+        }
+      }
+
       const response = await fetch('/api/sources/repositories/fetch-branches', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({ repoUrl: repositoryUrl.trim() })
+        body: JSON.stringify({ 
+          repoUrl: repositoryUrl.trim(),
+          credentials: Object.keys(fetchCredentials).length > 0 ? fetchCredentials : null
+        })
       });
 
       const result = await response.json();

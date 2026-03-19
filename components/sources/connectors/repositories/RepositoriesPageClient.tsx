@@ -42,6 +42,7 @@ interface Repository {
   url: string;
   provider: 'github' | 'bitbucket';
   defaultBranch?: string;
+  source_id?: string;
   // Sync config options
   fileExtensions?: string[];
   fetchIssues?: boolean;
@@ -132,7 +133,7 @@ export function RepositoriesPageClient() {
     try {
       // Fetch real repository data from the API with auth header
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/data-sources/repositories', headers);
+      const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
       console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
         const uniqueRepos: Repository[] = [];
@@ -164,9 +165,9 @@ export function RepositoriesPageClient() {
     try {
         // Fetch data sources with auth header
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const resp = await dataApiClient.get<ApiResponse<{ dataSources: DataSource[] }>>('/api/data-sources', headers);
-        if (resp.success && resp.data) {
-          const repoDataSources = resp.data.dataSources?.filter((ds: DataSource) => 
+        const resp = await dataApiClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
+        if (resp && resp.sources) {
+          const repoDataSources = resp.sources.filter((ds: DataSource) => 
             ['github', 'bitbucket'].includes(ds.type)
           ) || [];
           setDataSources(repoDataSources);
@@ -196,7 +197,7 @@ export function RepositoriesPageClient() {
       console.log(`Deleting repository ${selectedRepoId}`);
       
       const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.delete<ApiResponse>(`/api/data-sources/repositories/${selectedRepoId}`, tokenHeader);
+      const resp = await dataApiClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
       
       console.log('Delete response:', resp);
       
@@ -212,7 +213,7 @@ export function RepositoriesPageClient() {
   };
 
   const syncRepository = async (repo: Repository) => {
-    if (!repo.url || syncingRepoId) return;
+    if (!repo.url || !repo.source_id || syncingRepoId) return;
     
     setSyncingRepoId(repo.id);
     setSyncStatus(prev => ({ ...prev, [repo.id]: { status: 'syncing', message: 'Starting sync...' } }));
@@ -220,32 +221,25 @@ export function RepositoriesPageClient() {
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       
-      // Call the GitHub sync endpoint with config options
-      const resp = await dataApiClient.post<SyncResult>('/api/github/sync', {
-        repo_url: repo.url,
-        branch: repo.defaultBranch || 'main',
-        include_languages: null, // All languages
-        exclude_paths: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__'],
-        max_file_size_mb: 5,
-        // Pass file extensions if configured
+      const resp = await dataApiClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
+        source_id: repo.source_id,
+        force_reprocess: true,
+        exclude_patterns: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__'],
         file_extensions: repo.fileExtensions || null,
-        // Pass issues/PRs flags (default to true for backwards compatibility)
-        fetch_issues: repo.fetchIssues ?? true,
-        fetch_prs: repo.fetchPrs ?? true,
       }, headers);
       
-      if (resp.success) {
+      if (resp && resp.message) {
         setSyncStatus(prev => ({
           ...prev,
           [repo.id]: {
             status: 'success',
-            message: `Synced ${resp.documents_processed} docs${resp.issues_processed ? `, ${resp.issues_processed} issues` : ''}${resp.prs_processed ? `, ${resp.prs_processed} PRs` : ''} in ${(resp.sync_duration_ms / 1000).toFixed(1)}s`
+            message: `Sync started successfully (Job: ${resp.job_id})`
           }
         }));
         
         // Update repository status
         setRepositories(prev => prev.map(r => 
-          r.id === repo.id ? { ...r, status: 'active' as const } : r
+          r.id === repo.id ? { ...r, status: 'syncing' as const } : r
         ));
         
         fetchDataSources();
@@ -254,7 +248,7 @@ export function RepositoriesPageClient() {
           ...prev,
           [repo.id]: {
             status: 'error',
-            message: resp.error_message || 'Sync failed'
+            message: 'Sync failed to start'
           }
         }));
       }

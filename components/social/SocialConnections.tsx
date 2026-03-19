@@ -214,9 +214,15 @@ export function SocialConnections() {
           authorizationParams
         });
 
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+        await authClient.post(`/api/auth/connections/sync`, {}, headers);
+        await fetchConnections();
+        if (refreshConnections) refreshConnections();
+
+        const platformName = PLATFORM_CONFIGS[platform as keyof typeof PLATFORM_CONFIGS]?.name || platform;
         toast({
           title: "Success",
-          description: `${platform} connection initiated. Please complete the authorization in the popup.`,
+          description: `${platformName} connected successfully!`,
         });
 
         return;

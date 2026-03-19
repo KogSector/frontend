@@ -171,10 +171,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
     try {
-      const resp = await apiClient.get<ApiResponse<Array<{ id: string; platform: string; username?: string; is_active: boolean }>>>('/api/auth/connections', { Authorization: `Bearer ${token}` })
-      if (resp?.success) {
-        setConnections(resp.data ?? [])
-      }
+      const resp = await authClient.get<any>('/api/auth/connections', { Authorization: `Bearer ${token}` })
+      const list = unwrapResponse<Array<{ id: string; platform: string; username?: string; is_active: boolean }>>(resp)
+      setConnections(Array.isArray(list) ? list : [])
     } catch (err) {
       console.error('Failed to fetch connections:', err)
     }
