@@ -67,8 +67,8 @@ export default function DocumentsPage() {
       
       // Fetch documents and analytics in parallel
       const [docsResp, analyticsResp] = await Promise.allSettled([
-        dataApiClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/documents', headers),
-        dataApiClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/documents/analytics', headers)
+        dataApiClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/sources/documents', headers),
+        dataApiClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/sources/documents/analytics', headers)
       ]);
 
       // Process documents response
@@ -168,7 +168,7 @@ export default function DocumentsPage() {
   const handleDeleteDocument = async (docId: string) => {
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.delete<{ success: boolean }>(`/api/documents/${docId}`, headers);
+      const resp = await dataApiClient.delete<{ success: boolean }>(`/api/data-sources/documents/${docId}`, headers);
       if ((resp as any)?.success) {
         // Update local state immediately
         setDocuments(prev => prev.filter(d => d.id !== docId));

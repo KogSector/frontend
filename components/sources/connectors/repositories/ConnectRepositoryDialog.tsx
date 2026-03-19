@@ -231,7 +231,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     setIsValidated(false);
 
     try {
-      const response = await fetch('/api/repositories/fetch-branches', {
+      const response = await fetch('/api/sources/repositories/fetch-branches', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -372,7 +372,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
             };
 
             // Fire sync in background - don't block the UI
-            dataApiClient.post('/api/github/sync', syncPayload, headers)
+            dataApiClient.post('/api/sources/repositories/sync', syncPayload, headers)
               .then((syncResp: any) => {
                 if (syncResp && (syncResp.success || syncResp.job_id)) {
                   console.log('[ConnectRepo] Auto-sync completed/started:', syncResp);
@@ -485,7 +485,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                   title="Go to Social Connections"
                   aria-label="Go to Social Connections"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => { router.push('/dashboard/connections'); }}
+                  onClick={() => { router.push('/sources/connections'); }}
                   disabled={checkingConnection}
                 >
                   Go to Social Connections
@@ -570,7 +570,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
                       <Button
                         variant="link"
                         className="text-blue-700 px-0"
-                        onClick={() => { router.push('/dashboard/connections'); }}
+                        onClick={() => { router.push('/connections'); }}
                       >
                         Open Connections
                       </Button>

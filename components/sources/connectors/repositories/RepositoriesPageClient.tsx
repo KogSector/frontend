@@ -132,7 +132,7 @@ export function RepositoriesPageClient() {
     try {
       // Fetch real repository data from the API with auth header
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
+      const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/data-sources/repositories', headers);
       console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
         const uniqueRepos: Repository[] = [];
@@ -196,7 +196,7 @@ export function RepositoriesPageClient() {
       console.log(`Deleting repository ${selectedRepoId}`);
       
       const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
+      const resp = await dataApiClient.delete<ApiResponse>(`/api/data-sources/repositories/${selectedRepoId}`, tokenHeader);
       
       console.log('Delete response:', resp);
       

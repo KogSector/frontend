@@ -88,7 +88,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-6 mt-7">
-                <Link href="/repositories" className="group">
+                <Link href="/sources/repositories" className="group">
                   <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
                     <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl p-6 shadow-2xl border border-blue-400/20 backdrop-blur-sm transition-all duration-300">
@@ -104,7 +104,7 @@ export default function Dashboard() {
                   </div>
                 </Link>
 
-                <Link href="/dashboard/documents" className="group">
+                <Link href="/sources/documents" className="group">
                   <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
                     <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl p-6 shadow-2xl border border-emerald-400/20 backdrop-blur-sm transition-all duration-300">
@@ -120,7 +120,7 @@ export default function Dashboard() {
                   </div>
                 </Link>
 
-                <Link href="/dashboard/urls" className="group">
+                <Link href="/sources/urls" className="group">
                   <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
                     <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl p-6 shadow-2xl border border-orange-400/20 backdrop-blur-sm transition-all duration-300">
@@ -152,7 +152,7 @@ export default function Dashboard() {
                   </div>
                 </Link>
 
-                <Link href="/dashboard/connections" className="group">
+                <Link href="/connections" className="group">
                   <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
                     <div className="relative bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-purple-600 text-white rounded-2xl p-6 shadow-2xl border border-indigo-400/20 backdrop-blur-sm transition-all duration-300">
@@ -323,7 +323,7 @@ export default function Dashboard() {
                   <CardTitle className="text-lg font-semibold text-foreground">
                     Connected Sources
                   </CardTitle>
-                  <Link href="/dashboard/urls">
+                  <Link href="/sources/urls">
                     <Button variant="outline" size="sm">
                       <Plus className="w-4 h-4 mr-2" />
                       Add URL

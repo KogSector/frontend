@@ -17,8 +17,7 @@ import {
   Users,
   GitBranch,
   Target,
-  ArrowRight,
-  ArrowLeft
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 
@@ -112,20 +111,13 @@ export default function Documentation() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with back navigation */}
+      {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href={isAuthenticated ? "/dashboard" : "/"}>
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <BookOpen className="w-5 h-5 text-primary" />
-                <span className="text-lg font-semibold text-foreground">Documentation</span>
-              </div>
+            <div className="flex items-center space-x-3">
+              <BookOpen className="w-5 h-5 text-primary" />
+              <span className="text-lg font-semibold text-foreground">Documentation</span>
             </div>
             <div className="flex items-center gap-4">
               {!isLoading && (
@@ -147,41 +139,17 @@ export default function Documentation() {
         {}
         <section className="py-24 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-6">
-              <Badge variant="secondary" className="w-fit mx-auto">
-                <BookOpen className="w-3 h-3 mr-1" />
-                Documentation
-              </Badge>
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                Complete 
-                <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent"> Documentation</span>
+            <div className="text-center space-y-8">
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg mx-auto">
+                <BookOpen className="w-5 h-5 mr-2 text-white" />
+                <span className="text-white font-bold text-lg">Documentation</span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Complete Documentation</span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Everything you need to master ConFuse, from basic setup to advanced integrations.
               </p>
-              
-              {}
-              <div className="flex justify-center mt-6">
-                <Button 
-                  onClick={handleDashboardClick}
-                  disabled={isLoading}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  {isLoading ? (
-                    "Loading..."
-                  ) : isAuthenticated ? (
-                    <>
-                      Go to Dashboard
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  ) : (
-                    <>
-                      Get Started
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </div>
               
               {}
               <div className="max-w-lg mx-auto mt-8">

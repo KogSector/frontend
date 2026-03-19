@@ -194,11 +194,18 @@ export function SocialConnections() {
         let connectionName = platform;
         let authorizationParams: any = {};
 
+        // Use the original working connection names but fix the Google Drive issue
         if (platform === 'google_drive') {
           connectionName = 'google-oauth2';
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
         } else if (platform === 'onedrive') {
           connectionName = 'windowslive';
+        } else if (platform === 'github') {
+          connectionName = 'github';
+        } else if (platform === 'gitlab') {
+          connectionName = 'gitlab';
+        } else if (platform === 'bitbucket') {
+          connectionName = 'bitbucket';
         }
 
         authorizationParams.connection = connectionName;
@@ -206,7 +213,12 @@ export function SocialConnections() {
         await loginWithPopup({
           authorizationParams
         });
-        await syncPlatform('dummy_popup', platform);
+
+        toast({
+          title: "Success",
+          description: `${platform} connection initiated. Please complete the authorization in the popup.`,
+        });
+
         return;
       }
 
