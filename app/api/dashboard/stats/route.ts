@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
     // Aggregate data from multiple services
     const [reposResponse, docsResponse, urlsResponse, agentsResponse, usersResponse] = await Promise.allSettled([
       dataClient.get('/api/repositories'),
-      dataClient.get('/api/documents'),
-      dataClient.get('/api/urls'),
+      dataClient.get('/api/v1/documents'),
+      dataClient.get('/api/v1/external/urls'),
       dataClient.get('/api/agents'),
       authClient.get('/api/users/stats') // Get user stats from auth service
     ])
@@ -45,18 +45,18 @@ export async function GET(request: NextRequest) {
     const reposData = reposResponse.status === 'fulfilled' && reposResponse.value ?
       (reposResponse.value as any).data?.repositories || [] : []
     const docs = docsResponse.status === 'fulfilled' && docsResponse.value ?
-      (docsResponse.value as APIResponse<{ total: number }>).data || { total: 0 } : { total: 0 }
+      (docsResponse.value as any).data?.data || [] : []
     const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
-      (urlsResponse.value as APIResponse<DashboardStats[]>).data || [] : []
+      (urlsResponse.value as any).data?.data || [] : []
     const agents = agentsResponse.status === 'fulfilled' && agentsResponse.value ?
-      (agentsResponse.value as APIResponse<DashboardStats[]>).data || [] : []
+      (agentsResponse.value as any).data || [] : []
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
-      (usersResponse.value as APIResponse<UserStats>).data : {} as UserStats
+      (usersResponse.value as any).data : {} as UserStats
 
     // Calculate dashboard stats
     const stats = {
       repositories: reposData.length || 0,
-      documents: docs.total || 0,
+      documents: Array.isArray(docs) ? docs.length : (docs.total || 0),
       urls: Array.isArray(urls) ? urls.length : 0,
       agents: Array.isArray(agents) ? agents.length : 0,
       connections: calculateConnections(reposData, urls),

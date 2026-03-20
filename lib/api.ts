@@ -412,7 +412,7 @@ export async function createSource(data: unknown): Promise<ApiResponse> {
 
 // -- Repositories --
 export async function getRepositories(): Promise<ApiResponse> {
-  return dataClient.get('/api/v1/sources');
+  return dataClient.get('/api/repositories');
 }
 export async function createRepository(data: unknown): Promise<ApiResponse> {
   return dataClient.post('/api/repositories', data);
