@@ -56,10 +56,13 @@ export function SocialConnections() {
   const { toast } = useToast();
   const { token, refreshConnections, loginWithPopup } = useAuth();
 
-  const fetchConnections = useCallback(async (options?: { initial?: boolean }) => {
+  const fetchConnections = useCallback(async (options?: { initial?: boolean; overrideToken?: string }) => {
+    // Use the override token if provided (avoids stale closure after loginWithPopup)
+    const effectiveToken = options?.overrideToken || token;
+
     // Do not hit the services until we have an Auth0 access token;
     // otherwise we get an automatic 401 and show a spurious error toast.
-    if (!token) {
+    if (!effectiveToken) {
       setLoading(false);
       return;
     }
@@ -71,7 +74,7 @@ export function SocialConnections() {
     }
 
     try {
-      const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+      const headers: Record<string, string> = { Authorization: `Bearer ${effectiveToken}` };
 
       const authResp = await authClient.get('/api/auth/connections', headers);
 
@@ -82,7 +85,8 @@ export function SocialConnections() {
 
       const merged = Array.from(connectionMap.values());
       console.log('[SocialConnections] fetched connections', {
-        tokenPresent: !!token,
+        tokenPresent: !!effectiveToken,
+        tokenSource: options?.overrideToken ? 'override' : 'closure',
         authData,
         merged,
       });
@@ -146,7 +150,7 @@ export function SocialConnections() {
             description: `${data.provider} connected successfully!`,
           })
           // Refresh connections in-place (no skeleton) and update global state
-          fetchConnections()
+          fetchConnections({ overrideToken: effectiveToken })
           if (refreshConnections) refreshConnections()
         } catch (error: any) {
           console.error('OAuth exchange error:', error)
@@ -214,9 +218,19 @@ export function SocialConnections() {
           authorizationParams
         });
 
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        await authClient.post(`/api/auth/connections/sync`, {}, headers);
-        await fetchConnections();
+        console.log('[connectPlatform] loginWithPopup completed, syncing connections...');
+        // After loginWithPopup the Auth0 SDK may have refreshed the token, but
+        // the `token` captured in this closure hasn't updated yet (React state is async).
+        // Use the current closure token for the sync call (it was valid pre-popup),
+        // then pass it explicitly to fetchConnections to avoid the stale-closure early return.
+        const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
+        const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
+        const syncResp = await authClient.post(`/api/auth/connections/sync`, {}, headers);
+        console.log('[connectPlatform] sync response:', JSON.stringify(syncResp));
+
+        console.log('[connectPlatform] fetching connections after sync...');
+        await fetchConnections({ overrideToken: effectiveToken });
+
         if (refreshConnections) refreshConnections();
 
         const platformName = PLATFORM_CONFIGS[platform as keyof typeof PLATFORM_CONFIGS]?.name || platform;
