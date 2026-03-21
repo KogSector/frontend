@@ -322,8 +322,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(session.token);
           updateLastActivity();
           if (!user) {
-            fetchUserProfile(session.token).finally(() => setIsSyncing(false));
+            fetchUserProfile(session.token)
+              .then(() => refreshConnections())
+              .finally(() => setIsSyncing(false));
           } else {
+            refreshConnections();
             setIsSyncing(false);
           }
         } else {
@@ -372,7 +375,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     handleAuth0Callback, 
     verifyToken, 
     updateLastActivity, 
-    checkAuthBypass
+    checkAuthBypass,
+    refreshConnections
   ])
 
   // Update activity on user interaction

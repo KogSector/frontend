@@ -78,8 +78,8 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     try {
       const formData = new FormData();
       selectedFiles.forEach((file) => formData.append("files", file));
-      const result = await dataApiClient.postForm<{ success: boolean; message?: string }>("/api/documents/upload", formData);
-      if ((result as any).success) {
+      const result = await dataApiClient.postForm<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>("/api/v1/documents/upload", formData);
+      if ((result as any).source_id || (result as any).files_processed > 0) {
         setConnectionStatus({ status: "success", message: `Successfully uploaded ${selectedFiles.length} file(s)` });
         toast({ title: "Success", description: `Uploaded ${selectedFiles.length} file(s) successfully` });
         setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);

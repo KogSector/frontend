@@ -232,7 +232,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
 
     try {
       let fetchCredentials = { ...credentials };
-      if (!isBasicAuth(provider) && isProviderConnected(provider)) {
+      if (isProviderConnected(provider)) {
         const fetchHeaders: Record<string, string> = {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         };
@@ -275,10 +275,12 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         return;
       }
 
-      const fetchedBranches = result.branches || [];
-      const default_branch = result.defaultBranch;
-      const inferredExtensions = result.file_extensions && result.file_extensions.length > 0
-        ? result.file_extensions.map((ext: string) => ext.startsWith('.') ? ext : `.${ext}`)
+      const responseData = result.data || result;
+      const fetchedBranches = responseData.branches || result.branches || [];
+      const default_branch = responseData.default_branch || responseData.defaultBranch || result.defaultBranch;
+      const rawExtensions = responseData.file_extensions || result.file_extensions || [];
+      const inferredExtensions = rawExtensions.length > 0
+        ? rawExtensions.map((ext: string) => ext.startsWith('.') ? ext : `.${ext}`)
         : DEFAULT_FILE_EXTENSIONS;
 
       const repoName = extractRepoName(repositoryUrl.trim())
