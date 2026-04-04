@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: confuse
+  labels:
+    app: frontend
+    service: web
+    version: v1.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        service: web
+        version: v1.0.0
+    spec:
+      containers:
+      - name: frontend
+        image: confuseimgr.azurecr.io/frontend:v1.0.0
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        # Service URLs (internal K8s communication)
+        - name: NEXT_PUBLIC_AUTH_URL
+          value: "http://auth-middleware:3010"
+        - name: NEXT_PUBLIC_DATA_CONNECTOR_URL
+          value: "http://data-connector:8081"
+        - name: NEXT_PUBLIC_UNIFIED_PROCESSOR_URL
+          value: "http://unified-processor:8090"
+        - name: NEXT_PUBLIC_RELATION_GRAPH_URL
+          value: "http://relation-graph:3002"
+        - name: NEXT_PUBLIC_MCP_URL
+          value: "http://client-connector:8095"
+        - name: NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL
+          value: "http://embeddings-service:3001"
+        - name: NEXT_PUBLIC_FEATURE_TOGGLE_URL
+          value: "http://feature-context-toggle:3099"
+        
+        # Auth0 Public Configuration
+        - name: NEXT_PUBLIC_AUTH0_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: NEXT_PUBLIC_AUTH0_DOMAIN
+        - name: NEXT_PUBLIC_AUTH0_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: NEXT_PUBLIC_AUTH0_ISSUER
+        - name: NEXT_PUBLIC_AUTH0_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: NEXT_PUBLIC_AUTH0_AUDIENCE
+        
+        # Application Configuration
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: PORT
+        
+        # Build Configuration
+        - name: NEXT_PUBLIC_API_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: NEXT_PUBLIC_API_BASE_URL
+        
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /api/ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      
+      imagePullSecrets:
+      - name: acr-secret
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
