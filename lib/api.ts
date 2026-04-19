@@ -307,13 +307,13 @@ export const apiClient = dataClient;
 
 // -- URLs --
 export async function createUrl(data: { url: string; title?: string; description?: string; tags?: string[] }): Promise<ApiResponse> {
-  return dataClient.post('/api/urls', data);
+  return dataClient.post('/api/v1/external/urls', data);
 }
 export async function getUrls(): Promise<ApiResponse> {
-  return dataClient.get('/api/urls');
+  return dataClient.get('/api/v1/external/urls');
 }
 export async function deleteUrl(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/urls/${id}`);
+  return dataClient.delete(`/api/v1/external/urls/${id}`);
 }
 
 // -- Documents --
