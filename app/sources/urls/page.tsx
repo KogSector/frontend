@@ -9,7 +9,7 @@ import { BulkUrlImport } from "@/components/ui/BulkUrlImport";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/ui/footer";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient, ApiResponse } from "@/lib/api";
+import { getUrls, deleteUrl, ApiResponse } from "@/lib/api";
 import { UrlRecord } from "@/hooks/use-urls";
 import Link from "next/link";
 import { 
@@ -32,7 +32,7 @@ export default function UrlsPage() {
 
   const fetchUrls = async () => {
     try {
-      const result = await apiClient.getUrls() as ApiResponse<UrlRecord[]>;
+      const result = await getUrls() as ApiResponse<UrlRecord[]>;
       if (result.success) {
         setUrls(result.data || []);
       }
@@ -47,9 +47,9 @@ export default function UrlsPage() {
     }
   };
 
-  const deleteUrl = async (id: string) => {
+  const deleteUrlAction = async (id: string) => {
     try {
-      const result = await apiClient.deleteUrl(id);
+      const result = await deleteUrl(id);
       if (result.success) {
         setUrls(prev => prev.filter(url => url.id !== id));
         toast({
@@ -235,7 +235,7 @@ export default function UrlsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteUrl(url.id)}
+                      onClick={() => deleteUrlAction(url.id)}
                       className="text-red-500 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
