@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { X, Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api";
+import { createUrl } from "@/lib/api";
 
 interface AddUrlModalProps {
   open: boolean;
@@ -83,7 +83,7 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps
 
     setIsLoading(true);
     try {
-      const result = await apiClient.createUrl({
+      const result = await createUrl({
         url: formData.url,
         title: formData.title || undefined,
         description: formData.description || undefined,
