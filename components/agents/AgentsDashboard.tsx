@@ -22,11 +22,22 @@ export function AgentsDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initial dummy data to show some state
-    setAgents([
-      { id: "1", name: "GitHub Copilot", provider: "GitHub", status: "connected", category: "extension", lastSync: "10 mins ago" },
-      { id: "2", name: "Custom GPT", provider: "OpenAI", status: "connected", category: "webapp", lastSync: "1 hour ago" },
-    ]);
+    // Load from local storage or use default dummy data for initial view
+    const stored = localStorage.getItem('confuse_agents');
+    if (stored) {
+      try {
+        setAgents(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse agents", e);
+      }
+    } else {
+      const defaultAgents: ConnectedAgent[] = [
+        { id: "1", name: "GitHub Copilot", provider: "GitHub", status: "connected", category: "extension", lastSync: "10 mins ago" },
+        { id: "2", name: "Custom GPT", provider: "OpenAI", status: "connected", category: "webapp", lastSync: "1 hour ago" },
+      ];
+      setAgents(defaultAgents);
+      localStorage.setItem('confuse_agents', JSON.stringify(defaultAgents));
+    }
   }, []);
 
   const handleAgentAdded = (agent: any) => {
@@ -38,11 +49,19 @@ export function AgentsDashboard() {
       category: agent.category,
       lastSync: "Just now",
     };
-    setAgents((prev) => [newAgent, ...prev]);
+    setAgents((prev) => {
+      const nextAgents = [newAgent, ...prev];
+      localStorage.setItem('confuse_agents', JSON.stringify(nextAgents));
+      return nextAgents;
+    });
   };
 
   const removeAgent = (id: string) => {
-    setAgents(agents.filter(a => a.id !== id));
+    setAgents((prev) => {
+      const nextAgents = prev.filter(a => a.id !== id);
+      localStorage.setItem('confuse_agents', JSON.stringify(nextAgents));
+      return nextAgents;
+    });
     toast({
       title: "Agent Removed",
       description: "The agent connection has been deleted.",

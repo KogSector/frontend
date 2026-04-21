@@ -55,9 +55,9 @@ export function MarketplaceModal({ open, onOpenChange, onAgentSelected }: Market
     // Snippet logic based on agent type
     let snippet = "";
     if (selectedAgent.category === 'ide') {
-      snippet = `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "npx",\n      "args": ["-y", "@confuse/mcp-server"]\n    }\n  }\n}`;
+      snippet = `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "python",\n      "args": ["-m", "app.mcp_main"],\n      "env": {\n        "PYTHONPATH": "c:/Users/risha/Desktop/Work/client-connector"\n      }\n    }\n  }\n}`;
     } else {
-      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the endpoint to: https://api.confuse.com/v1/mcp`;
+      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the MCP SSE endpoint to: http://localhost:8080/sse`;
     }
 
     navigator.clipboard.writeText(snippet);
@@ -107,8 +107,8 @@ export function MarketplaceModal({ open, onOpenChange, onAgentSelected }: Market
              </p>
              <div className="bg-muted w-full max-w-md p-4 rounded-xl border font-mono text-sm overflow-x-auto whitespace-pre">
                {selectedAgent.category === 'ide' 
-                 ? `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "npx",\n      "args": ["-y", "@confuse/mcp-server"]\n    }\n  }\n}`
-                 : `// MCP Connection instruction\nEndpoint: https://api.confuse.com/v1/mcp`
+                 ? `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "python",\n      "args": ["-m", "app.mcp_main"],\n      "env": {\n        "PYTHONPATH": "c:/Users/risha/Desktop/Work/client-connector"\n      }\n    }\n  }\n}`
+                 : `// MCP Connection instruction\nEndpoint: http://localhost:8080/sse`
                }
              </div>
              <div className="flex gap-4 mt-8">
