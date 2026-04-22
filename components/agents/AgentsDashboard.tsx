@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MarketPlaceAgent, MarketplaceModal } from "./MarketplaceModal";
+import { MarketplaceAgent, MarketplaceModal } from "./MarketplaceModal";
 import { Bot, Plus, Settings, RefreshCw, Trash2, Activity, Play, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
