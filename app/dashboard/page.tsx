@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/ui/footer";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { apiClient } from "@/lib/api";
+import { apiClient, getSources, getAgents } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import {
   Bot,
@@ -16,14 +17,30 @@ import {
   Activity,
   Network,
   Shield,
-  GitBranch,
-  FileText,
-  Link as LinkIcon,
-  Globe,
-  BookOpen,
   Users,
-  MessageSquare
+  MessageSquare,
+  Globe2,
+  Trash2
 } from "lucide-react";
+
+interface SourceItem {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  uri?: string;
+  metadata?: any;
+}
+
+interface AgentItem {
+  id: string;
+  name: string;
+  provider: string;
+  status: string;
+  usage_stats?: {
+    total_requests: number;
+  };
+}
 
 interface DashboardStats {
   repositories: number;
@@ -46,23 +63,39 @@ export default function Dashboard() {
     security_score: 98,
   });
   const [loading, setLoading] = useState(true);
+  const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
+  const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/dashboard/stats');
-        if (response.ok) {
-          const data = await response.json();
+        // Fetch stats using our frontend API route
+        const statsResp = await fetch('/api/dashboard/stats');
+        if (statsResp.ok) {
+          const data = await statsResp.json();
           setStats(data);
         }
+
+        // Fetch recent sources
+        const sourcesResp = await getSources();
+        if (sourcesResp.success && sourcesResp.data) {
+          const sources = (sourcesResp.data as any).sources || [];
+          setRecentSources(sources.slice(0, 4));
+        }
+
+        // Fetch recent agents
+        const agentsResp = await getAgents();
+        if (agentsResp.success && agentsResp.data) {
+          setRecentAgents(agentsResp.data.slice(0, 4));
+        }
       } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
-        // Keep default values on error
+        console.error('Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
   return (
     <AuthGuard>
@@ -77,6 +110,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <ProfileAvatar />
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -221,7 +255,21 @@ export default function Dashboard() {
             { }
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Total Connections
+                    </CardTitle>
+                    <Activity className="w-4 h-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-foreground">{loading ? '...' : stats.connections}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Sources + Agents
+                    </p>
+                  </CardContent>
+                </Card>
                 <Card className="bg-card border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -332,39 +380,82 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                { }
-                {[
-                  { name: "frontend-app", type: "repository", status: "active", private: false, icon: GitBranch },
-                  { name: "API Documentation", type: "document", status: "active", private: false, icon: FileText },
-                  { name: "Confluence Wiki", type: "url", status: "syncing", private: true, icon: LinkIcon },
-                  { name: "user-service", type: "repository", status: "active", private: true, icon: GitBranch },
-                ].map((source, index) => {
-                  const IconComponent = source.icon;
-                  return (
-                    <div key={index} className="flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <IconComponent className="w-5 h-5 text-primary" />
-                          <span className="font-medium text-foreground">{source.name}</span>
+                {loading ? (
+                  <div className="flex justify-center p-4">
+                    <Activity className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : recentSources.length > 0 ? (
+                  recentSources.map((source, index) => {
+                    const getIcon = (type: string) => {
+                      switch (type.toLowerCase()) {
+                        case 'github':
+                        case 'gitlab':
+                        case 'bitbucket':
+                        case 'repository':
+                          return GitBranch;
+                        case 'url':
+                        case 'web':
+                          return Globe2;
+                        case 'document':
+                        case 'upload':
+                          return FileText;
+                        default:
+                          return LinkIcon;
+                      }
+                    };
+                    const IconComponent = getIcon(source.type);
+                    return (
+                        <div key={source.id || index} className="group/item flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2 hover:border-primary/50 transition-colors relative">
+                        <div className="flex items-center justify-between">
+                          <Link href={source.type === 'url' ? '/sources/urls' : '/sources/repositories'} className="flex items-center space-x-3 flex-1 min-w-0">
+                            <IconComponent className="w-5 h-5 text-primary flex-shrink-0" />
+                            <span className="font-medium text-foreground truncate max-w-[150px]">
+                              {source.name || source.uri || 'Untitled'}
+                            </span>
+                          </Link>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className="text-xs capitalize">{source.type}</Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (confirm('Are you sure you want to delete this source?')) {
+                                  try {
+                                    if (source.type === 'url') {
+                                      await fetch(`${process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8081'}/api/v1/external/urls/${source.id}`, { method: 'DELETE' });
+                                    } else {
+                                      await fetch(`${process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8081'}/api/repositories/${source.id}`, { method: 'DELETE' });
+                                    }
+                                    setRecentSources(prev => prev.filter(s => s.id !== source.id));
+                                    toast({ title: "Source Deleted", description: "The source has been removed." });
+                                  } catch (error) {
+                                    toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete source." });
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {source.private && <Badge variant="secondary" className="text-xs">Private</Badge>}
-                          <Badge variant="outline" className="text-xs capitalize">{source.type}</Badge>
+                          <div className={`w-2 h-2 rounded-full ${source.status === 'active' || source.status === 'syncing' || source.status === 'pending' ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-gray-400'
+                            }`}></div>
+                          <div className="text-sm text-muted-foreground">
+                            Status: {source.status}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${source.status === 'active' || source.status === 'syncing' ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-gray-400'
-                          }`}></div>
-                        <div className="text-sm text-muted-foreground">
-                          Status: {source.status}
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="ml-auto">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    No sources connected yet.
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -382,30 +473,56 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                { }
-                {[
-                  { name: "GitHub Copilot", status: "connected", requests: "1,247" },
-                  { name: "Amazon Q", status: "connected", requests: "892" },
-                  { name: "Cline", status: "connected", requests: "634" },
-                  { name: "Custom Agent", status: "pending", requests: "0" },
-                ].map((agent, index) => (
-                  <div key={index} className="flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Bot className="w-5 h-5 text-accent" />
-                        <span className="font-medium text-foreground">{agent.name}</span>
-                      </div>
-                      <div className={`w-2 h-2 rounded-full ${agent.status === 'connected' ? 'bg-blue-500 shadow-lg shadow-blue-500/50' : 'bg-gray-400'
-                        }`}></div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {agent.requests} requests today
-                    </div>
-                    <Button variant="ghost" size="sm" className="ml-auto">
-                      <Settings className="w-4 h-4" />
-                    </Button>
+                {loading ? (
+                  <div className="flex justify-center p-4">
+                    <Activity className="w-6 h-6 animate-spin text-accent" />
                   </div>
-                ))}
+                ) : recentAgents.length > 0 ? (
+                  recentAgents.map((agent, index) => (
+                    <div key={agent.id || index} className="group/item flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2 hover:border-accent/50 transition-colors relative">
+                      <div className="flex items-center justify-between">
+                        <Link href="/agents" className="flex items-center space-x-3 flex-1 min-w-0">
+                          <Bot className="w-5 h-5 text-accent flex-shrink-0" />
+                          <span className="font-medium text-foreground truncate">{agent.name}</span>
+                        </Link>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${agent.status === 'Connected' || agent.status === 'active' ? 'bg-blue-500 shadow-lg shadow-blue-500/50' : 'bg-gray-400'
+                            }`}></div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (confirm('Are you sure you want to delete this agent?')) {
+                                try {
+                                  await fetch(`${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:8095'}/api/agents/${agent.id}`, { method: 'DELETE' });
+                                  setRecentAgents(prev => prev.filter(a => a.id !== agent.id));
+                                  toast({ title: "Agent Deleted", description: "The agent has been removed." });
+                                } catch (error) {
+                                  toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete agent." });
+                                }
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground capitalize">
+                        Provider: {agent.provider}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {agent.usage_stats?.total_requests || 0} requests today
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    No agents connected.
+                  </div>
+                )}
               </CardContent>
             </Card>
 

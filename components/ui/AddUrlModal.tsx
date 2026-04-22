@@ -16,15 +16,17 @@ import {
 } from "@/components/ui/dialog";
 import { X, Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createUrl } from "@/lib/api";
+import { createUrl, updateUrl } from "@/lib/api";
+import { UrlRecord } from "@/hooks/use-urls";
 
 interface AddUrlModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUrlAdded?: () => void;
+  url?: UrlRecord | null;
 }
 
-export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps) {
+export function AddUrlModal({ open, onOpenChange, onUrlAdded, url }: AddUrlModalProps) {
   const [formData, setFormData] = useState({
     url: "",
     title: "",
@@ -35,6 +37,31 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+
+  useState(() => {
+    if (url) {
+      setFormData({
+        url: url.url,
+        title: url.title,
+        description: url.description || "",
+        tags: url.tags || [],
+      });
+    }
+  });
+
+  // Update form data when url prop changes
+  useEffect(() => {
+    if (url) {
+      setFormData({
+        url: url.url,
+        title: url.title,
+        description: url.description || "",
+        tags: url.tags || [],
+      });
+    } else if (open) {
+      resetForm();
+    }
+  }, [url, open]);
 
   const validateUrl = (url: string): boolean => {
     try {
@@ -83,19 +110,28 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps
 
     setIsLoading(true);
     try {
-      const result = await createUrl({
-        url: formData.url,
-        title: formData.title || undefined,
-        description: formData.description || undefined,
-        tags: formData.tags.length > 0 ? formData.tags : undefined,
-      });
-
-      console.log('API Response:', result);
+      let result;
+      if (url) {
+        // Update existing URL
+        result = await updateUrl(url.id, {
+          title: formData.title || undefined,
+          description: formData.description || undefined,
+          tags: formData.tags.length > 0 ? formData.tags : undefined,
+        });
+      } else {
+        // Create new URL
+        result = await createUrl({
+          url: formData.url,
+          title: formData.title || undefined,
+          description: formData.description || undefined,
+          tags: formData.tags.length > 0 ? formData.tags : undefined,
+        });
+      }
 
       if (result.success) {
         toast({
           title: "Success",
-          description: "URL added successfully!",
+          description: url ? "URL updated successfully!" : "URL added successfully!",
         });
         resetForm();
         onOpenChange(false);
@@ -139,9 +175,9 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add URL</DialogTitle>
+          <DialogTitle>{url ? "Configure URL" : "Add URL"}</DialogTitle>
           <DialogDescription>
-            Add a new URL to your knowledge base for AI agents to reference.
+            {url ? `Update configuration for ${url.title}` : "Add a new URL to your knowledge base for AI agents to reference."}
           </DialogDescription>
         </DialogHeader>
         
@@ -235,10 +271,10 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded }: AddUrlModalProps
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding...
+                  {url ? "Updating..." : "Adding..."}
                 </>
               ) : (
-                "Add URL"
+                url ? "Save Changes" : "Add URL"
               )}
             </Button>
           </DialogFooter>

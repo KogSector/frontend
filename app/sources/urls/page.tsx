@@ -20,12 +20,14 @@ import {
   ArrowLeft,
   Calendar,
   Tag,
-  Upload
+  Upload,
+  Settings
 } from "lucide-react";
 
 export default function UrlsPage() {
   const [urls, setUrls] = useState<UrlRecord[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUrl, setSelectedUrl] = useState<UrlRecord | null>(null);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -149,7 +151,10 @@ export default function UrlsPage() {
               <Upload className="w-4 h-4 mr-2" />
               Bulk Import
             </Button>
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => {
+              setSelectedUrl(null);
+              setIsModalOpen(true);
+            }}>
               <Plus className="w-4 h-4 mr-2" />
               Add URL
             </Button>
@@ -232,14 +237,27 @@ export default function UrlsPage() {
                       </div>
                     </div>
                     
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteUrlAction(url.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUrl(url);
+                          setIsModalOpen(true);
+                        }}
+                        className="text-muted-foreground hover:text-primary"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteUrlAction(url.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -252,6 +270,7 @@ export default function UrlsPage() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onUrlAdded={fetchUrls}
+        url={selectedUrl}
       />
       
       <BulkUrlImport

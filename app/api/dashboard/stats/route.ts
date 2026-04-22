@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { dataClient, authClient } from '@/lib/api'
+import { dataClient, authClient, clientConnectorClient } from '@/lib/api'
 
 // Type definitions for API responses
 interface APIResponse<T = any> {
@@ -37,21 +37,32 @@ export async function GET(request: NextRequest) {
       dataClient.get('/api/repositories'),
       dataClient.get('/api/v1/documents'),
       dataClient.get('/api/v1/external/urls'),
-      dataClient.get('/api/agents'),
+      clientConnectorClient.get('/api/agents'),
       authClient.get('/api/users/stats') // Get user stats from auth service
     ])
 
     // Extract data safely with proper typing
     const reposData = reposResponse.status === 'fulfilled' && reposResponse.value ?
-      (reposResponse.value as any).data?.repositories || [] : []
+      (reposResponse.value as any).data?.repositories || (reposResponse.value as any).repositories || [] : []
     const docs = docsResponse.status === 'fulfilled' && docsResponse.value ?
-      (docsResponse.value as any).data?.data || [] : []
+      (docsResponse.value as any).data?.data || (docsResponse.value as any).data || [] : []
     const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
-      (urlsResponse.value as any).data?.data || [] : []
+      (urlsResponse.value as any).data || [] : []
     const agents = agentsResponse.status === 'fulfilled' && agentsResponse.value ?
       (agentsResponse.value as any).data || [] : []
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
       (usersResponse.value as any).data : {} as UserStats
+
+    console.log('Dashboard Stats Fetch Results:', {
+      repos: Array.isArray(reposData) ? reposData.length : 'error',
+      docs: Array.isArray(docs) ? docs.length : (docs.total || 0),
+      urls: Array.isArray(urls) ? urls.length : 0,
+      agents: Array.isArray(agents) ? agents.length : 0,
+      reposStatus: reposResponse.status,
+      docsStatus: docsResponse.status,
+      urlsStatus: urlsResponse.status,
+      agentsStatus: agentsResponse.status,
+    });
 
     // Calculate dashboard stats
     const stats = {
@@ -59,7 +70,7 @@ export async function GET(request: NextRequest) {
       documents: Array.isArray(docs) ? docs.length : (docs.total || 0),
       urls: Array.isArray(urls) ? urls.length : 0,
       agents: Array.isArray(agents) ? agents.length : 0,
-      connections: calculateConnections(reposData, urls),
+      connections: calculateConnections(reposData, urls, agents),
       context_requests: userStatsData?.context_requests || 1247, // Fallback value
       security_score: userStatsData?.security_score || 98, // Fallback value
       total_users: userStatsData?.total_users || 0,
@@ -98,9 +109,19 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateConnections(repos: any[], urls: any[]): number {
-  // Calculate active connections based on repositories and URLs
-  const repoConnections = Array.isArray(repos) ? repos.filter(r => r.status === 'connected').length : 0
-  const urlConnections = Array.isArray(urls) ? urls.filter(u => u.status === 'active').length : 0
-  return repoConnections + urlConnections
+function calculateConnections(repos: any[], urls: any[], agents: any[]): number {
+  // Calculate active connections based on repositories, URLs, and agents
+  const repoConnections = Array.isArray(repos) ? repos.filter(r => 
+    ['connected', 'cloned', 'active', 'syncing'].includes(r.status?.toLowerCase())
+  ).length : 0
+  
+  const urlConnections = Array.isArray(urls) ? urls.filter(u => 
+    ['active', 'syncing', 'connected'].includes(u.status?.toLowerCase())
+  ).length : 0
+  
+  const agentConnections = Array.isArray(agents) ? agents.filter(a => 
+    ['connected', 'active'].includes(a.status?.toLowerCase())
+  ).length : 0
+  
+  return repoConnections + urlConnections + agentConnections
 }

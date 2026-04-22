@@ -28,6 +28,7 @@ export interface AgentRecord {
   id: string;
   user_id: string;
   name: string;
+  provider?: string;
   agent_type: string;
   endpoint?: string;
   api_key: string;
@@ -57,6 +58,7 @@ export interface AgentUsageStats {
 
 export interface CreateAgentRequest {
   name: string;
+  provider?: string;
   agent_type: string;
   endpoint?: string;
   api_key: string;
@@ -294,6 +296,7 @@ export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'e
 
 /** Feature toggle service */
 export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 
 /**
  * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
@@ -333,28 +336,28 @@ export async function getDocumentAnalytics(): Promise<ApiResponse> {
 
 // -- Agents --
 export async function getAgents(): Promise<ApiResponse<AgentRecord[]>> {
-  return dataClient.get('/api/agents');
+  return clientConnectorClient.get('/api/agents');
 }
 export async function getAgent(id: string): Promise<ApiResponse<AgentRecord>> {
-  return dataClient.get(`/api/agents/${id}`);
+  return clientConnectorClient.get(`/api/agents/${id}`);
 }
 export async function createAgent(data: CreateAgentRequest): Promise<ApiResponse<AgentRecord>> {
-  return dataClient.post('/api/agents', data);
+  return clientConnectorClient.post('/api/agents', data);
 }
 export async function updateAgent(id: string, data: UpdateAgentRequest): Promise<ApiResponse<AgentRecord>> {
-  return dataClient.put(`/api/agents/${id}`, data);
+  return clientConnectorClient.put(`/api/agents/${id}`, data);
 }
 export async function deleteAgent(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/agents/${id}`);
+  return clientConnectorClient.delete(`/api/agents/${id}`);
 }
 export async function getAgentContext(id: string): Promise<ApiResponse> {
-  return dataClient.get(`/api/agents/${id}/context`);
+  return clientConnectorClient.get(`/api/agents/${id}/context`);
 }
 export async function invokeAgent(id: string, data: AgentInvokeRequest): Promise<ApiResponse<AgentInvokeResponse>> {
-  return dataClient.post(`/api/agents/${id}/invoke`, data);
+  return clientConnectorClient.post(`/api/agents/${id}/invoke`, data);
 }
 export async function testAgent(id: string): Promise<ApiResponse<{ connected: boolean }>> {
-  return dataClient.post(`/api/agents/${id}/test`, {});
+  return clientConnectorClient.post(`/api/agents/${id}/test`, {});
 }
 
 // -- Dashboard --
