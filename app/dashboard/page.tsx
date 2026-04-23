@@ -20,7 +20,12 @@ import {
   Users,
   MessageSquare,
   Globe2,
-  Trash2
+  Trash2,
+  GitBranch,
+  FileText,
+  Link as LinkIcon,
+  BookOpen,
+  Globe
 } from "lucide-react";
 
 interface SourceItem {
@@ -100,7 +105,6 @@ export default function Dashboard() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
-        { }
         <div className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-20">
@@ -111,14 +115,11 @@ export default function Dashboard() {
                 <ProfileAvatar />
               </div>
             </div>
-            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          { }
           <div className="grid lg:grid-cols-2 gap-12 mb-8">
-            { }
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-6 mt-7">
@@ -132,8 +133,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Connect Repository</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -148,8 +148,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Add Documents</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -164,8 +163,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Add URLs</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -180,8 +178,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Connect Chats</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -196,8 +193,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Connections</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -212,8 +208,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Manage AI Agents</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -228,8 +223,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">Agent Rules</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
@@ -244,16 +238,14 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-center leading-tight">View Documentation</span>
                       </div>
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full"></div>
-                      <div className="absolute bottom-2 left-2 w-1 h-1 bg-white/20 rounded-full"></div>
+
                     </div>
                   </div>
                 </Link>
               </div>
             </div>
 
-            { }
-            <div>
+                <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
@@ -364,8 +356,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            { }
-            <Card className="bg-card border-border">
+                <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-lg font-semibold text-foreground">
@@ -459,8 +450,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            { }
-            <Card className="bg-card border-border">
+                <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-lg font-semibold text-foreground">
@@ -526,8 +516,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            { }
-            <Card className="bg-card border-border">
+                <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-foreground">
                   Recent Activity
