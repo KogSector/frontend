@@ -248,20 +248,6 @@ export default function Dashboard() {
                 <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Connections
-                    </CardTitle>
-                    <Activity className="w-4 h-4 text-green-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-foreground">{loading ? '...' : stats.connections}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Sources + Agents
-                    </p>
-                  </CardContent>
-                </Card>
                 <Card className="bg-card border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
