@@ -65,37 +65,76 @@ export default function DocumentsPage() {
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       
-      // Fetch documents and analytics in parallel
-      const [docsResp, analyticsResp] = await Promise.allSettled([
+      // Fetch documents, analytics and sources in parallel
+      const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
         dataApiClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
-        dataApiClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers)
+        dataApiClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
+        dataApiClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
       ]);
+
+      // Process sources response
+      const realSourcesMap = new Map<string, any>();
+      if (sourcesResp.status === 'fulfilled' && (sourcesResp.value as any)?.sources) {
+        (sourcesResp.value as any).sources.forEach((s: any) => {
+          realSourcesMap.set(s.id, s);
+        });
+      }
 
       // Process documents response
       if (docsResp.status === 'fulfilled' && (docsResp.value as any)?.success) {
-        // The API returns { success: true, data: { data: DocumentRecord[], total: number } }
         const respData = (docsResp.value as any).data;
         const docsData = Array.isArray(respData?.data) ? respData.data : (Array.isArray(respData) ? respData : []);
         setDocuments(docsData);
         
-        // Build sources from documents grouped by source type
+        // Build sources from real sources first, then add derived ones for demo docs
         const sourceMap = new Map<string, DocumentSource>();
-        docsData.forEach((doc: DocumentRecord) => {
-          const sourceType = doc.source as DocumentSource['type'];
-          if (!sourceMap.has(sourceType)) {
-            sourceMap.set(sourceType, {
-              id: sourceType,
-              name: getTypeName(sourceType),
-              type: sourceType,
-              status: 'connected',
+        
+        // Add real document sources
+        realSourcesMap.forEach((s) => {
+          // Only show document-related sources here (upload, gdrive, etc)
+          const docTypes = ['upload', 'google_drive', 'gdrive', 'dropbox', 'onedrive', 'notion', 'confluence'];
+          if (docTypes.includes(s.type)) {
+            sourceMap.set(s.id, {
+              id: s.id,
+              name: s.name,
+              type: s.type as any,
+              status: s.status as any,
               documentCount: 0,
               lastSync: 'Just now',
               size: '0 B'
             });
           }
-          const source = sourceMap.get(sourceType)!;
-          source.documentCount += 1;
         });
+
+        // Add document counts and handle derived sources
+        docsData.forEach((doc: DocumentRecord) => {
+          // Try to find if this doc belongs to a real source (by name match for demo, or id if we had it)
+          let sourceFound = false;
+          sourceMap.forEach((s) => {
+            if (s.type === doc.source) {
+              s.documentCount += 1;
+              sourceFound = true;
+            }
+          });
+
+          if (!sourceFound) {
+            const sourceType = doc.source as DocumentSource['type'];
+            if (!sourceMap.has(sourceType)) {
+              sourceMap.set(sourceType, {
+                id: sourceType,
+                name: getTypeName(sourceType),
+                type: sourceType,
+                status: 'connected',
+                documentCount: 0,
+                lastSync: 'Just now',
+                size: '0 B'
+              });
+            }
+            const source = sourceMap.get(sourceType)!;
+            source.documentCount += 1;
+          }
+        });
+
         setSources(Array.from(sourceMap.values()));
       }
 
@@ -356,8 +395,8 @@ export default function DocumentsPage() {
           </div>
         </div>
 
-        {/* Sources List */}
-        <div className="space-y-4">
+        {/* Document Sources */}
+        <div className="space-y-4 mb-12">
           {sources.length === 0 ? (
             <Card className="bg-muted/50 border-dashed border-muted-foreground/25">
               <CardContent className="flex flex-col items-center justify-center py-12">
@@ -425,6 +464,80 @@ export default function DocumentsPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Individual Documents List */}
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Individual Documents</h2>
+              <p className="text-sm text-muted-foreground">Manage and view details for each indexed document</p>
+            </div>
+          </div>
+
+          <Card className="bg-card border-border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Name</th>
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Source</th>
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Type</th>
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Size</th>
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Status</th>
+                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                        No individual documents found.
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc) => (
+                      <tr key={doc.id} className="hover:bg-accent/5 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-4 h-4 text-primary" />
+                            <span className="font-medium text-foreground">{doc.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant="secondary" className="capitalize">
+                            {getTypeName(doc.source)}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground uppercase">
+                          {doc.doc_type}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">
+                          {doc.size}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(doc.status)}`}></div>
+                            <span className="text-sm capitalize">{doc.status}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-red-500 hover:text-red-700 hover:bg-red-500/10"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
       </div>
 
