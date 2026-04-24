@@ -54,10 +54,14 @@ export function MarketplaceModal({ open, onOpenChange, onAgentSelected }: Market
     
     // Snippet logic based on agent type
     let snippet = "";
+    const serverUrl = typeof window !== 'undefined' 
+      ? `${window.location.protocol}//${window.location.hostname}:8095` 
+      : 'http://localhost:8095';
+
     if (selectedAgent.category === 'ide') {
-      snippet = `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "python",\n      "args": ["-m", "app.mcp_main"],\n      "env": {\n        "PYTHONPATH": "c:/Users/risha/Desktop/Work/client-connector"\n      }\n    }\n  }\n}`;
+      snippet = `{\n  "mcpServers": {\n    "confuse": {\n      "url": "${serverUrl}/mcp/sse"\n    }\n  }\n}`;
     } else {
-      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the MCP SSE endpoint to: http://localhost:8080/sse`;
+      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the MCP SSE endpoint to: ${serverUrl}/mcp/sse`;
     }
 
     navigator.clipboard.writeText(snippet);
@@ -107,8 +111,8 @@ export function MarketplaceModal({ open, onOpenChange, onAgentSelected }: Market
              </p>
              <div className="bg-muted w-full max-w-md p-4 rounded-xl border font-mono text-sm overflow-x-auto whitespace-pre">
                {selectedAgent.category === 'ide' 
-                 ? `{\n  "mcpServers": {\n    "confuse-${selectedAgent.name.toLowerCase()}": {\n      "command": "python",\n      "args": ["-m", "app.mcp_main"],\n      "env": {\n        "PYTHONPATH": "c:/Users/risha/Desktop/Work/client-connector"\n      }\n    }\n  }\n}`
-                 : `// MCP Connection instruction\nEndpoint: http://localhost:8080/sse`
+                 ? `{\n  "mcpServers": {\n    "confuse": {\n      "url": "${typeof window !== 'undefined' ? window.location.origin.replace('3000', '8095') : 'http://localhost:8095'}/mcp/sse"\n    }\n  }\n}`
+                 : `// MCP Connection instruction\nEndpoint: ${typeof window !== 'undefined' ? window.location.origin.replace('3000', '8095') : 'http://localhost:8095'}/mcp/sse`
                }
              </div>
              <div className="flex gap-4 mt-8">
