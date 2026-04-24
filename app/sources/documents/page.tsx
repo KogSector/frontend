@@ -9,7 +9,7 @@ import { Footer } from "@/components/ui/footer";
 import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
-import { dataApiClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
+import { dataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -67,9 +67,9 @@ export default function DocumentsPage() {
       
       // Fetch documents, analytics and sources in parallel
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
-        dataApiClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
-        dataApiClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
-        dataApiClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
+        dataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
+        dataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
+        dataClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
       ]);
 
       // Process sources response
@@ -266,7 +266,7 @@ export default function DocumentsPage() {
   const handleDeleteDocument = async (docId: string) => {
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataApiClient.delete<{ success: boolean }>(`/api/v1/documents/${docId}`, headers);
+      const resp = await dataClient.delete<{ success: boolean }>(`/api/v1/documents/${docId}`, headers);
       if ((resp as any)?.success) {
         // Update local state immediately
         setDocuments(prev => prev.filter(d => d.id !== docId));

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
-import { dataApiClient } from '@/lib/api'
+import { NextRequest, NextResponse } from 'next/server'
+import { dataClient } from '@/lib/api'
 
 type ApiResp = { success?: boolean; error?: string; data?: unknown }
 
@@ -18,10 +18,13 @@ function getData<T = unknown>(resp: unknown): T | undefined {
   return undefined
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const authHeader = request.headers.get('Authorization') || ''
+    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    
     // Call the dedicated data service to avoid recursive self-calls to this route
-    const resp = await dataApiClient.get('/api/data-sources')
+    const resp = await dataClient.get('/api/data-sources', headers)
     if (!succeeded(resp)) {
       const err = isApiResp(resp) ? resp.error : undefined
       return NextResponse.json({ success: false, error: err || 'Failed to fetch data sources' }, { status: 502 })

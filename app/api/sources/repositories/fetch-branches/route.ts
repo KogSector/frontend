@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dataApiClient } from '@/lib/api';
+import { dataClient } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward to data-connector
-    const resp = await dataApiClient.post('/api/repositories/fetch-branches', body, headers);
+    const resp = await dataClient.post('/api/repositories/fetch-branches', body, headers);
     
     console.log('[API /api/sources/repositories/fetch-branches] data-connector response success');
     

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/ui/footer";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { apiClient, getSources, getAgents } from "@/lib/api";
+import { apiClient, getSources, getAgents, deleteUrl, deleteRepository, deleteAgent } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import {
@@ -86,13 +86,16 @@ export default function Dashboard() {
           setStats(statsResp);
         }
 
-        if (sourcesResp && sourcesResp.success && sourcesResp.data) {
-          const sources = (sourcesResp.data as any).sources || [];
-          setRecentSources(sources.slice(0, 4));
+        if (sourcesResp && sourcesResp.success) {
+          // Robustly handle different response structures
+          const sources = (sourcesResp as any).sources || sourcesResp.data || [];
+          setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
         }
 
-        if (agentsResp && agentsResp.success && agentsResp.data) {
-          setRecentAgents(agentsResp.data.slice(0, 4));
+        if (agentsResp) {
+          // client-connector returns raw list, or wrapped object
+          const agents = Array.isArray(agentsResp) ? agentsResp : (agentsResp as any).data || (agentsResp as any).agents || [];
+          setRecentAgents(Array.isArray(agents) ? agents.slice(0, 4) : []);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -402,9 +405,9 @@ export default function Dashboard() {
                                 if (confirm('Are you sure you want to delete this source?')) {
                                   try {
                                     if (source.type === 'url') {
-                                      await fetch(`${process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8081'}/api/v1/external/urls/${source.id}`, { method: 'DELETE' });
+                                      await deleteUrl(source.id);
                                     } else {
-                                      await fetch(`${process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8081'}/api/repositories/${source.id}`, { method: 'DELETE' });
+                                      await deleteRepository(source.id);
                                     }
                                     setRecentSources(prev => prev.filter(s => s.id !== source.id));
                                     toast({ title: "Source Deleted", description: "The source has been removed." });
@@ -473,7 +476,7 @@ export default function Dashboard() {
                               e.stopPropagation();
                               if (confirm('Are you sure you want to delete this agent?')) {
                                 try {
-                                  await fetch(`${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:8095'}/api/agents/${agent.id}`, { method: 'DELETE' });
+                                  await deleteAgent(agent.id);
                                   setRecentAgents(prev => prev.filter(a => a.id !== agent.id));
                                   toast({ title: "Agent Deleted", description: "The agent has been removed." });
                                 } catch (error) {

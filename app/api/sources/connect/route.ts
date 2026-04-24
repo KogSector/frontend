@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dataApiClient, authClient, unwrapResponse } from '@/lib/api'
+import { dataClient, authClient, unwrapResponse } from '@/lib/api'
 
 
 function extractRepositoryName(url: string): string | null {
@@ -18,7 +18,7 @@ function extractRepositoryName(url: string): string | null {
   }
 }
 
-type ApiResp = { success?: boolean; error?: string; data?: unknown }
+type ApiResp = { success?: boolean; error?: string; data?: unknown; id?: string }
 
 function isApiResp(obj: unknown): obj is ApiResp {
   return typeof obj === 'object' && obj !== null
@@ -26,7 +26,7 @@ function isApiResp(obj: unknown): obj is ApiResp {
 
 function succeeded(resp: unknown): boolean {
   if (!isApiResp(resp)) return false
-  // dataApiClient throws on non-2xx status, so if we get here and it has an id, it succeeded
+  // dataClient throws on non-2xx status, so if we get here and it has an id, it succeeded
   return resp.success === true || (typeof resp.id === 'string' && resp.id.length > 0)
 }
 
@@ -40,6 +40,8 @@ function getData<T = unknown>(resp: unknown): T | undefined {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as Record<string, unknown>
+    const authHeader = request.headers.get('Authorization') || ''
+    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
     const type = typeof body.type === 'string' ? body.type : undefined
     const url = typeof body.url === 'string' ? body.url : undefined
     const credentials = body.credentials as Record<string, unknown> | undefined
@@ -92,9 +94,7 @@ export async function POST(request: NextRequest) {
 
     // Enforce social connections for git providers
     if (type === 'github' || type === 'gitlab' || type === 'bitbucket') {
-      const authHeader = request.headers.get('Authorization') || ''
       try {
-        const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
         const resp = await authClient.get('/api/auth/connections', headers)
         const list = unwrapResponse<Array<{ platform: string; is_active: boolean }>>(resp) || []
         const connected = list.some(c => c.is_active && c.platform === type)
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       metadata: processedConfig,
     }
 
-    const resp = await dataApiClient.post('/api/v1/sources', payload)
+    const resp = await dataClient.post('/api/v1/sources', payload, headers)
     if (!succeeded(resp)) {
       const err = isApiResp(resp) ? resp.error : undefined
       return NextResponse.json({ success: false, error: err || 'Failed to connect data source' }, { status: 502 })

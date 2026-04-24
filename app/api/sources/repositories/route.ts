@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { dataApiClient } from '@/lib/api'
+import { dataClient } from '@/lib/api'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     let resp: any
 
     try {
-      resp = await dataApiClient.get('/api/repositories', headers)
+      resp = await dataClient.get('/api/repositories', headers)
       console.log('[API /api/sources/repositories] data-connector response:', JSON.stringify(resp))
     } catch (fetchErr: any) {
       console.error('[API /api/sources/repositories] Failed to fetch from data-connector:', fetchErr?.message || fetchErr)
@@ -65,7 +65,7 @@ export async function DELETE(request: NextRequest) {
     const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
     
     try {
-      const resp = await dataApiClient.delete(`/api/repositories/${repoId}`, headers)
+      const resp = await dataClient.delete(`/api/repositories/${repoId}`, headers)
       console.log('[API /api/data-sources/repositories] DELETE response:', resp)
       
       if (resp && (resp as any).success) {
