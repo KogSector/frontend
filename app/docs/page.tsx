@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Navbar } from "@/components/ui/navbar";
-import { Footer } from "@/components/ui/footer";
+import dynamic from 'next/dynamic';
+
+const Navbar = dynamic(() => import("@/components/ui/navbar").then(mod => mod.Navbar));
+const Footer = dynamic(() => import("@/components/ui/footer").then(mod => mod.Footer));
 import { useAuth } from '@/contexts/auth'
 import {
   BookOpen,

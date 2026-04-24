@@ -296,18 +296,9 @@ export function SocialConnections() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Connections</h2>
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map(i => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-4">
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse">Loading connections...</p>
       </div>
     );
   }

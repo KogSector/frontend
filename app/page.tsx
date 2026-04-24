@@ -2,13 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FeaturesSection } from "@/components/sections/FeaturesSection";
-import { Footer } from "@/components/ui/footer";
-import { HeroSection } from "@/components/sections/HeroSection";
-import { Navbar } from "@/components/ui/navbar";
+import dynamic from 'next/dynamic';
+
+const HeroSection = dynamic(() => import("@/components/sections/HeroSection").then(mod => mod.HeroSection), {
+  loading: () => <div className="h-[600px] animate-pulse bg-muted/20" />
+});
+
+const FeaturesSection = dynamic(() => import("@/components/sections/FeaturesSection").then(mod => mod.FeaturesSection), {
+  loading: () => <div className="h-[400px] animate-pulse bg-muted/10" />
+});
+
+const Footer = dynamic(() => import("@/components/ui/footer").then(mod => mod.Footer));
+const Navbar = dynamic(() => import("@/components/ui/navbar").then(mod => mod.Navbar));
 import { useAuth } from '@/contexts/auth'
 
-const LOADING_TIMEOUT_MS = 3000; // Max 3 seconds for loading
+const LOADING_TIMEOUT_MS = 1500; // Max 1.5 seconds for loading
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();

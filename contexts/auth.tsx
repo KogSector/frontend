@@ -350,7 +350,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           const timeoutId = setTimeout(() => {
             setIsLoading(false);
-          }, 3000);
+          }, 1500);
 
           verifyToken(session.token).finally(() => {
             clearTimeout(timeoutId);

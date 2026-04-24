@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
-import { Footer } from "@/components/ui/footer";
+import dynamic from 'next/dynamic';
+
+const Footer = dynamic(() => import("@/components/ui/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";

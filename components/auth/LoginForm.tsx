@@ -101,21 +101,17 @@ export function LoginForm() {
 
       <div className="relative z-10 w-full max-w-md mx-4">
         <Card className="backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
-          <CardHeader className="space-y-1 text-center pb-12">
+          <CardHeader className="space-y-4 text-center pb-8 flex flex-col items-center">
             <CardTitle className="text-3xl font-bold text-white">Welcome</CardTitle>
+            {isLoading && (
+              <div className="w-6 h-6 border-2 border-white/30 border-t-purple-400 rounded-full animate-spin"></div>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
 
             {error && (
               <div className="p-4 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm">
                 {error}
-              </div>
-            )}
-
-            {/* Loading State Spinner */}
-            {isLoading && (
-              <div className="flex justify-center mb-4">
-                <div className="w-6 h-6 border-2 border-white/30 border-t-purple-400 rounded-full animate-spin"></div>
               </div>
             )}
 

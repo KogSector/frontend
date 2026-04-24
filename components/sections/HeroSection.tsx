@@ -3,7 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Code, Brain, Database, RefreshCw, GitBranch, Sparkles, Zap, Rocket, Star, ArrowRight, Play } from "lucide-react";
-import { Globe } from "@/components/ui/globe";
+import dynamic from 'next/dynamic';
+
+const Globe = dynamic(() => import("@/components/ui/globe").then(mod => mod.Globe), {
+  ssr: false,
+  loading: () => <div className="w-full aspect-square rounded-full bg-primary/5 animate-pulse flex items-center justify-center">
+    <div className="w-3/4 h-3/4 rounded-full border border-primary/10" />
+  </div>
+});
 import { useAuth } from '@/contexts/auth';
 
 // Animation helper - animations are always enabled for better UX
