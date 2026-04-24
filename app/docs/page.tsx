@@ -6,18 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { useAuth } from '@/contexts/auth'
-// Link not used in this file
-import { 
-  BookOpen, 
-  Bot, 
-  Shield, 
+import {
+  BookOpen,
+  Bot,
+  Shield,
   Play,
   FileText,
   Code,
   Users,
   GitBranch,
   Target,
-  ArrowRight
+  ArrowRight,
+  Home
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,8 +28,8 @@ export default function Documentation() {
     if (isAuthenticated) {
       window.location.href = '/dashboard';
     } else {
-      
-      
+
+
       window.location.href = '/';
     }
   };
@@ -41,7 +41,7 @@ export default function Documentation() {
       badge: "Beginner",
       articles: [
         "Quick Setup Guide",
-        "Creating Your Account", 
+        "Creating Your Account",
         "Connecting First Repository",
         "Adding Your First AI Agent",
         "Understanding the Dashboard"
@@ -114,29 +114,39 @@ export default function Documentation() {
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <BookOpen className="w-5 h-5 text-primary" />
-              <span className="text-lg font-semibold text-foreground">Documentation</span>
-            </div>
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center gap-4">
-              {!isLoading && (
-                <Button 
-                  onClick={handleDashboardClick}
-                  variant={isAuthenticated ? "default" : "outline"}
-                  size="sm"
-                >
-                  {isAuthenticated ? "Dashboard" : "Get Started"}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
+              <div className="flex items-center gap-3">
+                {!isAuthenticated ? (
+                  <Link href="/">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      className="flex items-center rounded-full px-6 border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:shadow-[0px_0px_15px_rgba(59,130,246,0.2)] transition-all duration-300 group"
+                    >
+                      <Home className="w-4 h-4 mr-2 text-primary group-hover:scale-110 transition-transform" />
+                      <span className="font-semibold text-foreground">Home</span>
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    onClick={handleDashboardClick}
+                    variant="default"
+                    size="default"
+                    className="rounded-full px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-300 font-bold"
+                  >
+                    Dashboard
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       <main>
-        {}
+        { }
         <section className="py-24 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center space-y-8">
@@ -150,8 +160,8 @@ export default function Documentation() {
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Everything you need to master ConFuse, from basic setup to advanced integrations.
               </p>
-              
-              {}
+
+              { }
               <div className="max-w-lg mx-auto mt-8">
                 <div className="relative">
                   <input
@@ -168,7 +178,7 @@ export default function Documentation() {
           </div>
         </section>
 
-        {}
+        { }
         <section className="py-16 -mt-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Card className="bg-card border-border shadow-card">
@@ -201,7 +211,7 @@ export default function Documentation() {
           </div>
         </section>
 
-        {}
+        { }
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-6">
@@ -234,7 +244,7 @@ export default function Documentation() {
                       ))}
                     </ul>
                     <div className="relative px-4 py-2 -mx-4 -my-2">
-                      <button 
+                      <button
                         className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium w-full h-10 px-4 py-2 text-white border border-orange-500/30 bg-transparent hover:text-white hover:bg-orange-500/10 hover:border-orange-500/50 hover:shadow-[0px_0px_12px_rgba(251,146,60,0.6)] hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
                       >
                         View All Articles
@@ -247,7 +257,7 @@ export default function Documentation() {
           </div>
         </section>
 
-        {}
+        { }
         <section className="py-16 bg-muted/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -258,7 +268,7 @@ export default function Documentation() {
                 The most helpful guides from our documentation
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 {
@@ -323,7 +333,7 @@ export default function Documentation() {
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );
