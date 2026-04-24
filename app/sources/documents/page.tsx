@@ -9,7 +9,7 @@ import { Footer } from "@/components/ui/footer";
 import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
-import { dataApiClient } from "@/lib/api";
+import { dataApiClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -73,7 +73,9 @@ export default function DocumentsPage() {
 
       // Process documents response
       if (docsResp.status === 'fulfilled' && (docsResp.value as any)?.success) {
-        const docsData = (docsResp.value as any).data || [];
+        // The API returns { success: true, data: { data: DocumentRecord[], total: number } }
+        const respData = (docsResp.value as any).data;
+        const docsData = Array.isArray(respData?.data) ? respData.data : (Array.isArray(respData) ? respData : []);
         setDocuments(docsData);
         
         // Build sources from documents grouped by source type
@@ -163,6 +165,50 @@ export default function DocumentsPage() {
       title: "Success",
       description: "Document source connected successfully"
     });
+  };
+
+  const handleDeleteSource = async (sourceId: string) => {
+    try {
+      setLoading(true);
+      const resp = await deleteSource(sourceId);
+      if (resp.success) {
+        toast({
+          title: "Source deleted",
+          description: "The document source has been removed.",
+        });
+        fetchDocuments(); // Refresh list
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete source",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSyncSource = async (sourceId: string) => {
+    try {
+      setLoading(true);
+      const resp = await syncSource(sourceId);
+      if (resp.success) {
+        toast({
+          title: "Sync started",
+          description: "Processing documents in the background.",
+        });
+        fetchDocuments();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start sync",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteDocument = async (docId: string) => {
@@ -353,18 +399,25 @@ export default function DocumentsPage() {
                       {source.lastSync && <span>Last sync: {source.lastSync}</span>}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleSyncSource(source.id)}
+                        disabled={loading}
+                      >
                         <RefreshCw className={`w-4 h-4 mr-1 ${source.status === 'syncing' ? 'animate-spin' : ''}`} />
-                        {source.status === 'syncing' ? 'Syncing...' : 'Sync'}
+                        Sync
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        Export
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteSource(source.id)}
+                        disabled={loading}
+                      >
                         <Trash2 className="w-4 h-4 mr-1" />
-                        Disconnect
+                        Delete
                       </Button>
                     </div>
                   </div>

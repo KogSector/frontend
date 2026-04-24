@@ -318,20 +318,23 @@ export async function getUrls(): Promise<ApiResponse> {
 export async function deleteUrl(id: string): Promise<ApiResponse> {
   return dataClient.delete(`/api/v1/external/urls/${id}`);
 }
+export async function updateUrl(id: string, data: { title?: string; description?: string; tags?: string[] }): Promise<ApiResponse> {
+  return dataClient.put(`/api/v1/external/urls/${id}`, data);
+}
 
 // -- Documents --
 export async function createDocument(data: { name: string; source: string; doc_type: string; size?: string; tags?: string[] }): Promise<ApiResponse<DocumentRecord>> {
-  return dataClient.post('/api/documents', data);
+  return dataClient.post('/api/v1/documents', data);
 }
 export async function getDocuments(search?: string): Promise<ApiResponse<{ data: DocumentRecord[], total: number }>> {
   const params = search ? `?search=${encodeURIComponent(search)}` : '';
-  return dataClient.get(`/api/documents${params}`);
+  return dataClient.get(`/api/v1/documents${params}`);
 }
 export async function deleteDocument(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/documents/${id}`);
+  return dataClient.delete(`/api/v1/documents/${id}`);
 }
 export async function getDocumentAnalytics(): Promise<ApiResponse> {
-  return dataClient.get('/api/documents/analytics');
+  return dataClient.get('/api/v1/documents/analytics');
 }
 
 // -- Agents --
@@ -411,6 +414,12 @@ export async function getSources(): Promise<ApiResponse> {
 }
 export async function createSource(data: unknown): Promise<ApiResponse> {
   return dataClient.post('/api/v1/sources', data);
+}
+export async function deleteSource(id: string): Promise<ApiResponse> {
+  return dataClient.delete(`/api/v1/sources/${id}`);
+}
+export async function syncSource(id: string): Promise<ApiResponse> {
+  return dataClient.post(`/api/v1/sources/${id}/sync`, {});
 }
 
 // -- Repositories --

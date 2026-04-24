@@ -40,7 +40,7 @@ interface SourceItem {
 interface AgentItem {
   id: string;
   name: string;
-  provider: string;
+  provider?: string;
   status: string;
   usage_stats?: {
     total_requests: number;
@@ -487,7 +487,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground capitalize">
-                        Provider: {agent.provider}
+                        Provider: {agent.provider || 'Unknown'}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {agent.usage_stats?.total_requests || 0} requests today
