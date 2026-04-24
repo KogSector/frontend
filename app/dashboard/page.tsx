@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/ui/footer";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { apiClient, getSources, getAgents, deleteUrl, deleteRepository, deleteAgent } from "@/lib/api";
+import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import {
@@ -248,7 +248,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-                <div>
+            <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-card border-border">
@@ -345,7 +345,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-                <Card className="bg-card border-border">
+            <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-lg font-semibold text-foreground">
@@ -385,7 +385,7 @@ export default function Dashboard() {
                     };
                     const IconComponent = getIcon(source.type);
                     return (
-                        <div key={source.id || index} className="group/item flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2 hover:border-primary/50 transition-colors relative">
+                      <div key={source.id || index} className="group/item flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2 hover:border-primary/50 transition-colors relative">
                         <div className="flex items-center justify-between">
                           <Link href={source.type === 'url' ? '/sources/urls' : '/sources/repositories'} className="flex items-center space-x-3 flex-1 min-w-0">
                             <IconComponent className="w-5 h-5 text-primary flex-shrink-0" />
@@ -395,9 +395,9 @@ export default function Dashboard() {
                           </Link>
                           <div className="flex items-center space-x-2">
                             <Badge variant="outline" className="text-xs capitalize">{source.type}</Badge>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={async (e) => {
                                 e.preventDefault();
@@ -439,7 +439,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-                <Card className="bg-card border-border">
+            <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-lg font-semibold text-foreground">
@@ -467,9 +467,9 @@ export default function Dashboard() {
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${agent.status === 'Connected' || agent.status === 'active' ? 'bg-blue-500 shadow-lg shadow-blue-500/50' : 'bg-gray-400'
                             }`}></div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={async (e) => {
                               e.preventDefault();
@@ -505,7 +505,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-                <Card className="bg-card border-border">
+            <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-foreground">
                   Recent Activity
