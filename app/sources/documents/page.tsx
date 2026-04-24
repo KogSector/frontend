@@ -207,6 +207,19 @@ export default function DocumentsPage() {
   };
 
   const handleDeleteSource = async (sourceId: string) => {
+    // Check if it's a UUID (real source) or a derived demo source
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId);
+    
+    if (!isUuid) {
+      // Demo source - just remove from local state
+      setSources(prev => prev.filter(s => s.id !== sourceId));
+      toast({
+        title: "Demo source removed",
+        description: "The demo document source has been removed locally.",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const resp = await deleteSource(sourceId);

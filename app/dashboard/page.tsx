@@ -75,23 +75,23 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch stats using our frontend API route
-        const statsResp = await fetch('/api/dashboard/stats');
-        if (statsResp.ok) {
-          const data = await statsResp.json();
-          setStats(data);
+        // Fetch all data concurrently for better performance
+        const [statsResp, sourcesResp, agentsResp] = await Promise.all([
+          fetch('/api/dashboard/stats').then(r => r.ok ? r.json() : null),
+          getSources(),
+          getAgents()
+        ]);
+
+        if (statsResp) {
+          setStats(statsResp);
         }
 
-        // Fetch recent sources
-        const sourcesResp = await getSources();
-        if (sourcesResp.success && sourcesResp.data) {
+        if (sourcesResp && sourcesResp.success && sourcesResp.data) {
           const sources = (sourcesResp.data as any).sources || [];
           setRecentSources(sources.slice(0, 4));
         }
 
-        // Fetch recent agents
-        const agentsResp = await getAgents();
-        if (agentsResp.success && agentsResp.data) {
+        if (agentsResp && agentsResp.success && agentsResp.data) {
           setRecentAgents(agentsResp.data.slice(0, 4));
         }
       } catch (error) {
