@@ -18,6 +18,7 @@ export interface User {
   role: 'admin' | 'user' | 'moderator'
   subscription_tier: 'free' | 'personal' | 'team' | 'enterprise'
   is_verified: boolean
+  onboardingCompleted: boolean
   created_at: string
   last_login_at?: string
 }
