@@ -264,42 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [saveSession, clearSession, router, refreshConnections])
 
-  // ============================================================================
-  // AUTH BYPASS (DEVELOPMENT)
-  // ============================================================================
 
-  const checkAuthBypass = useCallback(async (): Promise<boolean> => {
-    try {
-      const response = await fetch('http://localhost:3099/api/toggles/authBypass', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(500),  // Fast-fail: 500ms timeout
-      });
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      if (data.success && data.data?.enabled && data.data?.demoUser) {
-        console.log('🔓 Auth bypass enabled - using demo user:', data.data.demoUser.email);
-        const demoUser: User = {
-          id: data.data.demoUser.id,
-          email: data.data.demoUser.email,
-          name: data.data.demoUser.name,
-          role: 'admin',
-          subscription_tier: 'enterprise',
-          is_verified: true,
-          created_at: new Date().toISOString(),
-        };
-        setUser(demoUser);
-        setToken('bypass-demo-token');
-        return true;
-      }
-      return false;
-    } catch {
-      // Feature toggle service not available - normal auth flow
-      return false;
-    }
-  }, []);
 
   // ============================================================================
   // INITIALIZATION AND SESSION RESTORATION
@@ -307,13 +272,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      // First, check if auth bypass is enabled (development only)
-      const bypassEnabled = await checkAuthBypass();
-      if (bypassEnabled) {
-        setIsLoading(false);
-        return;
-      }
-
       // Check if Auth0 is authenticated
       if (auth0IsAuthenticated) {
         const session = getSession();
@@ -375,7 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     handleAuth0Callback, 
     verifyToken, 
     updateLastActivity, 
-    checkAuthBypass,
+
     refreshConnections
   ])
 
