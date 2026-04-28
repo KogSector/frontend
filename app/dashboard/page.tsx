@@ -9,9 +9,10 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/ui/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent } from "@/lib/api";
+import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent, authClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bot,
   Plus,
@@ -73,10 +74,24 @@ export default function Dashboard() {
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch onboarding status first
+        const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
+          console.error("Onboarding fetch failed:", e);
+          return null;
+        });
+        if (onboardingRes && onboardingRes.data) {
+          if (!onboardingRes.data.onboardingCompleted) {
+            router.push('/onboarding');
+            return;
+          }
+          // Here we could load preset logic using onboardingRes.data.dashboardPreset
+        }
+
         // Fetch all data concurrently for better performance
         const [statsResp, sourcesResp, agentsResp] = await Promise.all([
           fetch('/api/dashboard/stats').then(r => r.ok ? r.json() : null),

@@ -153,9 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = useCallback(async (authToken: string) => {
     try {
-      const result = await apiClient.get<ApiResponse<User>>('/api/auth/profile', { Authorization: `Bearer ${authToken}` })
-      if (result?.success && result.data) {
-        setUser(result.data)
+      const result = await authClient.get<{ user: User }>('/api/auth/me', { Authorization: `Bearer ${authToken}` })
+      if (result && result.user) {
+        setUser(result.user)
       } else {
         throw new Error('Failed to fetch user profile')
       }
