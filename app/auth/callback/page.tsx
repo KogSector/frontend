@@ -27,6 +27,9 @@ export default function AuthCallbackPage() {
     if (!sdkLoading && !contextLoading && !isAuthenticated && !error) {
       console.log('⚠️ Not authenticated on callback page, redirecting to login...')
       router.push('/auth/login')
+    } else if (!sdkLoading && !contextLoading && isAuthenticated && !error) {
+      console.log('✅ Authenticated on callback page, redirecting to dashboard...')
+      router.push('/dashboard')
     }
   }, [isAuthenticated, contextLoading, sdkLoading, auth0Error, error, router])
 

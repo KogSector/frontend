@@ -330,12 +330,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUserProfile, 
     clearSession, 
     getAccessTokenSilently, 
-    user, 
     handleAuth0Callback, 
     verifyToken, 
     updateLastActivity, 
-
     refreshConnections
+    // Removed `user` from dependency array to prevent infinite loop since fetching user profile creates a new object and triggers re-renders continuously
   ])
 
   // Update activity on user interaction
