@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -12,6 +12,7 @@ import { authClient } from "@/lib/api";
 
 const INTENTS = [
   { id: "engineering", label: "Engineering & Development", icon: Code, preset: "dev_preset" },
+  { id: "education", label: "Education", icon: BookOpen, preset: "education_preset" },
   { id: "research", label: "Research & Analysis", icon: BookOpen, preset: "research_preset" },
   { id: "finance", label: "Finance & Operations", icon: LineChart, preset: "finance_preset" },
   { id: "support", label: "Sales & Support", icon: MessageSquare, preset: "support_preset" },
@@ -23,13 +24,20 @@ export default function OnboardingPage() {
   const { toast } = useToast();
   const [selectedIntent, setSelectedIntent] = useState<string>("engineering");
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const res = await authClient.get<any>('/api/v1/user/onboarding');
-        if (res && res.data?.onboardingCompleted) {
-          router.push('/dashboard');
+        const edit = searchParams.get('edit') === 'true';
+        if (res && res.data) {
+          if (res.data.userIntent) {
+            setSelectedIntent(res.data.userIntent);
+          }
+          if (res.data?.onboardingCompleted && !edit) {
+            router.push('/dashboard');
+          }
         }
       } catch (err) {
         console.error(err);

@@ -1,13 +1,15 @@
  'use client'
 
- import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
  import { Menu, X, LogOut, User } from "lucide-react";
  import { useState } from "react";
  import Link from "next/link";
  // 🆕 1. Import the router hook for navigation
  import { useRouter } from "next/navigation"; 
 
- import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
+import SocialConnections from '@/components/social/SocialConnections';
 
  type NavbarProps = {
    showUserMenu?: boolean;
@@ -65,6 +67,14 @@
               ) : isAuthenticated && user ? (
                 // STATE A: LOGGED IN (Show Profile)
                 <div className="flex items-center gap-4">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="sm" title="Connections">Connections</Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <SocialConnections />
+                    </DialogContent>
+                  </Dialog>
                   <span className="text-sm font-medium text-foreground/80">
                     {user.name || user.email}
                   </span>
