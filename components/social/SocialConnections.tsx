@@ -193,7 +193,7 @@ export function SocialConnections() {
 
   const connectPlatform = async (platform: string) => {
     try {
-      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'github' || platform === 'bitbucket' || platform === 'gitlab') {
+      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab') {
         // Use Auth0 to link the social provider
         let connectionName = platform;
         let authorizationParams: any = {};
@@ -204,8 +204,6 @@ export function SocialConnections() {
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
         } else if (platform === 'onedrive') {
           connectionName = 'windowslive';
-        } else if (platform === 'github') {
-          connectionName = 'github';
         } else if (platform === 'gitlab') {
           connectionName = 'gitlab';
         } else if (platform === 'bitbucket') {
@@ -213,6 +211,7 @@ export function SocialConnections() {
         }
 
         authorizationParams.connection = connectionName;
+        authorizationParams.login_hint = 'rishabh.babi@gmail.com';
 
         await loginWithPopup({
           authorizationParams
@@ -225,7 +224,7 @@ export function SocialConnections() {
         // then pass it explicitly to fetchConnections to avoid the stale-closure early return.
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
-        const syncResp = await authClient.post(`/api/auth/connections/sync`, {}, headers);
+        const syncResp = await authClient.post(`/api/auth/connections/sync`, { targetProvider: connectionName }, headers);
         console.log('[connectPlatform] sync response:', JSON.stringify(syncResp));
 
         console.log('[connectPlatform] fetching connections after sync...');

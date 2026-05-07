@@ -7,12 +7,12 @@
 
 export const SERVICE_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3010',
-  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:8081',
+  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:3030',
   unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL || 'http://localhost:8090',
   relationGraph: process.env.NEXT_PUBLIC_RELATION_GRAPH_URL || 'http://localhost:3003',
   mcpServer: process.env.NEXT_PUBLIC_MCP_URL || 'http://localhost:3004',
   embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL || 'http://localhost:3001',
-  clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:8095',
+  clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020',
   featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL || 'http://localhost:3099',
 } as const;
 

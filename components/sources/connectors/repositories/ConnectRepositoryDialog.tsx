@@ -79,15 +79,11 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   interface RepositoryConfigUI {
-    fetchIssues: boolean;
-    fetchPrs: boolean;
     defaultBranch: string;
     autoSync: boolean;
     fileExtensions: string[];
   }
   const [config, setConfig] = useState<RepositoryConfigUI>({
-    fetchIssues: true,
-    fetchPrs: true,
     defaultBranch: 'main',
     autoSync: false,
     fileExtensions: ['.js', '.ts', '.jsx', '.tsx', '.py', '.rs', '.go', '.java', '.md']
@@ -108,9 +104,15 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     return connections
       .filter(c => c.is_active)
       .map(c => {
-        // Map platform names
-        if (c.platform === 'google') return 'google_drive';
-        if (c.platform === 'windowslive') return 'onedrive';
+        // Map platform names - only map cloud storage platforms
+        // Keep code hosting platforms (github, gitlab, bitbucket) as-is
+        if (c.platform === 'google' || c.platform === 'google_drive') return 'google_drive';
+        if (c.platform === 'windowslive' || c.platform === 'onedrive') return 'onedrive';
+        if (c.platform === 'dropbox') return 'dropbox';
+        // Code hosting platforms
+        if (c.platform === 'github') return 'github';
+        if (c.platform === 'gitlab') return 'gitlab';
+        if (c.platform === 'bitbucket') return 'bitbucket';
         return c.platform;
       });
   }, [connections]);
@@ -142,6 +144,14 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       resetForm();
     }
   }, [open]);
+
+  // Reset name and validation when repository URL changes
+  useEffect(() => {
+    setName('');
+    setIsValidated(false);
+    setBranches([]);
+    setFetchBranchesError(null);
+  }, [repositoryUrl]);
 
   const isUrlValid = useMemo(() => {
     if (!repositoryUrl) return false;
@@ -365,8 +375,6 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         include_patterns: ["**/*"],
         exclude_patterns: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__', 'vendor', '.venv', 'venv'],
         metadata: {
-          fetch_issues: config.fetchIssues,
-          fetch_prs: config.fetchPrs,
           auto_sync: config.autoSync,
           file_extensions: config.fileExtensions
         }
@@ -391,8 +399,6 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
               exclude_paths: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__', 'vendor', '.venv', 'venv'],
               max_file_size_mb: 5,
               file_extensions: config.fileExtensions || null,
-              fetch_issues: config.fetchIssues ?? true,
-              fetch_prs: config.fetchPrs ?? true,
             };
 
             // Fire sync in background - don't block the UI
@@ -445,8 +451,6 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     setRepositoryUrl('');
     setCredentials({});
     setConfig({
-      fetchIssues: true,
-      fetchPrs: true,
       defaultBranch: 'main',
       autoSync: false,
       fileExtensions: DEFAULT_FILE_EXTENSIONS
@@ -613,28 +617,6 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
               <h4 className="font-medium text-base">Configuration Options</h4>
 
               <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-sm font-medium">Fetch Issues</Label>
-                    <p className="text-xs text-muted-foreground">Ingest GitHub issues (title, body, comments) for this repository</p>
-                  </div>
-                  <Switch
-                    checked={config.fetchIssues}
-                    onCheckedChange={(checked) => setConfig({ ...config, fetchIssues: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-sm font-medium">Fetch PRs</Label>
-                    <p className="text-xs text-muted-foreground">Ingest pull requests, reviews, and discussions</p>
-                  </div>
-                  <Switch
-                    checked={config.fetchPrs}
-                    onCheckedChange={(checked) => setConfig({ ...config, fetchPrs: checked })}
-                  />
-                </div>
-
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <Label className="text-sm font-medium">Auto-sync</Label>

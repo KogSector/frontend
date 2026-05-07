@@ -247,7 +247,7 @@ export function UsageTracking() {
       {currentSubscription && (
         <Card>
           <CardHeader>
-            <CardTitle>Current Plan: {currentSubscription.plan.name}</CardTitle>
+            <CardTitle>Current Plan: {currentSubscription.plan?.name || 'No Plan'}</CardTitle>
             <CardDescription>
               Your plan limits and features
             </CardDescription>

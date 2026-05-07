@@ -77,51 +77,75 @@ export default function Dashboard() {
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch onboarding status first
-        const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
-          console.error("Onboarding fetch failed:", e);
-          return null;
-        });
-        if (onboardingRes && onboardingRes.data) {
-          if (!onboardingRes.data.onboardingCompleted) {
-            router.push('/onboarding');
-            return;
-          }
-          // Load preset logic using onboardingRes.data.dashboardPreset
-          setPreset(onboardingRes.data.dashboardPreset || null);
+  const fetchData = async () => {
+    try {
+      // Fetch onboarding status first
+      const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
+        console.error("Onboarding fetch failed:", e);
+        return null;
+      });
+      if (onboardingRes && onboardingRes.data) {
+        if (!onboardingRes.data.onboardingCompleted) {
+          router.push('/onboarding');
+          return;
         }
-
-        // Fetch all data concurrently for better performance
-        const [statsResp, sourcesResp, agentsResp] = await Promise.all([
-          fetch('/api/dashboard/stats').then(r => r.ok ? r.json() : null),
-          getSources(),
-          getAgents()
-        ]);
-
-        if (statsResp) {
-          setStats(statsResp);
-        }
-
-        if (sourcesResp && sourcesResp.success) {
-          // Robustly handle different response structures
-          const sources = (sourcesResp as any).sources || sourcesResp.data || [];
-          setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
-        }
-
-        if (agentsResp) {
-          // client-connector returns raw list, or wrapped object
-          const agents = Array.isArray(agentsResp) ? agentsResp : (agentsResp as any).data || (agentsResp as any).agents || [];
-          setRecentAgents(Array.isArray(agents) ? agents.slice(0, 4) : []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
+        // Load preset logic using onboardingRes.data.dashboardPreset
+        setPreset(onboardingRes.data.dashboardPreset || null);
       }
-    };
+
+      // Fetch sources and agents
+      const [sourcesResp, agentsResp] = await Promise.all([
+        getSources(),
+        getAgents()
+      ]);
+
+      // Extract sources data
+      let sources: SourceItem[] = [];
+      if (sourcesResp && sourcesResp.success) {
+        sources = (sourcesResp as any).sources || sourcesResp.data || [];
+        setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
+      }
+
+      // Extract agents data
+      let agents: AgentItem[] = [];
+      if (agentsResp) {
+        agents = Array.isArray(agentsResp) ? agentsResp : (agentsResp as any).data || (agentsResp as any).agents || [];
+        setRecentAgents(Array.isArray(agents) ? agents.slice(0, 4) : []);
+      }
+
+      // Calculate stats directly from the data
+      const reposCount = sources.filter(s => 
+        ['github', 'gitlab', 'bitbucket', 'repository'].includes(s.type.toLowerCase())
+      ).length;
+
+      const docsCount = sources.filter(s => 
+        ['upload', 'document'].includes(s.type.toLowerCase())
+      ).length;
+
+      const urlsCount = sources.filter(s => 
+        ['url', 'web'].includes(s.type.toLowerCase())
+      ).length;
+
+      const agentsCount = Array.isArray(agents) ? agents.length : 0;
+
+      setStats({
+        repositories: reposCount,
+        documents: docsCount,
+        urls: urlsCount,
+        agents: agentsCount,
+        connections: sources.length + agentsCount,
+        context_requests: 0,
+        security_score: 98,
+      });
+
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
   return (
@@ -495,6 +519,7 @@ export default function Dashboard() {
                                       await deleteRepository(source.id);
                                     }
                                     setRecentSources(prev => prev.filter(s => s.id !== source.id));
+                                    fetchData();
                                     toast({ title: "Source Deleted", description: "The source has been removed." });
                                   } catch (error) {
                                     toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete source." });
@@ -563,6 +588,7 @@ export default function Dashboard() {
                                 try {
                                   await deleteAgent(agent.id);
                                   setRecentAgents(prev => prev.filter(a => a.id !== agent.id));
+                                  fetchData();
                                   toast({ title: "Agent Deleted", description: "The agent has been removed." });
                                 } catch (error) {
                                   toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete agent." });
