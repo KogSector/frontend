@@ -193,7 +193,7 @@ export function SocialConnections() {
 
   const connectPlatform = async (platform: string) => {
     try {
-      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab') {
+      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab' || platform === 'github') {
         // Use Auth0 to link the social provider
         let connectionName = platform;
         let authorizationParams: any = {};
@@ -204,6 +204,8 @@ export function SocialConnections() {
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
         } else if (platform === 'onedrive') {
           connectionName = 'windowslive';
+        } else if (platform === 'github') {
+          connectionName = 'github';
         } else if (platform === 'gitlab') {
           connectionName = 'gitlab';
         } else if (platform === 'bitbucket') {
