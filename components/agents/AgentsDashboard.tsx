@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MarketplaceAgent, MarketplaceModal } from "./MarketplaceModal";
+import { Agent, AgentModal } from "./AgentModal";
 import { EditAgentModal } from "./EditAgentModal";
 import { Bot, Plus, Settings, RefreshCw, Trash2, Activity, Play, CheckCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -11,7 +11,7 @@ import { getAgents, createAgent, deleteAgent, AgentRecord } from "@/lib/api";
 
 export function AgentsDashboard() {
   const [agents, setAgents] = useState<AgentRecord[]>([]);
-  const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(false);
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ export function AgentsDashboard() {
     }
   };
 
-  const handleAgentAdded = async (agent: MarketplaceAgent) => {
+  const handleAgentAdded = async (agent: Agent) => {
     try {
       const response = await createAgent({
         name: agent.name,
@@ -102,7 +102,7 @@ export function AgentsDashboard() {
             Manage your AI assistant connections and IDE integrations.
           </p>
         </div>
-        <Button onClick={() => setIsMarketplaceOpen(true)} className="group shadow-lg shadow-primary/20 transition-all hover:scale-105">
+        <Button onClick={() => setIsAgentModalOpen(true)} className="group shadow-lg shadow-primary/20 transition-all hover:scale-105">
           <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
           Add Agent
         </Button>
@@ -213,20 +213,20 @@ export function AgentsDashboard() {
 
         <Card 
           className="border-dashed border-2 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group min-h-[220px]"
-          onClick={() => setIsMarketplaceOpen(true)}
+          onClick={() => setIsAgentModalOpen(true)}
         >
           <div className="p-4 rounded-full bg-muted group-hover:bg-primary/10 mb-4 transition-colors">
             <Plus className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
           <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">Add New Agent</h3>
-          <p className="text-sm text-muted-foreground mt-2 max-w-[200px]">Browse the marketplace to connect an IDE, extension, or agent.</p>
+          <p className="text-sm text-muted-foreground mt-2 max-w-[200px]">Connect an IDE, extension, or agent.</p>
         </Card>
       </div>
     )}
 
-      <MarketplaceModal 
-        open={isMarketplaceOpen} 
-        onOpenChange={setIsMarketplaceOpen}
+      <AgentModal 
+        open={isAgentModalOpen} 
+        onOpenChange={setIsAgentModalOpen}
         onAgentSelected={handleAgentAdded}
       />
 

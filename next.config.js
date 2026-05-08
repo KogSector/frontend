@@ -27,6 +27,19 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Enable TypeScript checking during builds
   },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'www.cursor.com' },
+      { protocol: 'https', hostname: 'www.gstatic.com' },
+      { protocol: 'https', hostname: 'www.trae.ai' },
+      { protocol: 'https', hostname: 'github.githubassets.com' },
+      { protocol: 'https', hostname: 'a0.awsstatic.com' },
+      { protocol: 'https', hostname: 'cdn.oaistatic.com' },
+      { protocol: 'https', hostname: 'www.deepseek.com' },
+      { protocol: 'https', hostname: 'claude.ai' },
+      { protocol: 'https', hostname: 'ollama.com' },
+    ],
+  },
 }
 
 module.exports = nextConfig
