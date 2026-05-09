@@ -213,7 +213,7 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-4 flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-4 flex-1 content-start">
               {filteredAgents.map((agent) => (
                 <Card
                   key={agent.id}
