@@ -335,7 +335,7 @@ export default function DocumentsPage() {
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{analytics?.unique_sources ?? sources.length}</div>
               <p className="text-xs text-muted-foreground">
-                Connected sources
+                Connected Documents
               </p>
             </CardContent>
           </Card>
@@ -393,7 +393,7 @@ export default function DocumentsPage() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Document Sources</h2>
+            <h2 className="text-xl font-semibold text-foreground">Connected Documents</h2>
             <p className="text-sm text-muted-foreground">Connect and manage your document sources</p>
           </div>
           <div className="flex gap-3">
@@ -403,7 +403,7 @@ export default function DocumentsPage() {
             </Button>
             <Button onClick={() => setShowConnectModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Connect Source
+              Connect Docs
             </Button>
           </div>
         </div>

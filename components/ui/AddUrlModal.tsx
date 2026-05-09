@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { X, Plus, Loader2 } from "lucide-react";
+import { X, Plus, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createUrl, updateUrl } from "@/lib/api";
 import { UrlRecord } from "@/hooks/use-urls";
@@ -24,9 +24,10 @@ interface AddUrlModalProps {
   onOpenChange: (open: boolean) => void;
   onUrlAdded?: () => void;
   url?: UrlRecord | null;
+  onBulkImport?: () => void;
 }
 
-export function AddUrlModal({ open, onOpenChange, onUrlAdded, url }: AddUrlModalProps) {
+export function AddUrlModal({ open, onOpenChange, onUrlAdded, url, onBulkImport }: AddUrlModalProps) {
   const [formData, setFormData] = useState({
     url: "",
     title: "",
@@ -170,6 +171,19 @@ export function AddUrlModal({ open, onOpenChange, onUrlAdded, url }: AddUrlModal
             {url ? `Update configuration for ${url.title}` : "Add a new URL to your knowledge base for AI agents to reference."}
           </DialogDescription>
         </DialogHeader>
+        {!url && onBulkImport && (
+          <div className="flex justify-center pb-4">
+            <Button
+              variant="outline"
+              onClick={onBulkImport}
+              className="w-full"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Bulk Import URLs
+            </Button>
+          </div>
+        )}
+        
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

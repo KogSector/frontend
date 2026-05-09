@@ -21,7 +21,8 @@ import {
   Calendar,
   Tag,
   Upload,
-  Settings
+  Settings,
+  RefreshCw
 } from "lucide-react";
 
 export default function UrlsPage() {
@@ -147,9 +148,9 @@ export default function UrlsPage() {
             <p className="text-sm text-muted-foreground">Add and organize your URL sources for AI context</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setIsBulkImportOpen(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Bulk Import
+            <Button variant="outline" onClick={fetchUrls} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
             </Button>
             <Button onClick={() => {
               setSelectedUrl(null);
@@ -270,6 +271,10 @@ export default function UrlsPage() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onUrlAdded={fetchUrls}
+        onBulkImport={() => {
+          setIsModalOpen(false);
+          setIsBulkImportOpen(true);
+        }}
         url={selectedUrl}
       />
       
