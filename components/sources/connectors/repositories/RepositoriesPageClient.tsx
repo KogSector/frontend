@@ -283,7 +283,8 @@ export function RepositoriesPageClient() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500 shadow-lg shadow-green-500/50';
+      case 'active':
+      case 'connected': return 'bg-green-500 shadow-lg shadow-green-500/50';
       case 'syncing': return 'bg-blue-500 shadow-lg shadow-blue-500/50';
       case 'error': return 'bg-red-500 shadow-lg shadow-red-500/50';
       default: return 'bg-gray-400';
@@ -327,7 +328,7 @@ export function RepositoriesPageClient() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 gap-4 mb-8">
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -338,58 +339,7 @@ export function RepositoriesPageClient() {
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{repositories.length}</div>
               <p className="text-xs text-muted-foreground">
-                {dataSources.length} connections
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Repos
-              </CardTitle>
-              <GitBranch className="w-4 h-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {repositories.filter(r => r.status === 'active').length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Currently syncing
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Stars
-              </CardTitle>
-              <Star className="w-4 h-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {repositories.reduce((sum, repo) => sum + (repo.stars || 0), 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Community recognition
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Forks
-              </CardTitle>
-              <GitFork className="w-4 h-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {repositories.reduce((sum, repo) => sum + (repo.forks || 0), 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Community contributions
+                Connected repositories
               </p>
             </CardContent>
           </Card>

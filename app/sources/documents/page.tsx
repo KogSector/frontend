@@ -324,67 +324,20 @@ export default function DocumentsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Sources
-              </CardTitle>
-              <Cloud className="w-4 h-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{analytics?.unique_sources ?? sources.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Connected Documents
-              </p>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 gap-4 mb-8">
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Documents
               </CardTitle>
-              <FileText className="w-4 h-4 text-green-500" />
+              <FileText className="w-4 h-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
                 {analytics?.total_documents ?? documents.length}
               </div>
               <p className="text-xs text-muted-foreground">
-                Indexed documents
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Processed
-              </CardTitle>
-              <Cloud className="w-4 h-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {analytics?.processed_documents ?? documents.filter(d => d.status === 'processed').length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ready for search
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Tags
-              </CardTitle>
-              <HardDrive className="w-4 h-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{analytics?.total_tags ?? 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Unique tags
+                Connected Documents
               </p>
             </CardContent>
           </Card>

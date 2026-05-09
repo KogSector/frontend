@@ -93,18 +93,40 @@ export default function Dashboard() {
         setPreset(onboardingRes.data.dashboardPreset || null);
       }
 
-      // Fetch sources and agents
-      const [sourcesResp, agentsResp] = await Promise.all([
+      // Fetch sources, agents and repositories
+      const [sourcesResp, agentsResp, reposResp] = await Promise.all([
         getSources(),
-        getAgents()
+        getAgents(),
+        import('@/lib/api').then(api => api.getRepositories())
       ]);
 
       // Extract sources data
       let sources: SourceItem[] = [];
       if (sourcesResp && sourcesResp.success) {
         sources = (sourcesResp as any).sources || sourcesResp.data || [];
-        setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
       }
+
+      // Extract repositories data and merge into sources
+      let repos: any[] = [];
+      if (reposResp && (reposResp as any).success) {
+        repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
+        
+        const repoSources = repos.map(repo => ({
+          id: repo.id,
+          name: repo.name || repo.url,
+          type: repo.provider || 'repository',
+          status: repo.status || 'active',
+          uri: repo.url,
+        }));
+        
+        repoSources.forEach(rs => {
+          if (!sources.some(s => s.id === rs.id)) {
+            sources.push(rs);
+          }
+        });
+      }
+
+      setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
 
       // Extract agents data
       let agents: AgentItem[] = [];
@@ -584,7 +606,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${source.status === 'active' || source.status === 'syncing' || source.status === 'pending' ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-gray-400'
+                          <div className={`w-2 h-2 rounded-full ${source.status === 'active' || source.status === 'syncing' || source.status === 'pending' || source.status === 'connected' ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-gray-400'
                             }`}></div>
                           <div className="text-sm text-muted-foreground">
                             Status: {source.status}

@@ -104,8 +104,8 @@ export default function UrlsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total URLs</CardTitle>
@@ -113,30 +113,6 @@ export default function UrlsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{urls.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active URLs</CardTitle>
-              <Globe className="w-4 h-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {urls.filter(url => url.status === 'active').length}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tags</CardTitle>
-              <Tag className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {new Set(urls.flatMap(url => url.tags)).size}
-              </div>
             </CardContent>
           </Card>
         </div>
