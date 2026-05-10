@@ -24,6 +24,16 @@ import {
   Settings,
   RefreshCw
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/AlertDialog";
 
 export default function UrlsPage() {
   const [urls, setUrls] = useState<UrlRecord[]>([]);
@@ -31,6 +41,7 @@ export default function UrlsPage() {
   const [selectedUrl, setSelectedUrl] = useState<UrlRecord | null>(null);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteUrlId, setDeleteUrlId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchUrls = async () => {
@@ -50,7 +61,16 @@ export default function UrlsPage() {
     }
   };
 
-  const deleteUrlAction = async (id: string) => {
+  const handleDeleteClick = (id: string) => {
+    setDeleteUrlId(id);
+  };
+
+  const confirmDeleteUrl = async () => {
+    if (!deleteUrlId) return;
+    
+    const id = deleteUrlId;
+    setDeleteUrlId(null);
+    
     try {
       const result = await deleteUrl(id);
       if (result.success) {
@@ -229,7 +249,7 @@ export default function UrlsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteUrlAction(url.id)}
+                        onClick={() => handleDeleteClick(url.id)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -259,6 +279,24 @@ export default function UrlsPage() {
         onOpenChange={setIsBulkImportOpen}
         onImportComplete={fetchUrls}
       />
+      
+      <AlertDialog open={!!deleteUrlId} onOpenChange={(open) => !open && setDeleteUrlId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete URL Source?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this URL and all its extracted content from your knowledge base.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteUrl} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <Footer />
     </div>

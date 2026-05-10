@@ -193,7 +193,6 @@ export function RepositoriesPageClient() {
   const deleteRepository = async () => {
     if (!selectedRepoId) return;
     try {
-      setLoading(true);
       console.log(`Deleting repository ${selectedRepoId}`);
       
       const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
@@ -201,14 +200,19 @@ export function RepositoriesPageClient() {
       
       console.log('Delete response:', resp);
       
-      await fetchRepositories();
-      await fetchDataSources();
+      if (resp.success) {
+        // Update local state immediately for better UX
+        const deletedId = selectedRepoId;
+        setRepositories(prev => prev.filter(r => r.id !== deletedId));
+        // Refresh in background to ensure everything is synced
+        fetchRepositories();
+        fetchDataSources();
+      }
     } catch (error) {
       console.error('Error deleting repository:', error);
     } finally {
       setShowDeleteConfirm(false);
       setSelectedRepoId(null);
-      setLoading(false);
     }
   };
 

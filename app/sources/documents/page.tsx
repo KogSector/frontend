@@ -12,6 +12,16 @@ import Link from "next/link";
 import { dataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/AlertDialog";
 
 interface DocumentSource {
   id: string;
@@ -51,6 +61,12 @@ export default function DocumentsPage() {
   const [analytics, setAnalytics] = useState<DocumentAnalytics | null>(null);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Custom dialog states
+  const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
+  const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   const hasLoadedRef = useRef(false);
   const { token } = useAuth();
   const { toast } = useToast();
@@ -206,7 +222,7 @@ export default function DocumentsPage() {
     });
   };
 
-  const handleDeleteSource = async (sourceId: string) => {
+  const handleDeleteSource = (sourceId: string) => {
     // Check if it's a UUID (real source) or a derived demo source
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId);
     
@@ -220,12 +236,17 @@ export default function DocumentsPage() {
       return;
     }
 
-    if (!confirm('Are you sure you want to delete this source? This will also remove all documents associated with it.')) {
-      return;
-    }
+    setDeleteSourceId(sourceId);
+  };
+
+  const confirmDeleteSource = async () => {
+    if (!deleteSourceId) return;
+    
+    const sourceId = deleteSourceId;
+    setDeleteSourceId(null);
+    setIsDeleting(true);
 
     try {
-      // Don't set global loading to true to avoid full page refresh
       const resp = await deleteSource(sourceId);
       if (resp.success) {
         toast({
@@ -242,18 +263,22 @@ export default function DocumentsPage() {
         description: "Failed to delete source",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleSyncSource = async (sourceId: string) => {
     try {
-      setLoading(true);
+      // Set individual source syncing state if possible, but don't set global loading
+      // For now we rely on the API status that will come back in fetchDocuments
       const resp = await syncSource(sourceId);
       if (resp.success) {
         toast({
           title: "Sync started",
           description: "Processing documents in the background.",
         });
+        // Poll for updates in background
         fetchDocuments();
       }
     } catch (error) {
@@ -262,15 +287,19 @@ export default function DocumentsPage() {
         description: "Failed to start sync",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleDeleteDocument = async (docId: string) => {
-    if (!confirm('Are you sure you want to delete this document?')) {
-      return;
-    }
+  const handleDeleteDocument = (docId: string) => {
+    setDeleteDocId(docId);
+  };
+
+  const confirmDeleteDocument = async () => {
+    if (!deleteDocId) return;
+    
+    const docId = deleteDocId;
+    setDeleteDocId(null);
+    setIsDeleting(true);
 
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
@@ -292,6 +321,8 @@ export default function DocumentsPage() {
         description: "Failed to delete document",
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -522,6 +553,45 @@ export default function DocumentsPage() {
         onOpenChange={setShowConnectModal}
         onSourceConnected={handleSourceConnected}
       />
+
+      <AlertDialog open={!!deleteSourceId} onOpenChange={(open) => !open && setDeleteSourceId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this source?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the document source
+              and all {documents.filter(d => {
+                const source = sources.find(s => s.id === deleteSourceId);
+                return d.source === source?.type;
+              }).length} associated documents from our knowledge base.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteSource} className="bg-red-500 hover:bg-red-600">
+              Delete Source
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteDocId} onOpenChange={(open) => !open && setDeleteDocId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove "{documents.find(d => d.id === deleteDocId)?.name}" from the system.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteDocument} className="bg-red-500 hover:bg-red-600">
+              Delete Document
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
