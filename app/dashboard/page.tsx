@@ -58,6 +58,7 @@ interface DashboardStats {
   connections: number;
   context_requests: number;
   security_score: number;
+  activity: any[];
 }
 
 export default function Dashboard() {
@@ -77,41 +78,51 @@ export default function Dashboard() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const fetchData = async () => {
+  const fetchData = async (isAutoRefresh = false) => {
     try {
-      // Fetch onboarding status first
-      const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
-        console.error("Onboarding fetch failed:", e);
-        return null;
-      });
-      if (onboardingRes && onboardingRes.data) {
-        if (!onboardingRes.data.onboardingCompleted) {
-          router.push('/onboarding');
-          return;
-        }
-        // Load preset logic using onboardingRes.data.dashboardPreset
-        setPreset(onboardingRes.data.dashboardPreset || null);
+      if (!isAutoRefresh) {
+        setLoading(true);
       }
 
-      // Fetch sources, agents and repositories
-      const [sourcesResp, agentsResp, reposResp] = await Promise.all([
+      // Fetch onboarding status first (only on initial load)
+      if (!isAutoRefresh) {
+        const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
+          console.error("Onboarding fetch failed:", e);
+          return null;
+        });
+        if (onboardingRes && onboardingRes.data) {
+          if (!onboardingRes.data.onboardingCompleted) {
+            router.push('/onboarding');
+            return;
+          }
+          setPreset(onboardingRes.data.dashboardPreset || null);
+        }
+      }
+
+      // Use the centralized dashboard stats API
+      const [dashboardStatsResp, sourcesResp, agentsResp] = await Promise.all([
+        import('@/lib/api').then(api => api.getDashboardStats()),
         getSources(),
-        getAgents(),
-        import('@/lib/api').then(api => api.getRepositories())
+        getAgents()
       ]);
 
-      // Extract sources data
-      let sources: SourceItem[] = [];
-      if (sourcesResp && sourcesResp.success) {
-        sources = (sourcesResp as any).sources || sourcesResp.data || [];
+      if (dashboardStatsResp && dashboardStatsResp.success === false) {
+        console.warn('Dashboard stats API returned failure, using fallback calculation');
       }
 
-      // Extract repositories data and merge into sources
-      let repos: any[] = [];
+      const dashboardStats = (dashboardStatsResp as any).data || dashboardStatsResp;
+
+      // Extract sources for the "Connected Sources" list
+      let sources: SourceItem[] = [];
+      if (sourcesResp && sourcesResp.success) {
+        sources = (sourcesResp as any).sources || (sourcesResp as any).data || [];
+      }
+      
+      // Merge in repositories if needed for the recent list
+      const reposResp = await import('@/lib/api').then(api => api.getRepositories());
       if (reposResp && (reposResp as any).success) {
-        repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
-        
-        const repoSources = repos.map(repo => ({
+        const repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
+        const repoSources = repos.map((repo: any) => ({
           id: repo.id,
           name: repo.name || repo.url,
           type: repo.provider || 'repository',
@@ -119,7 +130,7 @@ export default function Dashboard() {
           uri: repo.url,
         }));
         
-        repoSources.forEach(rs => {
+        repoSources.forEach((rs: SourceItem) => {
           if (!sources.some(s => s.id === rs.id)) {
             sources.push(rs);
           }
@@ -135,40 +146,35 @@ export default function Dashboard() {
         setRecentAgents(Array.isArray(agents) ? agents.slice(0, 4) : []);
       }
 
-      // Calculate stats directly from the data
-      const reposCount = sources.filter(s => 
-        ['github', 'gitlab', 'bitbucket', 'repository'].includes(s.type.toLowerCase())
-      ).length;
-
-      const docsCount = sources.filter(s => 
-        ['upload', 'document'].includes(s.type.toLowerCase())
-      ).length;
-
-      const urlsCount = sources.filter(s => 
-        ['url', 'web'].includes(s.type.toLowerCase())
-      ).length;
-
-      const agentsCount = Array.isArray(agents) ? agents.length : 0;
-
+      // Update stats from the dashboard API
       setStats({
-        repositories: reposCount,
-        documents: docsCount,
-        urls: urlsCount,
-        agents: agentsCount,
-        connections: sources.length + agentsCount,
-        context_requests: 0,
-        security_score: 98,
+        repositories: dashboardStats.repositories || 0,
+        documents: dashboardStats.documents || 0,
+        urls: dashboardStats.urls || 0,
+        agents: dashboardStats.agents || 0,
+        connections: dashboardStats.connections || (sources.length + agents.length),
+        context_requests: dashboardStats.context_requests || 0,
+        security_score: dashboardStats.security_score || 98,
       });
 
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
-      setLoading(false);
+      if (!isAutoRefresh) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchData();
+    
+    // Set up auto-refresh interval (every 30 seconds)
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
   return (
     <AuthGuard>
@@ -593,7 +599,7 @@ export default function Dashboard() {
                                       await deleteRepository(source.id);
                                     }
                                     setRecentSources(prev => prev.filter(s => s.id !== source.id));
-                                    fetchData();
+                                    fetchData(true);
                                     toast({ title: "Source Deleted", description: "The source has been removed." });
                                   } catch (error) {
                                     toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete source." });
@@ -662,7 +668,7 @@ export default function Dashboard() {
                                 try {
                                   await deleteAgent(agent.id);
                                   setRecentAgents(prev => prev.filter(a => a.id !== agent.id));
-                                  fetchData();
+                                  fetchData(true);
                                   toast({ title: "Agent Deleted", description: "The agent has been removed." });
                                 } catch (error) {
                                   toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete agent." });
@@ -697,12 +703,9 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {[
-                  { action: "Added API docs", source: "Swagger UI", time: "2 hours ago", type: "document" },
-                  { action: "Synced repository", source: "payment-service", time: "4 hours ago", type: "repository" },
-                  { action: "Connected URL", source: "Team Wiki", time: "1 day ago", type: "url" },
-                  { action: "Agent query", source: "GitHub Copilot", time: "2 days ago", type: "agent" },
-                ].map((activity, index) => {
+                {(stats.activity && stats.activity.length > 0 ? stats.activity : [
+                  { action: "No recent activity", source: "-", time: "Now", type: "system" },
+                ]).map((activity, index) => {
                   const getIcon = (type: string) => {
                     switch (type) {
                       case 'document': return FileText;

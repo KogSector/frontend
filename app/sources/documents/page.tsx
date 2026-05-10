@@ -220,15 +220,21 @@ export default function DocumentsPage() {
       return;
     }
 
+    if (!confirm('Are you sure you want to delete this source? This will also remove all documents associated with it.')) {
+      return;
+    }
+
     try {
-      setLoading(true);
+      // Don't set global loading to true to avoid full page refresh
       const resp = await deleteSource(sourceId);
       if (resp.success) {
         toast({
           title: "Source deleted",
           description: "The document source has been removed.",
         });
-        fetchDocuments(); // Refresh list
+        // Update local state immediately for better UX
+        setSources(prev => prev.filter(s => s.id !== sourceId));
+        fetchDocuments(); // Refresh list in background to sync everything
       }
     } catch (error) {
       toast({
@@ -236,8 +242,6 @@ export default function DocumentsPage() {
         description: "Failed to delete source",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -264,6 +268,10 @@ export default function DocumentsPage() {
   };
 
   const handleDeleteDocument = async (docId: string) => {
+    if (!confirm('Are you sure you want to delete this document?')) {
+      return;
+    }
+
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const resp = await dataClient.delete<{ success: boolean }>(`/api/v1/documents/${docId}`, headers);
@@ -274,7 +282,7 @@ export default function DocumentsPage() {
           title: "Success",
           description: "Document deleted successfully"
         });
-        // Refresh to update sources/analytics
+        // Refresh to update sources/analytics in background
         fetchDocuments();
       }
     } catch (error) {

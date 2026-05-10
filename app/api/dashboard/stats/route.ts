@@ -75,14 +75,27 @@ export async function GET(request: NextRequest) {
     });
 
     // Map jobs to activity items
-    const activity = jobsData.map((job: any) => ({
-      id: job.id,
-      type: job.source_type || 'processing',
-      description: `Processed ${job.source_type} source: ${job.source_id.substring(0, 8)}...`,
-      status: job.status,
-      timestamp: job.created_at,
-      icon: job.source_type === 'github' ? 'Github' : 'FileText'
-    }));
+    const activity = jobsData.map((job: any) => {
+      const time = new Date(job.created_at).toLocaleDateString(undefined, { 
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+      });
+      
+      let action = "Processed source";
+      if (job.status === 'completed') action = "Completed sync";
+      if (job.status === 'failed') action = "Sync failed";
+      if (job.status === 'syncing') action = "Syncing data";
+
+      return {
+        id: job.id,
+        action: action,
+        source: job.source_type === 'github' ? 'Repository' : (job.source_type === 'url' ? 'URL' : 'Document'),
+        time: time,
+        type: job.source_type || 'processing',
+        status: job.status,
+        timestamp: job.created_at,
+        icon: job.source_type === 'github' ? 'Github' : 'FileText'
+      };
+    });
 
     // Calculate dashboard stats
     const stats = {
@@ -92,11 +105,11 @@ export async function GET(request: NextRequest) {
       agents: Array.isArray(agents) ? agents.length : 0,
       activity: activity,
       connections: calculateConnections(reposData, urls, agents),
-      context_requests: userStatsData?.context_requests || 1247, // Fallback value
-      security_score: userStatsData?.security_score || 98, // Fallback value
+      context_requests: userStatsData?.context_requests || 0,
+      security_score: userStatsData?.security_score || 100,
       total_users: userStatsData?.total_users || 0,
       active_users: userStatsData?.active_users || 0,
-      system_health: 95, // Will be calculated by health endpoint
+      system_health: 100,
       usage_metrics: {
         api_calls: userStatsData?.api_calls || 0,
         storage_used: userStatsData?.storage_used || 0,
