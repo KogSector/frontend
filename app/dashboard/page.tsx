@@ -70,6 +70,7 @@ export default function Dashboard() {
     connections: 0,
     context_requests: 0,
     security_score: 98,
+    activity: [],
   });
   const [loading, setLoading] = useState(true);
   const [preset, setPreset] = useState<string | null>(null);
@@ -155,6 +156,7 @@ export default function Dashboard() {
         connections: dashboardStats.connections || (sources.length + agents.length),
         context_requests: dashboardStats.context_requests || 0,
         security_score: dashboardStats.security_score || 98,
+        activity: dashboardStats.activity || [],
       });
 
     } catch (error) {

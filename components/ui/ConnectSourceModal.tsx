@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { dataApiClient, listAuthConnections, unwrapResponse } from "@/lib/api";
+import { dataApiClient, listAuthConnections, unwrapResponse, ApiResponse } from "@/lib/api";
 import { Upload, Cloud, Loader2, CheckCircle2, XCircle, FolderOpen, FileText, HardDrive, Droplets, BookOpen } from "lucide-react";
 
 interface ConnectSourceModalProps {
