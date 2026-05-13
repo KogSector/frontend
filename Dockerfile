@@ -22,7 +22,7 @@ RUN npm install
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . ./
+COPY frontend/ ./
 
 # Create feature-toggles.json if not present (for standalone builds)
 RUN echo '{}' > ../feature-toggles.json 2>/dev/null || true
