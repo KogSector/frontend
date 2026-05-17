@@ -7,12 +7,16 @@ export async function GET(req: NextRequest) {
   
   try {
     // Forward the request to the auth backend service
-    const authHeader = req.headers.get('authorization')
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization')
+    const userIdHeader = req.headers.get('x-user-id')
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
     if (authHeader) {
       headers['Authorization'] = authHeader
+    }
+    if (userIdHeader) {
+      headers['x-user-id'] = userIdHeader
     }
     
     const response = await fetch(`${authServiceUrl}/api/auth/oauth/url?provider=${encodeURIComponent(provider)}`, {

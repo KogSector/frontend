@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, RefreshCw, Trash2, FileText, MessageSquare, GitBranch } from 'lucide-react';
 import { ConnectDataSourceDialog } from '@/components/sources/ConnectDialog';
+import { getSources, syncSource, deleteSource } from '@/lib/api';
 import Link from 'next/link';
 
 interface DataSource {
@@ -31,11 +32,9 @@ export default function DataSourcesPage() {
 
   const fetchDataSources = async () => {
     try {
-      const response = await fetch('/api/data-sources');
-      const data = await response.json();
-      if (data.success) {
-        // API route returns { success, data: { dataSources: [] } }
-        const sources = data.data?.dataSources ?? data.dataSources ?? [];
+      const resp = await getSources();
+      if (resp && (resp as any).sources) {
+        const sources = (resp as any).sources;
         setDataSources(Array.isArray(sources) ? sources : []);
       } else {
         setDataSources([]);
@@ -50,13 +49,8 @@ export default function DataSourcesPage() {
 
   const syncDataSource = async (sourceId: string) => {
     try {
-      const response = await fetch(`/api/data-sources/${sourceId}/sync`, {
-        method: 'POST'
-      });
-      const data = await response.json();
-      if (data.success) {
-        fetchDataSources();
-      }
+      await syncSource(sourceId);
+      fetchDataSources();
     } catch (error) {
       console.error('Error syncing data source:', error);
     }
@@ -66,13 +60,8 @@ export default function DataSourcesPage() {
     if (!confirm('Are you sure you want to delete this data source?')) return;
 
     try {
-      const response = await fetch(`/api/data-sources/${sourceId}`, {
-        method: 'DELETE'
-      });
-      const data = await response.json();
-      if (data.success) {
-        fetchDataSources();
-      }
+      await deleteSource(sourceId);
+      fetchDataSources();
     } catch (error) {
       console.error('Error deleting data source:', error);
     }

@@ -6,7 +6,10 @@ import { dataClient } from '@/lib/api'
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization') || ''
-    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    const userIdHeader = request.headers.get('x-user-id') || ''
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
 
     const form = await request.formData()
     // mark type as video so backend can handle differently if needed

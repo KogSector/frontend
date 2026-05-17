@@ -30,16 +30,20 @@ interface DashboardStats {
 export async function GET(request: NextRequest) {
   try {
     // Get user from auth header
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+    const userIdHeader = request.headers.get('x-user-id')
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
 
     // Aggregate data from multiple services
     const [reposResponse, docsResponse, urlsResponse, agentsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
-      dataClient.get('/api/repositories'),
-      dataClient.get('/api/v1/documents'),
-      dataClient.get('/api/v1/external/urls'),
-      clientConnectorClient.get('/api/agents'),
-      authClient.get('/api/users/stats'),
-      dataClient.get('/api/v1/jobs?limit=5')
+      dataClient.get('/api/repositories', headers),
+      dataClient.get('/api/v1/documents', headers),
+      dataClient.get('/api/v1/external/urls', headers),
+      clientConnectorClient.get('/api/agents', headers),
+      authClient.get('/api/users/stats', headers),
+      dataClient.get('/api/v1/jobs?limit=5', headers)
     ])
 
     // Extract data safely with proper typing

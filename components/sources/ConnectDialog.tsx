@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { apiClient, ApiResponse } from '@/lib/api';
+import { apiClient, authClient, ApiResponse } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,12 +23,12 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const [credentials, setCredentials] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
-  const { loginWithPopup } = useAuth();
+  const { loginWithPopup, getAccessTokenSilently, token } = useAuth();
 
   // Fetch connected providers on open
   const fetchConnections = async () => {
     try {
-      const resp = await apiClient.get<ApiResponse<any[]>>('/api/auth/connections');
+      const resp = await authClient.get<ApiResponse<any[]>>('/api/auth/connections');
       if (resp.success && Array.isArray(resp.data)) {
         setConnectedProviders(resp.data.filter(c => c.is_active).map(c => c.platform));
       }
@@ -49,7 +49,23 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const handleConnect = async () => {
     setLoading(true);
     try {
-      const resp = await apiClient.post<ApiResponse>('/api/data-sources/connect', { type, credentials, config: { ...config, name } });
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const userId = localStorage.getItem('confuse_user_id');
+      if (userId) {
+        headers['x-user-id'] = userId;
+      }
+
+      const response = await fetch('/api/sources/connect', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ type, credentials, config: { ...config, name } }),
+      });
+      const resp = await response.json();
       if (resp.success) {
         onSuccess();
         onOpenChange(false);
@@ -81,7 +97,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
 
       // Sync connections after successful login/link
       const token = await getAccessTokenSilently();
-      await apiClient.post('/api/auth/connections/sync', {}, {
+      await authClient.post('/api/auth/connections/sync', {}, {
         Authorization: `Bearer ${token}`
       });
 

@@ -20,8 +20,11 @@ function getData<T = unknown>(resp: unknown): T | undefined {
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization') || ''
-    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization') || ''
+    const userIdHeader = request.headers.get('x-user-id') || ''
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
     
     // Call the dedicated data service to avoid recursive self-calls to this route
     const resp = await dataClient.get('/api/data-sources', headers)

@@ -110,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(authToken)
     if (userProfile) {
       setUser(userProfile)
+      localStorage.setItem('confuse_user_id', userProfile.id)
     }
   }, [])
 
@@ -143,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth_session')
     localStorage.removeItem('auth_token')
     localStorage.removeItem('confuse_auth_token')
+    localStorage.removeItem('confuse_user_id')
     setToken(null)
     setUser(null)
     setConnections(null)
@@ -157,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await authClient.get<{ user: User }>('/api/auth/me', { Authorization: `Bearer ${authToken}` })
       if (result && result.user) {
         setUser(result.user)
+        localStorage.setItem('confuse_user_id', result.user.id)
       } else {
         throw new Error('Failed to fetch user profile')
       }
@@ -367,7 +370,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data && data.user && data.token) {
         setUser(data.user)
         setToken(data.token)
-        saveSession(data.token)
+        saveSession(data.token, data.user)
         await refreshConnections()
         router.push('/dashboard')
       } else {
@@ -390,7 +393,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (authData && authData.user && authData.token) {
         setUser(authData.user)
         setToken(authData.token)
-        saveSession(authData.token)
+        saveSession(authData.token, authData.user)
         await refreshConnections()
         router.push('/dashboard')
       } else {

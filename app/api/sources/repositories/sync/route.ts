@@ -7,13 +7,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Forward authorization header
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    const userIdHeader = request.headers.get('x-user-id');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     
     if (authHeader) {
       headers['Authorization'] = authHeader;
+    }
+    if (userIdHeader) {
+      headers['x-user-id'] = userIdHeader;
     }
 
     const response = await fetch(`${DATA_SERVICE_URL}/api/github/sync`, {

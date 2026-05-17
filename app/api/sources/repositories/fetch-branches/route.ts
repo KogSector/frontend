@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    const userIdHeader = request.headers.get('x-user-id');
     
     console.log('[API /api/data-sources/repositories/fetch-branches] POST called');
     
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
     
     if (authHeader) {
       headers['Authorization'] = authHeader;
+    }
+    if (userIdHeader) {
+      headers['x-user-id'] = userIdHeader;
     }
 
     // Forward to data-connector

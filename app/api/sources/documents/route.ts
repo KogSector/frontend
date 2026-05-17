@@ -5,11 +5,14 @@ import { dataClient } from '@/lib/api'
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+    const userIdHeader = request.headers.get('x-user-id')
     console.log('[API /api/sources/documents] GET called, authHeader present:', !!authHeader)
 
     // Fetch documents directly from data-connector's /api/v1/documents endpoint
-    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
     let resp: any
 
     try {
@@ -51,7 +54,8 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+    const userIdHeader = request.headers.get('x-user-id')
     const url = new URL(request.url)
     const docId = url.pathname.split('/').pop()
     
@@ -64,8 +68,9 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Delete document from data-connector
-    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
     
     try {
       const resp = await dataClient.delete(`/api/v1/documents/${docId}`, headers)

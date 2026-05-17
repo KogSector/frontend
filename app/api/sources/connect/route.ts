@@ -40,8 +40,11 @@ function getData<T = unknown>(resp: unknown): T | undefined {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as Record<string, unknown>
-    const authHeader = request.headers.get('Authorization') || ''
-    const headers: Record<string, string> = authHeader ? { Authorization: authHeader } : {}
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization') || ''
+    const userIdHeader = request.headers.get('x-user-id') || ''
+    const headers: Record<string, string> = {}
+    if (authHeader) headers['Authorization'] = authHeader
+    if (userIdHeader) headers['x-user-id'] = userIdHeader
     const type = typeof body.type === 'string' ? body.type : undefined
     const url = typeof body.url === 'string' ? body.url : undefined
     const credentials = body.credentials as Record<string, unknown> | undefined

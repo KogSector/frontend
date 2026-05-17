@@ -128,10 +128,15 @@ export class ApiClient {
   private getAuthHeaders(): Record<string, string> {
     if (typeof window === 'undefined') return {};
     const token = localStorage.getItem('confuse_auth_token');
+    const userId = localStorage.getItem('confuse_user_id');
+    const headers: Record<string, string> = {};
     if (token) {
-      return { 'Authorization': `Bearer ${token}` };
+      headers['Authorization'] = `Bearer ${token}`;
     }
-    return {};
+    if (userId) {
+      headers['x-user-id'] = userId;
+    }
+    return headers;
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
