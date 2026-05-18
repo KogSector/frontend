@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Activity, BookOpen, Code, LineChart, MessageSquare } from "lucide-react";
-import { authClient } from "@/lib/api";
+import { authClient, isToggleEnabled } from "@/lib/api";
 
 const INTENTS = [
   { id: "engineering", label: "Engineering & Development", icon: Code, preset: "dev_preset" },
@@ -29,8 +29,16 @@ export default function OnboardingPage() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await authClient.get<any>('/api/v1/user/onboarding');
+        // Check if onboarding is hidden via feature toggle
+        const hideOnboarding = await isToggleEnabled('hideOnboarding');
         const edit = searchParams.get('edit') === 'true';
+        
+        if (hideOnboarding && !edit) {
+          router.push('/dashboard');
+          return;
+        }
+
+        const res = await authClient.get<any>('/api/v1/user/onboarding');
         if (res && res.data) {
           if (res.data.userIntent) {
             setSelectedIntent(res.data.userIntent);
@@ -44,7 +52,7 @@ export default function OnboardingPage() {
       }
     };
     checkStatus();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

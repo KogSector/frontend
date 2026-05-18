@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/ui/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent, authClient } from "@/lib/api";
+import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent, authClient, isToggleEnabled } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -76,6 +76,7 @@ export default function Dashboard() {
   const [preset, setPreset] = useState<string | null>(null);
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
+  const [hideSwitchUse, setHideSwitchUse] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -171,6 +172,9 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
     
+    // Fetch hideSwitchUse toggle
+    isToggleEnabled('hideSwitchUse').then(setHideSwitchUse).catch(() => setHideSwitchUse(false));
+    
     // Set up auto-refresh interval (every 30 seconds)
     const interval = setInterval(() => {
       fetchData(true);
@@ -188,9 +192,11 @@ export default function Dashboard() {
                 <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConFuse</h1>
               </div>
               <div className="flex items-center gap-4">
-                <Link href="/onboarding?edit=true">
-                  <Button variant="outline" size="sm">Switch Use</Button>
-                </Link>
+                {!hideSwitchUse && (
+                  <Link href="/onboarding?edit=true">
+                    <Button variant="outline" size="sm">Switch Use</Button>
+                  </Link>
+                )}
                 <ProfileAvatar />
               </div>
             </div>

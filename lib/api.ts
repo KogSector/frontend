@@ -490,6 +490,44 @@ export function unwrapResponse<T = unknown>(resp: unknown): T | undefined {
   return resp as T | undefined;
 }
 
+// =============================================================================
+// Feature Toggle API
+// =============================================================================
+
+export interface FeatureToggle {
+  name: string;
+  enabled: boolean;
+  description: string;
+  category: string;
+  categoryType?: string;
+}
+
+export interface ToggleState {
+  [key: string]: {
+    enabled: boolean;
+    description: string;
+    category: string;
+    categoryType?: string;
+  };
+}
+
+export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
+  return featureToggleClient.get('/api/toggles');
+}
+
+export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
+  return featureToggleClient.get(`/api/toggles/${name}`);
+}
+
+export async function isToggleEnabled(name: string): Promise<boolean> {
+  try {
+    const response = await getToggle(name);
+    return response.data?.enabled || false;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * @deprecated Use dataClient directly. Kept for backward compat.
  */
