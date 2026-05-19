@@ -88,12 +88,13 @@ export default function Dashboard() {
 
       // Fetch onboarding status first (only on initial load)
       if (!isAutoRefresh) {
+        const hideOnboarding = await isToggleEnabled('hideOnboarding').catch(() => false);
         const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
           console.error("Onboarding fetch failed:", e);
           return null;
         });
         if (onboardingRes && onboardingRes.data) {
-          if (!onboardingRes.data.onboardingCompleted) {
+          if (!onboardingRes.data.onboardingCompleted && !hideOnboarding) {
             router.push('/onboarding');
             return;
           }
