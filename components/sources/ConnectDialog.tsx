@@ -250,11 +250,28 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
         );
 
       case 'google-drive':
+        const isGoogleDriveConnected = connectedProviders.includes('google-oauth2');
         return (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Click Connect to start OAuth flow with Google.
-            </p>
+            {!isGoogleDriveConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with Google Drive to access your files.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('google-oauth2')}
+                >
+                  Connect Google Drive
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to Google Drive
+              </div>
+            )}
             <div>
               <Label htmlFor="folderId">Folder ID (optional)</Label>
               <Input
@@ -262,17 +279,35 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="Leave empty for all files"
                 value={config.folder_id || ''}
                 onChange={(e) => setConfig({ ...config, folder_id: e.target.value })}
+                disabled={!isGoogleDriveConnected}
               />
             </div>
           </div>
         );
 
       case 'dropbox':
+        const isDropboxConnected = connectedProviders.includes('dropbox');
         return (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Click Connect to start OAuth flow with Dropbox.
-            </p>
+            {!isDropboxConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with Dropbox to access your files.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('dropbox')}
+                >
+                  Connect Dropbox
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to Dropbox
+              </div>
+            )}
             <div>
               <Label htmlFor="folderPath">Folder Path (optional)</Label>
               <Input
@@ -280,17 +315,35 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="/Documents (leave empty for root)"
                 value={config.folder_path || ''}
                 onChange={(e) => setConfig({ ...config, folder_path: e.target.value })}
+                disabled={!isDropboxConnected}
               />
             </div>
           </div>
         );
 
       case 'onedrive':
+        const isOneDriveConnected = connectedProviders.includes('windowslive');
         return (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Click Connect to start OAuth flow with Microsoft.
-            </p>
+            {!isOneDriveConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with OneDrive to access your files.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('windowslive')}
+                >
+                  Connect OneDrive
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to OneDrive
+              </div>
+            )}
             <div>
               <Label htmlFor="folderPath">Folder Path (optional)</Label>
               <Input
@@ -298,8 +351,35 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 placeholder="/Documents (leave empty for root)"
                 value={config.folder_path || ''}
                 onChange={(e) => setConfig({ ...config, folder_path: e.target.value })}
+                disabled={!isOneDriveConnected}
               />
             </div>
+          </div>
+        );
+
+      case 'notion':
+        const isNotionConnected = connectedProviders.includes('notion');
+        return (
+          <div className="space-y-4">
+            {!isNotionConnected ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connect with Notion to access your workspace.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuthConnect('notion')}
+                >
+                  Connect Notion
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-green-50/10 border border-green-200/20 rounded text-sm text-green-600 mb-4 flex items-center">
+                <span className="mr-2">✓</span> Connected to Notion
+              </div>
+            )}
           </div>
         );
 
@@ -357,6 +437,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                 <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="dropbox">Dropbox</SelectItem>
                 <SelectItem value="onedrive">OneDrive</SelectItem>
+                <SelectItem value="notion">Notion</SelectItem>
                 <SelectItem value="url">URLs</SelectItem>
               </SelectContent>
             </Select>
