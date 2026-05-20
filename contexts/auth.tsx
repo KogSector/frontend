@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSyncing, setIsSyncing] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
   const [connections, setConnections] = useState<Array<{ id: string; platform: string; username?: string; is_active: boolean }> | null>(null)
   const router = useRouter()
 
@@ -220,6 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearSession()
     } finally {
       setIsLoading(false)
+      setIsSyncing(false)
     }
   }, [fetchUserProfile, clearSession, refreshConnections])
 
