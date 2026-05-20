@@ -161,6 +161,7 @@ export class ApiClient {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'GET',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
           ...this.getAuthHeaders(),
@@ -380,7 +381,7 @@ export async function getDashboardStats(): Promise<ApiResponse> {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch('/api/dashboard/stats', { headers });
+  const response = await fetch('/api/dashboard/stats', { headers, cache: 'no-store' });
   return response.json();
 }
 
@@ -390,6 +391,7 @@ export async function getSystemHealth(): Promise<ApiResponse> {
     headers: {
       'Content-Type': 'application/json',
     },
+    cache: 'no-store',
   });
   return response.json();
 }
@@ -400,6 +402,7 @@ export async function getLandingStats(): Promise<ApiResponse> {
     headers: {
       'Content-Type': 'application/json',
     },
+    cache: 'no-store',
   });
   return response.json();
 }
@@ -409,6 +412,7 @@ export async function getLandingFeatures(): Promise<ApiResponse> {
     headers: {
       'Content-Type': 'application/json',
     },
+    cache: 'no-store',
   });
   return response.json();
 }

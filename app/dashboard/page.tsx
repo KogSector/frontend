@@ -173,15 +173,25 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
     
-    // Fetch hideSwitchUse toggle
-    isToggleEnabled('hideSwitchUse').then(setHideSwitchUse).catch(() => setHideSwitchUse(false));
+    // Fetch hideSwitchUse toggle and keep it fresh in real-time
+    const checkToggles = () => {
+      isToggleEnabled('hideSwitchUse')
+        .then(setHideSwitchUse)
+        .catch(() => setHideSwitchUse(false));
+    };
+
+    checkToggles();
+    const toggleInterval = setInterval(checkToggles, 5000);
     
     // Set up auto-refresh interval (every 30 seconds)
     const interval = setInterval(() => {
       fetchData(true);
     }, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(toggleInterval);
+      clearInterval(interval);
+    };
   }, []);
   return (
     <AuthGuard>
@@ -262,64 +272,6 @@ export default function Dashboard() {
                               <FileText className="w-7 h-7" />
                             </div>
                             <span className="font-semibold text-center leading-tight">Add Videos (YouTube / Local)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </>
-                ) : preset === 'support_preset' ? (
-                  <>
-                    <Link href="/sources/crms" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-6 shadow-2xl border border-purple-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <Users className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Connect CRMs</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/documents" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl p-6 shadow-2xl border border-emerald-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <FileText className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Add Documents</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/grcs" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl p-6 shadow-2xl border border-cyan-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <Shield className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Connect GRCs</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/chats" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-pink-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl p-6 shadow-2xl border border-pink-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <MessageSquare className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Connect Chats</span>
                           </div>
                         </div>
                       </div>

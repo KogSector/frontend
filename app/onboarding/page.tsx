@@ -15,7 +15,6 @@ const INTENTS = [
   { id: "education", label: "Education", icon: BookOpen, preset: "education_preset" },
   { id: "research", label: "Research & Analysis", icon: BookOpen, preset: "research_preset" },
   { id: "finance", label: "Finance & Operations", icon: LineChart, preset: "finance_preset" },
-  { id: "support", label: "Sales & Support", icon: MessageSquare, preset: "support_preset" },
   { id: "other", label: "Other / Custom", icon: Activity, preset: "default_preset" }
 ];
 
