@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, RefreshCw, Plus, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { authClient, unwrapResponse } from '@/lib/api';
+import { authClient, dataClient, unwrapResponse } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
@@ -149,6 +149,20 @@ export function SocialConnections() {
             title: "Success",
             description: `${data.provider} connected successfully!`,
           })
+          
+          // Auto-register data source
+          try {
+            const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
+            await dataClient.post('/api/v1/sources', {
+              type: data.provider,
+              name: `${platformName} Connection`,
+              uri: `oauth://${data.provider}`,
+            }, headers);
+            console.log(`[registerDataSource] Successfully registered ${data.provider} source for data streaming`);
+          } catch (err) {
+            console.error(`[registerDataSource] Failed to register source for ${data.provider}:`, err);
+          }
+
           // Refresh connections in-place (no skeleton) and update global state
           fetchConnections({ overrideToken: effectiveToken })
           if (refreshConnections) refreshConnections()
@@ -193,45 +207,40 @@ export function SocialConnections() {
 
   const connectPlatform = async (platform: string) => {
     try {
-      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab' || platform === 'github') {
-        // Use Auth0 to link the social provider
+      // ----------------------------------------------------------------
+      // Auth0-based providers (Google Drive, OneDrive, Bitbucket, GitLab, Dropbox)
+      // These use Auth0's loginWithPopup to link the social provider
+      // ----------------------------------------------------------------
+      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab' || platform === 'dropbox') {
         let connectionName = platform;
         let authorizationParams: any = {};
 
-        // Use the original working connection names but fix the Google Drive issue
         if (platform === 'google_drive') {
           connectionName = 'google-oauth2';
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
         } else if (platform === 'onedrive') {
           connectionName = 'windowslive';
-        } else if (platform === 'github') {
-          connectionName = 'github';
         } else if (platform === 'gitlab') {
           connectionName = 'gitlab';
         } else if (platform === 'bitbucket') {
           connectionName = 'bitbucket';
+        } else if (platform === 'dropbox') {
+          connectionName = 'dropbox';
         }
 
         authorizationParams.connection = connectionName;
-        authorizationParams.login_hint = 'rishabh.babi@gmail.com';
 
         await loginWithPopup({
           authorizationParams
         });
 
         console.log('[connectPlatform] loginWithPopup completed, syncing connections...');
-        // After loginWithPopup the Auth0 SDK may have refreshed the token, but
-        // the `token` captured in this closure hasn't updated yet (React state is async).
-        // Use the current closure token for the sync call (it was valid pre-popup),
-        // then pass it explicitly to fetchConnections to avoid the stale-closure early return.
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
         const syncResp = await authClient.post(`/api/auth/connections/sync`, { targetProvider: connectionName }, headers);
         console.log('[connectPlatform] sync response:', JSON.stringify(syncResp));
 
-        console.log('[connectPlatform] fetching connections after sync...');
         await fetchConnections({ overrideToken: effectiveToken });
-
         if (refreshConnections) refreshConnections();
 
         const platformName = PLATFORM_CONFIGS[platform as keyof typeof PLATFORM_CONFIGS]?.name || platform;
@@ -240,10 +249,107 @@ export function SocialConnections() {
           description: `${platformName} connected successfully!`,
         });
 
+        // Auto-register data source
+        try {
+          await dataClient.post('/api/v1/sources', {
+            type: platform,
+            name: `${platformName} Connection`,
+            uri: `oauth://${platform}`,
+          }, headers);
+          console.log(`[registerDataSource] Successfully registered ${platform} source for data streaming`);
+        } catch (err) {
+          console.error(`[registerDataSource] Failed to register source for ${platform}:`, err);
+        }
+
         return;
       }
 
-      toast({ title: 'Error', description: `Platform ${platform} connection is not fully implemented yet.`, variant: 'destructive' });
+      // ----------------------------------------------------------------
+      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence)
+      // These open a popup to the provider's OAuth authorize URL directly
+      // ----------------------------------------------------------------
+      if (platform === 'github' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence') {
+        const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
+        const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
+
+        // Get the OAuth URL from auth-middleware
+        const urlResp = await authClient.get<{ url: string; provider: string }>(
+          `/api/auth/oauth/url?provider=${platform}`,
+          headers
+        );
+
+        if (!urlResp || !(urlResp as any).url) {
+          toast({
+            title: 'Configuration Required',
+            description: `${PLATFORM_CONFIGS[platform as keyof typeof PLATFORM_CONFIGS]?.name || platform} OAuth is not configured yet. Please set up the OAuth credentials.`,
+            variant: 'destructive'
+          });
+          return;
+        }
+
+        // Open the OAuth popup
+        const popup = window.open(
+          (urlResp as any).url,
+          `${platform}-oauth`,
+          'width=600,height=700,scrollbars=yes,resizable=yes'
+        );
+
+        // Monitor popup close (the message handler in useEffect will handle the code exchange)
+        if (popup) {
+          const checkClosed = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+            }
+          }, 1000);
+        }
+
+        return;
+      }
+
+      // ----------------------------------------------------------------
+      // Custom Apps: API key/token dialog
+      // ----------------------------------------------------------------
+      if (platform === 'custom_apps') {
+        const appName = prompt('Enter your app name:');
+        if (!appName) return;
+
+        const apiToken = prompt('Enter your API key or access token:');
+        if (!apiToken) return;
+
+        const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
+        const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
+
+        await authClient.post('/api/auth/oauth/exchange', {
+          provider: 'custom_apps',
+          token: apiToken,
+          metadata: { name: appName, app_id: appName.toLowerCase().replace(/\s+/g, '-') }
+        }, headers);
+
+        toast({
+          title: "Success",
+          description: `${appName} connected successfully!`,
+        });
+
+        // Auto-register data source
+        try {
+          await dataClient.post('/api/v1/sources', {
+            type: 'custom',
+            name: appName,
+            uri: `custom://${appName.toLowerCase().replace(/\s+/g, '-')}`,
+            credentials: { access_token: apiToken },
+          }, headers);
+          console.log(`[registerDataSource] Successfully registered custom app source for data streaming`);
+        } catch (err) {
+          console.error(`[registerDataSource] Failed to register source for custom app:`, err);
+        }
+
+        await fetchConnections({ overrideToken: effectiveToken });
+        if (refreshConnections) refreshConnections();
+
+        return;
+      }
+
+      toast({ title: 'Error', description: `Platform ${platform} connection is not supported.`, variant: 'destructive' });
 
     } catch (error) {
       console.error('Error connecting platform:', error);
