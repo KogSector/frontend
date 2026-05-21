@@ -523,11 +523,39 @@ export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle
   return featureToggleClient.get(`/api/toggles/${name}`);
 }
 
+const toggleCache: {
+  [key: string]: {
+    enabled: boolean;
+    timestamp: number;
+  };
+} = {};
+
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
 export async function isToggleEnabled(name: string): Promise<boolean> {
+  const now = Date.now();
+  
+  // 1. Check if we have a fresh cached value
+  if (toggleCache[name] && (now - toggleCache[name].timestamp < CACHE_TTL_MS)) {
+    return toggleCache[name].enabled;
+  }
+
   try {
     const response = await getToggle(name);
-    return response.data?.enabled || false;
-  } catch {
+    const enabled = response.data?.enabled || false;
+    
+    // 2. Update cache with fresh value
+    toggleCache[name] = { enabled, timestamp: now };
+    return enabled;
+  } catch (error) {
+    console.warn(`[isToggleEnabled] Failed to fetch toggle "${name}", falling back to cache if available.`, error);
+    
+    // 3. Fallback to expired cache if service is down
+    if (toggleCache[name]) {
+      return toggleCache[name].enabled;
+    }
+    
+    // 4. Default to disabled only if no cache exists
     return false;
   }
 }
