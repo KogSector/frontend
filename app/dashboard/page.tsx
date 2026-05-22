@@ -104,9 +104,9 @@ export default function Dashboard() {
 
       // Use the centralized dashboard stats API
       const [dashboardStatsResp, sourcesResp, agentsResp] = await Promise.all([
-        import('@/lib/api').then(api => api.getDashboardStats()),
-        getSources(),
-        getAgents()
+        import('@/lib/api').then(api => api.getDashboardStats()).catch(() => null),
+        getSources().catch(() => null),
+        getAgents().catch(() => null)
       ]);
 
       if (dashboardStatsResp && dashboardStatsResp.success === false) {
@@ -122,7 +122,7 @@ export default function Dashboard() {
       }
       
       // Merge in repositories if needed for the recent list
-      const reposResp = await import('@/lib/api').then(api => api.getRepositories());
+      const reposResp = await import('@/lib/api').then(api => api.getRepositories()).catch(() => null);
       if (reposResp && (reposResp as any).success) {
         const repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
         const repoSources = repos.map((repo: any) => ({
@@ -203,11 +203,6 @@ export default function Dashboard() {
                 <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConFuse</h1>
               </div>
               <div className="flex items-center gap-4">
-                {!hideSwitchUse && (
-                  <Link href="/onboarding?edit=true">
-                    <Button variant="outline" size="sm">Switch Use</Button>
-                  </Link>
-                )}
                 <ProfileAvatar />
               </div>
             </div>

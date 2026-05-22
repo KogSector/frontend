@@ -516,11 +516,15 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return featureToggleClient.get('/api/toggles');
+  const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const res = await fetch(`${baseUrl}/api/toggles`);
+  return res.json();
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return featureToggleClient.get(`/api/toggles/${name}`);
+  const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const res = await fetch(`${baseUrl}/api/toggles/${encodeURIComponent(name)}`);
+  return res.json();
 }
 
 const toggleCache: {
@@ -548,9 +552,9 @@ export async function isToggleEnabled(name: string): Promise<boolean> {
     toggleCache[name] = { enabled, timestamp: now };
     return enabled;
   } catch (error) {
-    console.warn(`[isToggleEnabled] Failed to fetch toggle "${name}", falling back to cache if available.`, error);
+    console.warn(`[isToggleEnabled] Database fetch failed for toggle "${name}". Falling back to stale cache.`, error);
     
-    // 3. Fallback to expired cache if service is down
+    // 3. Fallback to expired cache if DB is down
     if (toggleCache[name]) {
       return toggleCache[name].enabled;
     }
