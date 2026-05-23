@@ -214,7 +214,7 @@ export function SocialConnections() {
       // Auth0-based providers (Google Drive, OneDrive, Bitbucket, GitLab, Dropbox)
       // These use Auth0's loginWithPopup to link the social provider
       // ----------------------------------------------------------------
-      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'bitbucket' || platform === 'gitlab' || platform === 'dropbox') {
+      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'dropbox') {
         let connectionName = platform;
         let authorizationParams: any = {};
 
@@ -223,10 +223,6 @@ export function SocialConnections() {
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
         } else if (platform === 'onedrive') {
           connectionName = 'windowslive';
-        } else if (platform === 'gitlab') {
-          connectionName = 'gitlab';
-        } else if (platform === 'bitbucket') {
-          connectionName = 'bitbucket';
         } else if (platform === 'dropbox') {
           connectionName = 'dropbox';
         }
@@ -271,7 +267,7 @@ export function SocialConnections() {
       // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence)
       // These open a popup to the provider's OAuth authorize URL directly
       // ----------------------------------------------------------------
-      if (platform === 'github' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence') {
+      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence') {
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 
