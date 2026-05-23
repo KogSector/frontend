@@ -364,6 +364,7 @@ export function SocialConnections() {
       await authClient.delete(`/api/auth/connections/${platform}`, headers);
 
       setConnections(prev => prev.filter(conn => conn.id !== connectionId));
+      if (refreshConnections) refreshConnections();
       toast({
         title: "Success",
         description: "Platform disconnected successfully"
