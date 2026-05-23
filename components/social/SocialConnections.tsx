@@ -150,17 +150,20 @@ export function SocialConnections() {
             description: `${data.provider} connected successfully!`,
           })
           
-          // Auto-register data source
-          try {
-            const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
-            await dataClient.post('/api/v1/sources', {
-              type: data.provider,
-              name: `${platformName} Connection`,
-              uri: `oauth://${data.provider}`,
-            }, headers);
-            console.log(`[registerDataSource] Successfully registered ${data.provider} source for data streaming`);
-          } catch (err) {
-            console.error(`[registerDataSource] Failed to register source for ${data.provider}:`, err);
+          // Auto-register data source for non-git providers
+          const gitProviders = ['github', 'gitlab', 'bitbucket'];
+          if (!gitProviders.includes(data.provider)) {
+            try {
+              const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
+              await dataClient.post('/api/v1/sources', {
+                type: data.provider,
+                name: `${platformName} Connection`,
+                uri: `oauth://${data.provider}`,
+              }, headers);
+              console.log(`[registerDataSource] Successfully registered ${data.provider} source for data streaming`);
+            } catch (err) {
+              console.error(`[registerDataSource] Failed to register source for ${data.provider}:`, err);
+            }
           }
 
           // Refresh connections in-place (no skeleton) and update global state

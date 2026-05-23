@@ -373,12 +373,16 @@ export async function testAgent(id: string): Promise<ApiResponse<{ connected: bo
 export async function getDashboardStats(): Promise<ApiResponse> {
   // This now calls frontend API route, not microservice
   const token = typeof window !== 'undefined' ? localStorage.getItem('confuse_auth_token') : null;
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('confuse_user_id') : null;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (userId) {
+    headers['x-user-id'] = userId;
   }
 
   const response = await fetch('/api/dashboard/stats', { headers, cache: 'no-store' });
