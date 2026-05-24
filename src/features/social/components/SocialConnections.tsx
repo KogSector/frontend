@@ -211,18 +211,16 @@ export function SocialConnections() {
   const connectPlatform = async (platform: string) => {
     try {
       // ----------------------------------------------------------------
-      // Auth0-based providers (Google Drive, OneDrive, Bitbucket, GitLab, Dropbox)
+      // Auth0-based providers (Google Drive, Bitbucket, GitLab, Dropbox)
       // These use Auth0's loginWithPopup to link the social provider
       // ----------------------------------------------------------------
-      if (platform === 'google_drive' || platform === 'onedrive' || platform === 'dropbox') {
+      if (platform === 'google_drive' || platform === 'dropbox') {
         let connectionName = platform;
         let authorizationParams: any = {};
 
         if (platform === 'google_drive') {
           connectionName = 'google-oauth2';
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
-        } else if (platform === 'onedrive') {
-          connectionName = 'windowslive';
         } else if (platform === 'dropbox') {
           connectionName = 'dropbox';
         }
@@ -264,10 +262,10 @@ export function SocialConnections() {
       }
 
       // ----------------------------------------------------------------
-      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence)
+      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence, OneDrive)
       // These open a popup to the provider's OAuth authorize URL directly
       // ----------------------------------------------------------------
-      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence') {
+      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence' || platform === 'onedrive') {
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 

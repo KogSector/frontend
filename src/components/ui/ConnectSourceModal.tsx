@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { dataApiClient, listAuthConnections, unwrapResponse, ApiResponse } from "@/lib/api";
 import { Upload, Cloud, Loader2, CheckCircle2, XCircle, FolderOpen, FileText, HardDrive, Droplets, BookOpen } from "lucide-react";
+import { CloudFileBrowser, CloudFile } from "./CloudFileBrowser";
 
 interface ConnectSourceModalProps {
   open: boolean;
@@ -35,6 +36,8 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({ status: "idle" });
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  const [browserOpen, setBrowserOpen] = useState(false);
+  const [activeProvider, setActiveProvider] = useState("");
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -117,11 +120,19 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const handleThirdPartyConnect = async (service: string) => {
     setConnectionStatus({ status: "connecting" });
     try {
-      if (service === 'google_drive' || service === 'dropbox') {
+      if (service === 'google_drive' || service === 'dropbox' || service === 'onedrive') {
         const connected = await ensureProviderConnected(service);
         if (!connected) {
-          setConnectionStatus({ status: "error", message: `Please connect ${service === 'google_drive' ? 'Google Drive' : 'Dropbox'} in Social Connections first` });
+          const providerName = service === 'google_drive' ? 'Google Drive' : service === 'onedrive' ? 'OneDrive' : 'Dropbox';
+          setConnectionStatus({ status: "error", message: `Please connect ${providerName} in Social Connections first` });
           return;
+        }
+
+        if (service === 'onedrive') {
+           setConnectionStatus({ status: "idle" });
+           setActiveProvider(service);
+           setBrowserOpen(true);
+           return;
         }
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -131,6 +142,28 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     } catch {
       setConnectionStatus({ status: "error", message: `Failed to connect to ${service}` });
       toast({ title: "Error", description: `Failed to connect to ${service}`, variant: "destructive" });
+    }
+  };
+
+  const handleFilesSelected = async (files: CloudFile[]) => {
+    setConnectionStatus({ status: "connecting" });
+    try {
+      const itemIds = files.map(f => f.id);
+      
+      const payload = {
+        type: activeProvider,
+        name: `${activeProvider} Selected Files`,
+        uri: `oauth://${activeProvider}`,
+        credentials: { item_ids: itemIds }
+      };
+
+      await dataApiClient.post("/api/v1/sources", payload);
+      setConnectionStatus({ status: "success", message: `Successfully synced ${files.length} file(s) from ${activeProvider}` });
+      toast({ title: "Success", description: `Started sync for ${files.length} file(s)` });
+      setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);
+    } catch (error) {
+      setConnectionStatus({ status: "error", message: "Failed to start sync" });
+      toast({ title: "Error", description: "Failed to start sync", variant: "destructive" });
     }
   };
 
@@ -256,6 +289,14 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
           </p>
         </div>
       </DialogContent>
+      {browserOpen && (
+        <CloudFileBrowser
+          open={browserOpen}
+          onOpenChange={setBrowserOpen}
+          provider={activeProvider}
+          onFilesSelected={handleFilesSelected}
+        />
+      )}
     </Dialog>
   );
 }
