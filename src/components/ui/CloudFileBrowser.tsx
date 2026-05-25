@@ -52,9 +52,10 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
       }
     } catch (error) {
       console.error("Failed to fetch files:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load files from " + provider;
       toast({
         title: "Error",
-        description: "Failed to load files from " + provider,
+        description: errorMessage,
         variant: "destructive"
       });
       setFiles([]);

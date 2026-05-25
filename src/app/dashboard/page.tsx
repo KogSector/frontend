@@ -280,7 +280,7 @@ export default function Dashboard() {
                         <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                           <Bot className="w-7 h-7" />
                         </div>
-                        <span className="font-semibold text-center leading-tight">Manage AI Agents</span>
+                        <span className="font-semibold text-center leading-tight">Manage Agents</span>
                       </div>
 
                     </div>

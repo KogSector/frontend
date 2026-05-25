@@ -196,7 +196,7 @@ class ConFuseLogger {
 
 
     if (metric.includes('duration')) {
-      const threshold = metric === 'page_load_duration' ? 2500 : 1000;
+      const threshold = metric === 'page_load_duration' ? 2500 : 3000;
       if (value > threshold) {
         this.warn(`Slow operation detected: ${metric}`, { value, threshold, ...context });
       }
