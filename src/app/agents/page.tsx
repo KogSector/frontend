@@ -1,9 +1,9 @@
 "use client";
 
-import { AuthGuard } from "@/features/auth/components/AuthGuard";
+import { AuthGuard } from "@/app/auth/components/AuthGuard";
 import { Footer } from "@/components/layout/footer";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
-import { AgentsDashboard } from "@/features/agents/components/AgentsDashboard";
+import { AgentsDashboard } from "@/app/agents/components/AgentsDashboard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bot } from "lucide-react";
 import Link from "next/link";

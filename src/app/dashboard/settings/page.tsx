@@ -9,7 +9,7 @@ import {
   BillingSettings,
   TeamSettings,
   DeveloperSettings
-} from "@/features/settings/components";
+} from "@/app/dashboard/settings/components";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/layout/footer";
 import { ArrowLeft } from "lucide-react";

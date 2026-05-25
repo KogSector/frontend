@@ -479,16 +479,7 @@ export async function importDocumentFromProvider(data: {
   return dataClient.post('/api/data/documents/import', data);
 }
 
-// -- Ebooks & Videos upload (frontend helper proxies to frontend API routes)
-export async function uploadEbook(form: FormData): Promise<ApiResponse> {
-  const response = await fetch('/api/sources/ebooks', { method: 'POST', body: form });
-  return response.json();
-}
 
-export async function uploadVideo(form: FormData): Promise<ApiResponse> {
-  const response = await fetch('/api/sources/videos', { method: 'POST', body: form });
-  return response.json();
-}
 
 export function unwrapResponse<T = unknown>(resp: unknown): T | undefined {
   if (typeof resp === 'object' && resp !== null) {

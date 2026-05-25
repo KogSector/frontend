@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
-import { HeroSection } from "@/features/landing/components/HeroSection";
+import { HeroSection } from "@/app/components/HeroSection";
 import { Navbar } from "@/components/layout/navbar";
 import { useAuth } from '@/contexts/auth'
 
-const FeaturesSection = dynamic(() => import("@/features/landing/components/FeaturesSection").then(mod => mod.FeaturesSection), {
+const FeaturesSection = dynamic(() => import("@/app/components/FeaturesSection").then(mod => mod.FeaturesSection), {
   loading: () => <div className="h-[400px] animate-pulse bg-muted/10" />
 });
 

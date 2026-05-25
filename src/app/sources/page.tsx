@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, RefreshCw, Trash2, FileText, MessageSquare, GitBranch } from 'lucide-react';
-import { ConnectDataSourceDialog } from '@/features/sources/components/ConnectDialog';
+import { ConnectDataSourceDialog } from '@/app/sources/components/ConnectDialog';
 import { getSources, syncSource, deleteSource } from '@/lib/api';
 import Link from 'next/link';
 

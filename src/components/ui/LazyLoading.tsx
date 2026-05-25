@@ -35,6 +35,6 @@ export function lazyLoad<T extends ComponentType<any>>(
 
 
 export const LazySocialConnections = lazyLoad(
-  () => import('@/features/social/components/SocialConnections'),
+  () => import('@/app/connections/components/SocialConnections'),
   () => <LoadingSkeleton height="h-32" className="border" />
 )

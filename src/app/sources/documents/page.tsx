@@ -61,12 +61,12 @@ export default function DocumentsPage() {
   const [analytics, setAnalytics] = useState<DocumentAnalytics | null>(null);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   // Custom dialog states
   const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
   const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const hasLoadedRef = useRef(false);
   const { token } = useAuth();
   const { toast } = useToast();
@@ -80,7 +80,7 @@ export default function DocumentsPage() {
 
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      
+
       // Fetch documents, analytics and sources in parallel
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
         dataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
@@ -101,10 +101,10 @@ export default function DocumentsPage() {
         const respData = (docsResp.value as any).data;
         const docsData = Array.isArray(respData?.data) ? respData.data : (Array.isArray(respData) ? respData : []);
         setDocuments(docsData);
-        
+
         // Build sources from real sources first, then add derived ones for demo docs
         const sourceMap = new Map<string, DocumentSource>();
-        
+
         // Add real document sources
         realSourcesMap.forEach((s) => {
           // Only show document-related sources here (upload, gdrive, etc)
@@ -225,7 +225,7 @@ export default function DocumentsPage() {
   const handleDeleteSource = (sourceId: string) => {
     // Check if it's a UUID (real source) or a derived demo source
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId);
-    
+
     if (!isUuid) {
       // Demo source - just remove from local state
       setSources(prev => prev.filter(s => s.id !== sourceId));
@@ -241,7 +241,7 @@ export default function DocumentsPage() {
 
   const confirmDeleteSource = async () => {
     if (!deleteSourceId) return;
-    
+
     const sourceId = deleteSourceId;
     setDeleteSourceId(null);
     setIsDeleting(true);
@@ -296,7 +296,7 @@ export default function DocumentsPage() {
 
   const confirmDeleteDocument = async () => {
     if (!deleteDocId) return;
-    
+
     const docId = deleteDocId;
     setDeleteDocId(null);
     setIsDeleting(true);
@@ -395,7 +395,7 @@ export default function DocumentsPage() {
             </Button>
             <Button onClick={() => setShowConnectModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Connect Docs
+              Connect
             </Button>
           </div>
         </div>
@@ -444,8 +444,8 @@ export default function DocumentsPage() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleSyncSource(source.id)}
                         disabled={loading}
@@ -453,9 +453,9 @@ export default function DocumentsPage() {
                         <RefreshCw className={`w-4 h-4 mr-1 ${source.status === 'syncing' ? 'animate-spin' : ''}`} />
                         Sync
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="text-red-500 hover:text-red-700"
                         onClick={() => handleDeleteSource(source.id)}
                         disabled={loading}
@@ -527,9 +527,9 @@ export default function DocumentsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="text-red-500 hover:text-red-700 hover:bg-red-500/10"
                             onClick={() => handleDeleteDocument(doc.id)}
                           >

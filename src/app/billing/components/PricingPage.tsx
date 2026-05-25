@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Check } from "lucide-react";
 
-export default function Pricing() {
+export function PricingPage() {
   const plans = [
     {
       name: "Free",

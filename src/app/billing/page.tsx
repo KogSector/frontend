@@ -9,29 +9,19 @@ import { ArrowLeft, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar'
 import { Footer } from '@/components/layout/footer'
-import { BillingDashboard } from '@/features/billing/components/BillingDashboard'
-import { SubscriptionPlans } from '@/features/billing/components/SubscriptionPlans'
-import { PaymentMethods } from '@/features/billing/components/PaymentMethods'
-import { InvoiceHistory } from '@/features/billing/components/InvoiceHistory'
-import { UsageTracking } from '@/features/billing/components/UsageTracking'
+import { BillingDashboard } from '@/app/billing/components/BillingDashboard'
+import { SubscriptionPlans } from '@/app/billing/components/SubscriptionPlans'
+import { PaymentMethods } from '@/app/billing/components/PaymentMethods'
+import { InvoiceHistory } from '@/app/billing/components/InvoiceHistory'
+import { UsageTracking } from '@/app/billing/components/UsageTracking'
+import { PricingPage } from '@/app/billing/components/PricingPage'
 
 export default function BillingPage() {
   const { isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
 
   if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please log in to access your billing information.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    )
+    return <PricingPage />
   }
 
   return (

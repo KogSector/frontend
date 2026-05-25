@@ -8,7 +8,7 @@ import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/layout/footer").then(mod => mod.Footer));
-import { AuthGuard } from "@/features/auth/components/AuthGuard";
+import { AuthGuard } from "@/app/auth/components/AuthGuard";
 import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent, authClient, isToggleEnabled } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";

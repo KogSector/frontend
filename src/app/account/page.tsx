@@ -7,10 +7,10 @@ import { useAuth } from '@/contexts/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ProfileSettings } from '@/features/account/components/ProfileSettings'
-import { SecuritySettings } from '@/features/account/components/SecuritySettings'
-import { NotificationSettings } from '@/features/account/components/NotificationSettings'
-import { AccountDeletion } from '@/features/account/components/AccountDeletion'
+import { ProfileSettings } from '@/app/account/components/ProfileSettings'
+import { SecuritySettings } from '@/app/account/components/SecuritySettings'
+import { NotificationSettings } from '@/app/account/components/NotificationSettings'
+import { AccountDeletion } from '@/app/account/components/AccountDeletion'
 
 export default function AccountPage() {
   const { isAuthenticated } = useAuth()

@@ -9,7 +9,7 @@ import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
  import { useRouter } from "next/navigation"; 
 
 import { useAuth0 } from "@auth0/auth0-react";
-import SocialConnections from '@/features/social/components/SocialConnections';
+import SocialConnections from '@/app/connections/components/SocialConnections';
 
  type NavbarProps = {
    showUserMenu?: boolean;
@@ -55,7 +55,7 @@ import SocialConnections from '@/features/social/components/SocialConnections';
             <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
               Documentation
             </Link>
-            <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/billing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
 
@@ -113,7 +113,7 @@ import SocialConnections from '@/features/social/components/SocialConnections';
               <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
                 Documentation
               </Link>
-              <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/billing" className="text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </Link>
 

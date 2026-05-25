@@ -260,29 +260,20 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
         }
       }
 
-      const response = await fetch('/api/sources/repositories/fetch-branches', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ 
+      const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      let result: any;
+      try {
+        result = await dataApiClient.post('/api/repositories/fetch-branches', {
           repoUrl: repositoryUrl.trim(),
           credentials: Object.keys(fetchCredentials).length > 0 ? fetchCredentials : null
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || (result && result.error)) {
-        let message = result?.error || 'Repository access check failed. Please verify the URL and permissions.';
+        }, headers);
+      } catch (err: any) {
+        let message = err.message || 'Repository access check failed. Please verify the URL and permissions.';
         if (message.toLowerCase().includes('connect') && message.toLowerCase().includes('social connections')) {
           setNeedsSocialConnect(provider);
         }
-        setFetchBranchesError(message);
-        setBranches([]);
-        setIsValidated(false);
-        return;
+        throw new Error(message);
       }
 
       const responseData = result.data || result;
