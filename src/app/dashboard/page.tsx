@@ -73,7 +73,6 @@ export default function Dashboard() {
     activity: [],
   });
   const [loading, setLoading] = useState(true);
-  const [preset, setPreset] = useState<string | null>(null);
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
   const [hideSwitchUse, setHideSwitchUse] = useState(false);
@@ -84,22 +83,6 @@ export default function Dashboard() {
     try {
       if (!isAutoRefresh) {
         setLoading(true);
-      }
-
-      // Fetch onboarding status first (only on initial load)
-      if (!isAutoRefresh) {
-        const hideOnboarding = await isToggleEnabled('hideOnboarding').catch(() => false);
-        const onboardingRes = await authClient.get<any>('/api/v1/user/onboarding').catch((e) => {
-          console.error("Onboarding fetch failed:", e);
-          return null;
-        });
-        if (onboardingRes && onboardingRes.data) {
-          if (!onboardingRes.data.onboardingCompleted && !hideOnboarding) {
-            router.push('/onboarding');
-            return;
-          }
-          setPreset(onboardingRes.data.dashboardPreset || null);
-        }
       }
 
       // Use the centralized dashboard stats API
@@ -120,7 +103,7 @@ export default function Dashboard() {
       if (sourcesResp && sourcesResp.success) {
         sources = (sourcesResp as any).sources || (sourcesResp as any).data || [];
       }
-      
+
       // Merge in repositories if needed for the recent list
       const reposResp = await import('@/lib/api').then(api => api.getRepositories()).catch(() => null);
       if (reposResp && (reposResp as any).success) {
@@ -132,7 +115,7 @@ export default function Dashboard() {
           status: repo.status || 'active',
           uri: repo.url,
         }));
-        
+
         repoSources.forEach((rs: SourceItem) => {
           if (!sources.some(s => s.id === rs.id)) {
             sources.push(rs);
@@ -172,7 +155,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    
+
     // Fetch hideSwitchUse toggle and keep it fresh in real-time
     const checkToggles = () => {
       isToggleEnabled('hideSwitchUse')
@@ -182,7 +165,7 @@ export default function Dashboard() {
 
     checkToggles();
     const toggleInterval = setInterval(checkToggles, 5000);
-    
+
     // Set up auto-refresh interval (every 30 seconds)
     const interval = setInterval(() => {
       fetchData(true);
@@ -214,67 +197,6 @@ export default function Dashboard() {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-6 mt-7">
-                {preset === 'education_preset' ? (
-                  <>
-                    <Link href="/sources/urls" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl p-6 shadow-2xl border border-orange-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <LinkIcon className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Add URLs</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/documents" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl p-6 shadow-2xl border border-emerald-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <FileText className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Add Documents</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/ebooks" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-sky-500 to-indigo-600 hover:from-indigo-600 hover:to-sky-600 text-white rounded-2xl p-6 shadow-2xl border border-sky-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <BookOpen className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Add Ebooks</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link href="/sources/videos" className="group">
-                      <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-yellow-500 to-orange-500 hover:from-orange-500 hover:to-yellow-600 text-white rounded-2xl p-6 shadow-2xl border border-yellow-400/20 backdrop-blur-sm transition-all duration-300">
-                          <div className="flex flex-col items-center space-y-3">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                              <FileText className="w-7 h-7" />
-                            </div>
-                            <span className="font-semibold text-center leading-tight">Add Videos (YouTube / Local)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </>
-                ) : (
-
-                <>
                 <Link href="/sources/repositories" className="group">
                   <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
@@ -394,8 +316,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </Link>
-                </>
-                )}
               </div>
             </div>
 
