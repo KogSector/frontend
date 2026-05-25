@@ -350,7 +350,19 @@ class ConFuseLogger {
     return { selector, text };
   }
 
-  public trackAPICall(url: string, method: string, duration: number, status: number, error?: string) {
+  public trackAPICall(originalUrl: string, method: string, duration: number, status: number, error?: string) {
+    let url = originalUrl;
+    // Truncate long URLs to avoid polluting the logs
+    if (url.length > 150) {
+      try {
+        const urlObj = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+        urlObj.search = urlObj.search.replace(/([?&](?:code|token|access_token|state|session_state)=)[^&]+/g, '$1<hidden>');
+        url = urlObj.pathname + urlObj.search;
+      } catch (e) {
+        url = url.substring(0, 150) + '...';
+      }
+    }
+
     const context = {
       method,
       status,
@@ -367,7 +379,7 @@ class ConFuseLogger {
     }
 
     this.trackPerformance('api_call_duration', duration, {
-      url,
+      url: originalUrl,
       method,
       status
     });

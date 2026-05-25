@@ -249,8 +249,8 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
           </div>
         );
 
-      case 'google-drive':
-        const isGoogleDriveConnected = connectedProviders.includes('google-oauth2');
+      case 'gdrive':
+        const isGoogleDriveConnected = connectedProviders.includes('google_drive');
         return (
           <div className="space-y-4">
             {!isGoogleDriveConnected ? (
@@ -322,7 +322,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
         );
 
       case 'onedrive':
-        const isOneDriveConnected = connectedProviders.includes('windowslive');
+        const isOneDriveConnected = connectedProviders.includes('onedrive');
         return (
           <div className="space-y-4">
             {!isOneDriveConnected ? (
@@ -334,7 +334,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleOAuthConnect('windowslive')}
+                  onClick={() => handleOAuthConnect('onedrive')}
                 >
                   Connect OneDrive
                 </Button>
@@ -432,7 +432,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="github">GitHub</SelectItem>
-                <SelectItem value="google-drive">Google Drive</SelectItem>
+                <SelectItem value="gdrive">Google Drive</SelectItem>
                 <SelectItem value="gitlab">GitLab</SelectItem>
                 <SelectItem value="bitbucket">BitBucket</SelectItem>
                 <SelectItem value="dropbox">Dropbox</SelectItem>

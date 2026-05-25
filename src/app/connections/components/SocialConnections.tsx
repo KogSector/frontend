@@ -150,9 +150,9 @@ export function SocialConnections() {
             description: `${data.provider} connected successfully!`,
           })
           
-          // Auto-register data source for non-git providers
-          const gitProviders = ['github', 'gitlab', 'bitbucket'];
-          if (!gitProviders.includes(data.provider)) {
+          // Auto-register data source for specific providers, exclude git and file storage
+          const noAutoSyncProviders = ['github', 'gitlab', 'bitbucket', 'google_drive', 'google', 'onedrive', 'windowslive'];
+          if (!noAutoSyncProviders.includes(data.provider)) {
             try {
               const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
               await dataClient.post('/api/v1/sources', {
@@ -440,11 +440,7 @@ export function SocialConnections() {
         {(Object.keys(PLATFORM_CONFIGS) as Array<keyof typeof PLATFORM_CONFIGS>).map((platform) => {
           const config = PLATFORM_CONFIGS[platform];
 
-          let targetPlatform = platform as string;
-          if (platform === 'google_drive') targetPlatform = 'google';
-          if (platform === 'onedrive') targetPlatform = 'windowslive';
-
-          let connection = connections.find(c => c.platform === targetPlatform);
+          let connection = connections.find(c => c.platform === platform);
           const isConnected = connection?.is_active;
 
           return (
