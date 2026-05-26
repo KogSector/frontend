@@ -33,8 +33,6 @@ spec:
           value: "http://data-connector:8081"
         - name: NEXT_PUBLIC_UNIFIED_PROCESSOR_URL
           value: "http://unified-processor:8090"
-        - name: NEXT_PUBLIC_RELATION_GRAPH_URL
-          value: "http://relation-graph:3002"
         - name: NEXT_PUBLIC_MCP_URL
           value: "http://client-connector:8095"
         - name: NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL

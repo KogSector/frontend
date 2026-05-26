@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
       { name: 'auth-middleware', url: SERVICE_URLS.auth },
       { name: 'unified-processor', url: SERVICE_URLS.unifiedProcessor },
       { name: 'embeddings-service', url: SERVICE_URLS.embeddingsService },
-      { name: 'relation-graph', url: SERVICE_URLS.relationGraph },
       { name: 'mcp-server', url: SERVICE_URLS.mcpServer }
     ]
 

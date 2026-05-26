@@ -292,7 +292,6 @@ export const dataClient = new ApiClient(SERVICE_URLS.dataConnector, 'data-connec
 export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'unified-processor');
 
 /** Relation graph service (search, relationships, entity evolution) */
-export const graphClient = new ApiClient(SERVICE_URLS.relationGraph, 'relation-graph');
 
 /** MCP server (Agent protocol) */
 export const mcpClient = new ApiClient(SERVICE_URLS.mcpServer, 'mcp-server');
