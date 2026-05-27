@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { OAuthEmailDialog } from '../../connections/components/OAuthEmailDialog';
 
 interface ConnectDataSourceDialogProps {
   open: boolean;
@@ -23,6 +24,8 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
   const [credentials, setCredentials] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailDialogPlatform, setEmailDialogPlatform] = useState<string | null>(null);
   const { loginWithPopup, getAccessTokenSilently, token } = useAuth();
 
   // Fetch connected providers on open
@@ -86,13 +89,15 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
     }
   }, [open]);
 
-  const handleOAuthConnect = async (provider: string) => {
+  const handleOAuthConnect = async (provider: string, emailHint?: string) => {
     try {
       setLoading(true);
+      const authorizationParams: any = { connection: provider };
+      if (emailHint) {
+        authorizationParams.login_hint = emailHint;
+      }
       await loginWithPopup({
-        authorizationParams: {
-          connection: provider,
-        }
+        authorizationParams
       });
 
       // Sync connections after successful login/link
@@ -262,7 +267,10 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleOAuthConnect('google-oauth2')}
+                  onClick={() => {
+                    setEmailDialogPlatform('google-oauth2');
+                    setEmailDialogOpen(true);
+                  }}
                 >
                   Connect Google Drive
                 </Button>
@@ -298,7 +306,10 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleOAuthConnect('dropbox')}
+                  onClick={() => {
+                    setEmailDialogPlatform('dropbox');
+                    setEmailDialogOpen(true);
+                  }}
                 >
                   Connect Dropbox
                 </Button>
@@ -334,7 +345,10 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleOAuthConnect('onedrive')}
+                  onClick={() => {
+                    setEmailDialogPlatform('onedrive');
+                    setEmailDialogOpen(true);
+                  }}
                 >
                   Connect OneDrive
                 </Button>
@@ -370,7 +384,10 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleOAuthConnect('notion')}
+                  onClick={() => {
+                    setEmailDialogPlatform('notion');
+                    setEmailDialogOpen(true);
+                  }}
                 >
                   Connect Notion
                 </Button>
@@ -458,6 +475,14 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
           </div>
         </div>
       </DialogContent>
+      {emailDialogPlatform && (
+        <OAuthEmailDialog
+          open={emailDialogOpen}
+          onOpenChange={setEmailDialogOpen}
+          platformName={emailDialogPlatform === 'google-oauth2' ? 'Google Drive' : emailDialogPlatform.charAt(0).toUpperCase() + emailDialogPlatform.slice(1)}
+          onContinue={(email) => handleOAuthConnect(emailDialogPlatform, email)}
+        />
+      )}
     </Dialog>
   );
 }

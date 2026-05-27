@@ -21,6 +21,7 @@ import NotionIcon from '@/components/icons/NotionIcon'
 import JiraIcon from '@/components/icons/JiraIcon'
 import ConfluenceIcon from '@/components/icons/ConfluenceIcon'
 import CustomAppsIcon from '@/components/icons/CustomAppsIcon'
+import { OAuthEmailDialog } from './OAuthEmailDialog';
 
 interface SocialConnection {
   id: string;
@@ -49,6 +50,8 @@ export function SocialConnections() {
   const [connections, setConnections] = useState<SocialConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailDialogPlatform, setEmailDialogPlatform] = useState<string | null>(null);
   // Use a Set in a ref to track codes that have been processed (prevents duplicate exchanges)
   const processedCodesRef = useRef<Set<string>>(new Set());
   // Track whether initial load has completed to avoid skeleton flash on subsequent fetches
@@ -208,7 +211,7 @@ export function SocialConnections() {
 
 
 
-  const connectPlatform = async (platform: string) => {
+  const connectPlatform = async (platform: string, emailHint?: string) => {
     try {
       // ----------------------------------------------------------------
       // Auth0-based providers (Google Drive, Bitbucket, GitLab, Dropbox)
@@ -221,8 +224,10 @@ export function SocialConnections() {
         if (platform === 'google_drive') {
           connectionName = 'google-oauth2';
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
+          if (emailHint) authorizationParams.login_hint = emailHint;
         } else if (platform === 'dropbox') {
           connectionName = 'dropbox';
+          if (emailHint) authorizationParams.login_hint = emailHint;
         }
 
         authorizationParams.connection = connectionName;
@@ -269,9 +274,14 @@ export function SocialConnections() {
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 
+        let url = `/api/auth/oauth/url?provider=${platform}`;
+        if (emailHint) {
+          url += `&login_hint=${encodeURIComponent(emailHint)}`;
+        }
+        
         // Get the OAuth URL from auth-middleware
         const urlResp = await authClient.get<{ url: string; provider: string }>(
-          `/api/auth/oauth/url?provider=${platform}`,
+          url,
           headers
         );
 
@@ -478,7 +488,14 @@ export function SocialConnections() {
                   <Button
                     title={`Connect ${config.name}`}
                     aria-label={`Connect ${config.name}`}
-                    onClick={() => connectPlatform(platform)}
+                    onClick={() => {
+                      if (['google_drive', 'dropbox', 'onedrive', 'notion'].includes(platform)) {
+                        setEmailDialogPlatform(platform);
+                        setEmailDialogOpen(true);
+                      } else {
+                        connectPlatform(platform);
+                      }
+                    }}
                     className="w-full"
                     variant="outline"
                   >
@@ -492,6 +509,15 @@ export function SocialConnections() {
         })}
       </div>
       </div>
+      
+      {emailDialogPlatform && (
+        <OAuthEmailDialog
+          open={emailDialogOpen}
+          onOpenChange={setEmailDialogOpen}
+          platformName={PLATFORM_CONFIGS[emailDialogPlatform as keyof typeof PLATFORM_CONFIGS]?.name || emailDialogPlatform}
+          onContinue={(email) => connectPlatform(emailDialogPlatform, email)}
+        />
+      )}
     </div>
   );
 }
