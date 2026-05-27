@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth";
 
 interface AgentModalProps {
   open: boolean;
@@ -33,6 +34,14 @@ const AGENT_CATALOG: Agent[] = [
     category: "ide",
     description: "AI-first Code Editor.",
     iconUrl: "https://www.cursor.com/favicon.ico",
+  },
+  {
+    id: "vscode",
+    name: "VS Code",
+    provider: "Microsoft",
+    category: "ide",
+    description: "The classic IDE, empowered by AI extensions like Cline.",
+    iconUrl: "https://code.visualstudio.com/favicon.ico",
   },
   {
     id: "antigravity",
@@ -106,6 +115,7 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const filteredAgents = AGENT_CATALOG.filter((agent) => {
     const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase()) || agent.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -113,17 +123,20 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
     return matchesSearch && matchesCategory;
   });
 
+  const serverUrl = process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020';
+  const userId = user?.sub || user?.id || 'YOUR_USER_ID';
+  const mcpEndpoint = `${serverUrl}/mcp/sse?userId=${encodeURIComponent(userId)}&rules=default`;
+
   const generateAndCopySnippet = () => {
     if (!selectedAgent) return;
     
     // Snippet logic based on agent type
     let snippet = "";
-    const serverUrl = process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020';
 
     if (selectedAgent.category === 'ide') {
-      snippet = `{\n  "mcpServers": {\n    "confuse": {\n      "type": "sse",\n      "url": "${serverUrl}/mcp/sse"\n    }\n  }\n}`;
+      snippet = `{\n  "mcpServers": {\n    "confuse": {\n      "type": "sse",\n      "url": "${mcpEndpoint}"\n    }\n  }\n}`;
     } else {
-      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the MCP SSE endpoint to: ${serverUrl}/mcp/sse`;
+      snippet = `// Instruction for ${selectedAgent.name}\nConfigure the MCP SSE endpoint to: ${mcpEndpoint}`;
     }
 
     navigator.clipboard.writeText(snippet);
@@ -179,8 +192,8 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
              </p>
              <div className="bg-muted w-full max-w-md p-4 rounded-xl border font-mono text-sm overflow-x-auto whitespace-pre">
                {selectedAgent.category === 'ide' 
-                 ? `{\n  "mcpServers": {\n    "confuse": {\n      "type": "sse",\n      "url": "${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020'}/mcp/sse"\n    }\n  }\n}`
-                 : `// MCP Connection instruction\nEndpoint: ${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020'}/mcp/sse`
+                 ? `{\n  "mcpServers": {\n    "confuse": {\n      "type": "sse",\n      "url": "${mcpEndpoint}"\n    }\n  }\n}`
+                 : `// MCP Connection instruction\nEndpoint: ${mcpEndpoint}`
                }
              </div>
              <div className="flex gap-4 mt-8">

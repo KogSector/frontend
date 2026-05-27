@@ -30,6 +30,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'www.cursor.com' },
+      { protocol: 'https', hostname: 'code.visualstudio.com' },
       { protocol: 'https', hostname: 'www.gstatic.com' },
       { protocol: 'https', hostname: 'www.trae.ai' },
       { protocol: 'https', hostname: 'github.githubassets.com' },
