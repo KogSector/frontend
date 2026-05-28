@@ -79,16 +79,25 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     }
     setConnectionStatus({ status: "connecting" });
     try {
-      const formData = new FormData();
-      selectedFiles.forEach((file) => formData.append("files", file));
-      const result = await dataApiClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/v1/documents/upload", formData);
-      const resultData = (result as any).data;
-      if (resultData?.source_id || resultData?.files_processed > 0) {
+      const uploadPromises = selectedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append("files", file);
+        formData.append("source_name", file.name);
+        return dataApiClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/v1/documents/upload", formData);
+      });
+      const results = await Promise.all(uploadPromises);
+      
+      const allSuccess = results.every(res => {
+        const resultData = (res as any).data;
+        return resultData?.source_id || resultData?.files_processed > 0;
+      });
+
+      if (allSuccess) {
         setConnectionStatus({ status: "success", message: `Successfully uploaded ${selectedFiles.length} file(s)` });
         toast({ title: "Success", description: `Uploaded ${selectedFiles.length} file(s) successfully` });
         setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);
       } else {
-        throw new Error((result as any).message || "Upload failed");
+        throw new Error("One or more uploads failed");
       }
     } catch (error) {
       setConnectionStatus({ status: "error", message: "Failed to upload files" });
@@ -148,26 +157,23 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const handleFilesSelected = async (files: CloudFile[]) => {
     setConnectionStatus({ status: "connecting" });
     try {
-      const itemIds = files.map(f => f.id);
-      
-      const sourceName = files.length === 1 
-        ? files[0].name 
-        : `${files[0].name} and ${files.length - 1} other files`;
+      const syncPromises = files.map(async (file) => {
+        const payload = {
+          type: activeProvider,
+          name: file.name,
+          uri: `oauth://${activeProvider}`,
+          credentials: { item_ids: [file.id] }
+        };
+        return dataApiClient.post("/api/v1/sources", payload);
+      });
 
-      const payload = {
-        type: activeProvider,
-        name: sourceName,
-        uri: `oauth://${activeProvider}`,
-        credentials: { item_ids: itemIds }
-      };
-
-      await dataApiClient.post("/api/v1/sources", payload);
+      await Promise.all(syncPromises);
       setConnectionStatus({ status: "success", message: `Successfully synced ${files.length} file(s) from ${activeProvider}` });
-      toast({ title: "Success", description: `Started sync for ${files.length} file(s)` });
+      toast({ title: "Success", description: `Synced ${files.length} file(s) successfully` });
       setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);
-    } catch (error) {
-      setConnectionStatus({ status: "error", message: "Failed to start sync" });
-      toast({ title: "Error", description: "Failed to start sync", variant: "destructive" });
+    } catch {
+      setConnectionStatus({ status: "error", message: "Failed to sync files" });
+      toast({ title: "Error", description: "Failed to sync files", variant: "destructive" });
     }
   };
 

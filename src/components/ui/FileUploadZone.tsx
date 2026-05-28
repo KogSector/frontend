@@ -109,6 +109,7 @@ export function FileUploadZone({ open, onOpenChange, onUploadComplete }: FileUpl
         // Create FormData for file upload
         const formData = new FormData();
         formData.append('files', uploadFile.file);
+        formData.append('source_name', uploadFile.file.name);
         
         // Use apiClient for the upload
         const result = await apiClient.postForm<{ success: boolean; message: string; data?: any }>('/api/v1/documents/upload', formData);
