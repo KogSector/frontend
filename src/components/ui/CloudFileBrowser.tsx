@@ -138,7 +138,26 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
-  const filteredFiles = files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const ALLOWED_EXTENSIONS = [
+    '.md', '.doc', '.docx', '.txt', '.pdf', 
+    '.rtf', '.csv', '.xls', '.xlsx', '.ppt', '.pptx'
+  ];
+
+  const isAllowedDocument = (fileName: string) => {
+    const lowerName = fileName.toLowerCase();
+    return ALLOWED_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+  };
+
+  const filteredFiles = files.filter(f => {
+    const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    // Always show folders for navigation
+    if (f.type === "folder") return true;
+    
+    // For files, only show allowed documents
+    return isAllowedDocument(f.name);
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
