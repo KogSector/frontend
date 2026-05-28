@@ -489,7 +489,7 @@ export function SocialConnections() {
                     title={`Connect ${config.name}`}
                     aria-label={`Connect ${config.name}`}
                     onClick={() => {
-                      if (['google_drive', 'dropbox', 'onedrive', 'notion'].includes(platform)) {
+                      if (['google_drive', 'dropbox', 'notion'].includes(platform)) {
                         setEmailDialogPlatform(platform);
                         setEmailDialogOpen(true);
                       } else {

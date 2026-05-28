@@ -27,7 +27,7 @@ export function HeroSection() {
   const durationClasses = [
     'anim-duration-3s', 'anim-duration-4s', 'anim-duration-5s', 'anim-duration-6s', 'anim-duration-7s'
   ];
-  
+
   const handleGetStarted = () => {
     if (isAuthenticated) {
       window.location.href = '/dashboard';
@@ -42,13 +42,13 @@ export function HeroSection() {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {}
+      { }
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       <div className={`absolute top-1/4 -left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl ${anim('animate-pulse')}`} />
       <div className={`absolute bottom-1/4 -right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl ${anim('animate-pulse')} ${anim('anim-delay-1000')}`} />
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-primary/5 to-transparent rounded-full" />
-      
-      {}
+
+      { }
       <div className="absolute inset-0 overflow-hidden pointer-events-none hero-floating">
         {[...Array(20)].map((_, i) => (
           <div
@@ -60,7 +60,7 @@ export function HeroSection() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {}
+          { }
           <div className={`space-y-8 ${anim('animate-fade-in-up')}`}>
             <div className="flex items-center gap-4">
               <Badge className="w-fit bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors">
@@ -72,7 +72,7 @@ export function HeroSection() {
                 <span>4.9/5 from early users</span>
               </div>
             </div>
-            
+
             <div className="space-y-6">
               <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
                 <span className={`inline-block ${anim('animate-fade-in-up')}`}>Supercharge Your</span>
@@ -86,12 +86,12 @@ export function HeroSection() {
                 </span>
               </h1>
               <p className={`text-xl text-muted-foreground leading-relaxed max-w-lg ${anim('animate-fade-in-up')} ${anim('anim-delay-600')}`}>
-                Connect repositories, docs, and URLs. Let AI agents access complete context across your entire development ecosystem. 
+                Connect repositories, docs, and URLs. Let AI agents access complete context across your entire development ecosystem.
                 <span className="text-primary font-semibold">Code smarter, not harder.</span>
               </p>
             </div>
 
-            {}
+            { }
             <div className={`grid grid-cols-2 gap-4 ${anim('animate-fade-in-up')} ${anim('anim-delay-800')}`}>
               <div className="flex items-center gap-2 p-3 rounded-lg bg-card/50 border border-border/50 hover:bg-card transition-colors">
                 <Shield className="w-5 h-5 text-accent" />
@@ -111,18 +111,17 @@ export function HeroSection() {
               </div>
             </div>
 
-            {}
+            { }
             <div className={`flex flex-col sm:flex-row gap-4 ${anim('animate-fade-in-up')} ${anim('anim-delay-1000')}`}>
-              <Button 
-                className="h-11 px-8 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 transition-all duration-300 shadow-lg hover:shadow-xl group" 
+              <Button
+                className="h-11 px-8 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 transition-all duration-300 shadow-lg hover:shadow-xl group"
                 onClick={handleGetStarted}
               >
-                <Rocket className="w-4 h-4 mr-2 group-hover:animate-bounce" />
                 Get Started
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button 
-                className="h-11 px-8 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground border-primary/20 hover:border-primary/40 transition-all duration-300 group" 
+              <Button
+                className="h-11 px-8 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground border-primary/20 hover:border-primary/40 transition-all duration-300 group"
                 onClick={handleViewDocs}
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -130,7 +129,7 @@ export function HeroSection() {
               </Button>
             </div>
 
-            {}
+            { }
             <div className={`flex items-center gap-8 text-sm ${anim('animate-fade-in-up')} ${anim('anim-delay-1200')}`}>
               <div className="text-center">
                 <div className="font-bold text-2xl bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">1000+</div>
@@ -147,17 +146,17 @@ export function HeroSection() {
             </div>
           </div>
 
-          {}
+          { }
           <div className={`relative ${anim('animate-fade-in-up')} ${anim('anim-delay-500')}`}>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <div className="relative">
                 <Globe className="w-full h-auto" />
-                {}
+                { }
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-xl -z-10" />
               </div>
             </div>
-            
-            {}
+
+            { }
             <div className={`absolute -top-6 -right-6 bg-gradient-to-r from-card to-card/90 backdrop-blur-sm border border-border/50 rounded-xl p-4 shadow-xl ${anim('animate-fade-in-up')} ${anim('anim-delay-1500')}`}>
               <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 bg-green-500 rounded-full ${anim('animate-pulse')}`} />
@@ -167,7 +166,7 @@ export function HeroSection() {
                 </div>
               </div>
             </div>
-            
+
             <div className={`absolute -bottom-6 -left-6 bg-gradient-to-r from-card to-card/90 backdrop-blur-sm border border-border/50 rounded-xl p-4 shadow-xl ${anim('animate-fade-in-up')} ${anim('anim-delay-1700')}`}>
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-5 h-5 text-primary animate-spin anim-duration-3s" />
@@ -188,7 +187,7 @@ export function HeroSection() {
               </div>
             </div>
 
-            {}
+            { }
             <div className={`absolute top-8 left-8 bg-gradient-to-r from-card to-card/90 backdrop-blur-sm border border-border/50 rounded-xl p-3 shadow-xl ${anim('animate-fade-in-up')} ${anim('anim-delay-2100')}`}>
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-yellow-500" />

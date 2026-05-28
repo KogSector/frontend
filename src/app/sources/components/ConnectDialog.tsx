@@ -345,10 +345,7 @@ export function ConnectDataSourceDialog({ open, onOpenChange, onSuccess }: Conne
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    setEmailDialogPlatform('onedrive');
-                    setEmailDialogOpen(true);
-                  }}
+                  onClick={() => handleOAuthConnect('onedrive')}
                 >
                   Connect OneDrive
                 </Button>
