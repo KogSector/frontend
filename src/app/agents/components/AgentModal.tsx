@@ -178,7 +178,7 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
         {selectedAgent ? (
           <div className="flex-1 flex flex-col items-center justify-center space-y-6 overflow-hidden">
              <div className="p-4 rounded-full bg-primary/10 mb-4">
-                <Image
+                <img
                   src={selectedAgent.iconUrl}
                   alt={selectedAgent.name}
                   width={64}
@@ -235,7 +235,7 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
                   <CardContent className="p-5 flex flex-col gap-4">
                     <div className="flex justify-between items-start w-full">
                       <div className="p-2 rounded-xl bg-primary/10 group-hover:scale-110 transition-transform flex items-center justify-center w-10 h-10 shrink-0">
-                        <Image
+                        <img
                           src={agent.iconUrl}
                           alt={agent.name}
                           width={24}
