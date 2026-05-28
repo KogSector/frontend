@@ -13,7 +13,7 @@ export function Footer() {
               <span className="text-xl font-bold tracking-tight">ConFuse</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Empowering AI agents with the world's most intelligent knowledge layer.
+              Empowering AI agents with the world&apos;s most intelligent knowledge layer.
             </p>
           </div>
           

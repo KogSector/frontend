@@ -214,7 +214,7 @@ export function ProfileManagement() {
           {isChangingPassword ? (
             <div className="space-y-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Click the button below to reset your password. You'll be redirected to a secure page to complete the process.
+                Click the button below to reset your password. You&apos;ll be redirected to a secure page to complete the process.
               </p>
               <div className="flex justify-end">
                 <Button 

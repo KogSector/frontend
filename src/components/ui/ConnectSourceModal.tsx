@@ -150,9 +150,13 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     try {
       const itemIds = files.map(f => f.id);
       
+      const sourceName = files.length === 1 
+        ? files[0].name 
+        : `${files[0].name} and ${files.length - 1} other files`;
+
       const payload = {
         type: activeProvider,
-        name: `${activeProvider} Selected Files`,
+        name: sourceName,
         uri: `oauth://${activeProvider}`,
         credentials: { item_ids: itemIds }
       };

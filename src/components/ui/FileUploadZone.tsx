@@ -108,19 +108,10 @@ export function FileUploadZone({ open, onOpenChange, onUploadComplete }: FileUpl
       try {
         // Create FormData for file upload
         const formData = new FormData();
-        formData.append('file', uploadFile.file);
+        formData.append('files', uploadFile.file);
         
-        // Upload to backend API
-        const response = await fetch('/api/data/documents/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Upload failed: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
+        // Use apiClient for the upload
+        const result = await apiClient.postForm<{ success: boolean; message: string; data?: any }>('/api/v1/documents/upload', formData);
         
         if (result.success) {
           setFiles(prev => prev.map(f => 

@@ -124,7 +124,7 @@ export function AgentModal({ open, onOpenChange, onAgentSelected }: AgentModalPr
   });
 
   const serverUrl = process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020';
-  const userId = user?.sub || user?.id || 'YOUR_USER_ID';
+  const userId = user?.id || 'YOUR_USER_ID';
   const mcpEndpoint = `${serverUrl}/mcp/sse?userId=${encodeURIComponent(userId)}&rules=default`;
 
   const generateAndCopySnippet = () => {

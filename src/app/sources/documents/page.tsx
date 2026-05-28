@@ -580,7 +580,7 @@ export default function DocumentsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove "{documents.find(d => d.id === deleteDocId)?.name}" from the system.
+              This will remove &quot;{documents.find(d => d.id === deleteDocId)?.name}&quot; from the system.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -29,14 +29,14 @@ interface CloudFileBrowserProps {
 
 const getFileIcon = (mimeType?: string, fileName?: string) => {
   const name = (fileName || "").toLowerCase();
-  
+
   if (name.endsWith(".pdf") || mimeType?.includes("pdf")) return <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />;
   if (name.endsWith(".xlsx") || name.endsWith(".csv") || mimeType?.includes("spreadsheet") || mimeType?.includes("excel") || mimeType?.includes("csv")) return <FileSpreadsheet className="w-5 h-5 text-green-600 flex-shrink-0" />;
   if (name.endsWith(".docx") || name.endsWith(".doc") || mimeType?.includes("word")) return <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />;
   if (mimeType?.startsWith("image/") || name.match(/\.(jpg|jpeg|png|gif|svg)$/)) return <ImageIcon className="w-5 h-5 text-purple-500 flex-shrink-0" />;
   if (name.match(/\.(zip|tar|gz|rar)$/)) return <FileArchive className="w-5 h-5 text-yellow-600 flex-shrink-0" />;
   if (name.match(/\.(js|ts|py|java|cpp|html|css|json)$/)) return <FileCode className="w-5 h-5 text-slate-600 flex-shrink-0" />;
-  
+
   return <File className="w-5 h-5 text-gray-400 flex-shrink-0" />;
 };
 
@@ -106,7 +106,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
     }
     setSelectedIds(newSelected);
   };
-  
+
   const handleSelectAll = () => {
     if (selectedIds.size === filteredFiles.length && filteredFiles.length > 0) {
       setSelectedIds(new Set());
@@ -139,7 +139,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
   };
 
   const ALLOWED_EXTENSIONS = [
-    '.md', '.doc', '.docx', '.txt', '.pdf', 
+    '.md', '.doc', '.docx', '.txt', '.pdf',
     '.rtf', '.csv', '.xls', '.xlsx', '.ppt', '.pptx'
   ];
 
@@ -151,10 +151,10 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
   const filteredFiles = files.filter(f => {
     const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
-    
+
     // Always show folders for navigation
     if (f.type === "folder") return true;
-    
+
     // For files, only show allowed documents
     return isAllowedDocument(f.name);
   });
@@ -184,13 +184,13 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
             ) : null}
-            
+
             <div className="flex items-center text-sm px-2 py-1.5 bg-background border rounded-md shadow-sm whitespace-nowrap">
               <span className="font-medium px-1 cursor-pointer hover:text-primary transition-colors" onClick={() => setPathStack([])}>Root</span>
               {pathStack.map((crumb, idx) => (
                 <React.Fragment key={idx}>
                   <ChevronRight className="w-4 h-4 mx-0.5 text-muted-foreground" />
-                  <span 
+                  <span
                     className={`px-1 hover:text-primary cursor-pointer transition-colors ${idx === pathStack.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground"}`}
                     onClick={() => setPathStack(pathStack.slice(0, idx + 1))}
                   >
@@ -200,11 +200,11 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
               ))}
             </div>
           </div>
-          
+
           <div className="relative w-full sm:w-64">
             <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-muted-foreground" />
-            <Input 
-              placeholder="Search files..." 
+            <Input
+              placeholder="Search files..."
               className="h-9 pl-9 bg-background"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -222,13 +222,13 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
               </div>
             </div>
           )}
-          
+
           <ScrollArea className="h-full">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground bg-muted/50 uppercase sticky top-0 z-0">
                 <tr>
                   <th scope="col" className="p-3 w-10 text-center">
-                    <Checkbox 
+                    <Checkbox
                       checked={filteredFiles.length > 0 && selectedIds.size === filteredFiles.length}
                       onCheckedChange={handleSelectAll}
                       disabled={filteredFiles.length === 0}
@@ -251,12 +251,12 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                   </tr>
                 ) : (
                   filteredFiles.map(file => (
-                    <tr 
-                      key={file.id} 
+                    <tr
+                      key={file.id}
                       className={`hover:bg-muted/40 transition-colors group ${selectedIds.has(file.id) ? 'bg-primary/5 hover:bg-primary/10' : ''}`}
                     >
                       <td className="p-3 text-center">
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedIds.has(file.id)}
                           onCheckedChange={() => handleToggleSelect(file)}
                           className={selectedIds.has(file.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 transition-opacity"}
@@ -264,7 +264,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                       </td>
                       <td className="p-3 font-medium text-foreground">
                         {file.type === "folder" ? (
-                          <div 
+                          <div
                             className="flex items-center space-x-3 cursor-pointer group-hover:text-primary transition-colors w-max"
                             onClick={() => handleNavigate(file)}
                           >
@@ -274,7 +274,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                             <span className="truncate">{file.name}</span>
                           </div>
                         ) : (
-                          <div 
+                          <div
                             className="flex items-center space-x-3 cursor-pointer"
                             onClick={() => handleToggleSelect(file)}
                           >
@@ -308,7 +308,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
               <div className="space-x-2 flex">
                 <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                 <Button onClick={handleSubmit} disabled={selectedIds.size === 0} className="shadow-sm">
-                  Add to Workspace
+                  Add
                 </Button>
               </div>
             </div>

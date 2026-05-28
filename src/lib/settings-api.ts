@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { apiClient } from './api';
 
 export class SettingsAPI {
@@ -47,7 +47,7 @@ export class SettingsAPI {
   }
 
   // Local/mocked responses for billing/invoices/sessions
-  static async getBillingInfo(userId: string) {
+  static async getBillingInfo(_userId: string) {
     return {
       success: true,
       data: {
@@ -65,7 +65,7 @@ export class SettingsAPI {
     };
   }
 
-  static async getInvoices(userId: string) {
+  static async getInvoices(_userId: string) {
     return {
       success: true,
       data: [
@@ -88,7 +88,7 @@ export class SettingsAPI {
     return this.updateSettings(userId, { security: settings });
   }
 
-  static async getActiveSessions(userId: string) {
+  static async getActiveSessions(_userId: string) {
     return {
       success: true,
       data: [
@@ -104,7 +104,7 @@ export class SettingsAPI {
     };
   }
 
-  static async revokeSession(userId: string, sessionId: string) {
+  static async revokeSession(_userId: string, _sessionId: string) {
     return {
       success: true,
       data: null
