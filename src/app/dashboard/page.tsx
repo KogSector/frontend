@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/layout/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
-import { getSources, getAgents, deleteUrl, deleteRepository, deleteAgent, authClient, isToggleEnabled } from "@/lib/api";
+import { getSources, deleteUrl, deleteRepository, authClient, isToggleEnabled } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -86,10 +86,9 @@ export default function Dashboard() {
       }
 
       // Use the centralized dashboard stats API
-      const [dashboardStatsResp, sourcesResp, agentsResp] = await Promise.all([
+      const [dashboardStatsResp, sourcesResp] = await Promise.all([
         import('@/lib/api').then(api => api.getDashboardStats()).catch(() => null),
-        getSources().catch(() => null),
-        getAgents().catch(() => null)
+        getSources().catch(() => null)
       ]);
 
       if (dashboardStatsResp && dashboardStatsResp.success === false) {
@@ -125,12 +124,8 @@ export default function Dashboard() {
 
       setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
 
-      // Extract agents data
+      // Agents are handled via DashboardStats now
       let agents: AgentItem[] = [];
-      if (agentsResp) {
-        agents = Array.isArray(agentsResp) ? agentsResp : (agentsResp as any).data || (agentsResp as any).agents || [];
-        setRecentAgents(Array.isArray(agents) ? agents.slice(0, 4) : []);
-      }
 
       // Update stats from the dashboard API
       setStats({
@@ -415,7 +410,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-2 gap-8">
             <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -505,72 +500,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg font-semibold text-foreground">
-                    AI Agents
-                  </CardTitle>
-                  <Button variant="outline" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Connect Agent
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loading ? (
-                  <div className="flex justify-center p-4">
-                    <Activity className="w-6 h-6 animate-spin text-accent" />
-                  </div>
-                ) : recentAgents.length > 0 ? (
-                  recentAgents.map((agent, index) => (
-                    <div key={agent.id || index} className="group/item flex flex-col p-3 rounded-lg bg-muted/20 border border-border gap-2 hover:border-accent/50 transition-colors relative">
-                      <div className="flex items-center justify-between">
-                        <Link href="/agents" className="flex items-center space-x-3 flex-1 min-w-0">
-                          <Bot className="w-5 h-5 text-accent flex-shrink-0" />
-                          <span className="font-medium text-foreground truncate">{agent.name}</span>
-                        </Link>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${agent.status === 'Connected' || agent.status === 'active' ? 'bg-blue-500 shadow-lg shadow-blue-500/50' : 'bg-gray-400'
-                            }`}></div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={async (e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (confirm('Are you sure you want to delete this agent?')) {
-                                try {
-                                  await deleteAgent(agent.id);
-                                  setRecentAgents(prev => prev.filter(a => a.id !== agent.id));
-                                  fetchData(true);
-                                  toast({ title: "Agent Deleted", description: "The agent has been removed." });
-                                } catch (error) {
-                                  toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete agent." });
-                                }
-                              }
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="text-sm text-muted-foreground capitalize">
-                        Provider: {agent.provider || 'Unknown'}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {agent.usage_stats?.total_requests || 0} requests today
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-muted-foreground">
-                    No agents connected.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
 
             <Card className="bg-card border-border">
               <CardHeader>
