@@ -118,14 +118,14 @@ export function SocialConnections() {
         return
       }
 
-      const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string; installation_id?: string }
+      const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string }
 
       if (data.type === 'oauth-connected') {
         // Legacy: popup already did the exchange
         fetchConnections()
-      } else if (data.type === 'oauth-code' && data.provider && (data.code || data.installation_id)) {
+      } else if (data.type === 'oauth-code' && data.provider && data.code) {
         // Prevent duplicate exchange calls - OAuth codes are single-use
-        const codeKey = `${data.provider}:${data.code || data.installation_id}`
+        const codeKey = `${data.provider}:${data.code}`
         if (processedCodesRef.current.has(codeKey)) {
           console.log('OAuth code already processed, skipping duplicate:', codeKey)
           return
@@ -147,11 +147,7 @@ export function SocialConnections() {
             return
           }
           const headers: Record<string, string> = { Authorization: `Bearer ${effectiveToken}` }
-          const exchangePayload = data.installation_id 
-            ? { provider: data.provider, installation_id: data.installation_id }
-            : { provider: data.provider, code: data.code };
-            
-          await authClient.post('/api/auth/oauth/exchange', exchangePayload, headers)
+          await authClient.post('/api/auth/oauth/exchange', { provider: data.provider, code: data.code }, headers)
           toast({
             title: "Success",
             description: `${data.provider} connected successfully!`,

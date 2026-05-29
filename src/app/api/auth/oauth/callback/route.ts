@@ -38,19 +38,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } });
   }
 
-  const installationId = searchParams.get('installation_id')
-
-  if (!code && !installationId) {
-    return new NextResponse('Missing authorization code or installation id', { status: 400 })
+  if (!code) {
+    return new NextResponse('Missing authorization code', { status: 400 })
   }
 
   const safeProvider = sanitize(provider)
   const safeCode = sanitize(code)
-  const safeInstallationId = sanitize(installationId)
-
-  const payload = installationId 
-    ? `{ type: 'oauth-code', provider: '${safeProvider}', installation_id: '${safeInstallationId}' }`
-    : `{ type: 'oauth-code', provider: '${safeProvider}', code: '${safeCode}' }`;
 
   // Render an HTML page that will postMessage back to the opener and close itself
   const html = `
@@ -61,7 +54,7 @@ export async function GET(req: NextRequest) {
       <p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Connecting your account...</p>
       <script>
         if (window.opener) {
-          window.opener.postMessage(${payload}, '*');
+          window.opener.postMessage({ type: 'oauth-code', provider: '${safeProvider}', code: '${safeCode}' }, '*');
           setTimeout(function() { window.close(); }, 500);
         } else {
           document.body.innerHTML = '<p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Authentication successful! You can close this window.</p>';
