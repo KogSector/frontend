@@ -11,18 +11,13 @@ import Link from "next/link";
 export default function AgentsPage() {
   const [copied, setCopied] = useState(false);
 
-  const mcpConfig = `{
-  "mcpServers": {
-    "confuse-connector": {
-      "command": "python",
-      "args": ["-m", "app.mcp_main"]
-    }
-  }
-}`;
+  const mcpUrl = typeof window !== 'undefined' 
+    ? `${window.location.protocol}//${window.location.hostname}:3004/mcp` 
+    : 'https://api.yourdomain.com/mcp';
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(mcpConfig);
+      await navigator.clipboard.writeText(mcpUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -59,13 +54,13 @@ export default function AgentsPage() {
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-4">Connect Your AI Agent</h2>
               <p className="text-muted-foreground text-lg">
-                Use the Model Context Protocol (MCP) configuration below to connect your favorite coding agent (like Claude Desktop or Cursor) to ConFuse.
+                ConFuse provides a remote Model Context Protocol (MCP) server. Provide the URL below to your AI agent or IDE (like Cursor or Windsurf) to connect.
               </p>
             </div>
 
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="flex justify-between items-center px-4 py-3 bg-muted/50 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">mcp_config.json</span>
+                <span className="text-sm font-medium text-muted-foreground">Server-Sent Events (SSE) Endpoint</span>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -86,18 +81,29 @@ export default function AgentsPage() {
                 </Button>
               </div>
               <div className="p-4 overflow-x-auto">
-                <pre className="text-sm text-foreground font-mono">
-                  <code>{mcpConfig}</code>
+                <pre className="text-lg text-foreground font-mono text-center py-4">
+                  <code>{mcpUrl}</code>
                 </pre>
               </div>
             </div>
 
             <div className="mt-8 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <h4 className="text-blue-500 font-semibold mb-2">How to use this</h4>
-              <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                <li>For <strong>Claude Desktop</strong>, add this to your <code>claude_desktop_config.json</code> file.</li>
-                <li>For <strong>Cursor</strong>, add this under the MCP Servers section in settings.</li>
-                <li>Ensure the `client-connector` service is running so the Python command works correctly.</li>
+              <h4 className="text-blue-500 font-semibold mb-2">How to connect</h4>
+              <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
+                <li><strong>Cursor IDE:</strong> Go to Cursor Settings &gt; Features &gt; MCP. Click "+ Add New MCP Server". Set the type to <strong>SSE</strong> and paste the URL above.</li>
+                <li><strong>Windsurf:</strong> Add a new MCP server in your workspace config, select SSE transport, and use the URL above.</li>
+                <li><strong>Claude Desktop:</strong> Because Claude natively only supports local CLI commands (stdio), you can connect to our remote server using the official bridge:
+                  <pre className="bg-background/50 p-3 rounded-md mt-2 text-xs font-mono overflow-x-auto">
+{`{
+  "mcpServers": {
+    "confuse-remote": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/client-sse", "--url", "${mcpUrl}"]
+    }
+  }
+}`}
+                  </pre>
+                </li>
               </ul>
             </div>
           </div>
