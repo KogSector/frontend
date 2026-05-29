@@ -90,9 +90,8 @@ export default function AgentsPage() {
             <div className="mt-8 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <h4 className="text-blue-500 font-semibold mb-2">How to connect</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
-                <li><strong>Cursor IDE:</strong> Go to Cursor Settings &gt; Features &gt; MCP. Click "+ Add New MCP Server". Set the type to <strong>SSE</strong> and paste the URL above.</li>
-                <li><strong>Windsurf:</strong> Add a new MCP server in your workspace config, select SSE transport, and use the URL above.</li>
-                <li><strong>Claude Desktop:</strong> Because Claude natively only supports local CLI commands (stdio), you can connect to our remote server using the official bridge:
+                <li><strong>Native SSE Support:</strong> If your AI coding tool (IDE or Agent) natively supports Server-Sent Events (SSE) for MCP, simply select the SSE transport option and paste the URL above.</li>
+                <li><strong>Stdio-only Tools:</strong> If your tool only supports local CLI commands (stdio) for MCP, you can bridge it to our remote server using the official MCP CLI:
                   <pre className="bg-background/50 p-3 rounded-md mt-2 text-xs font-mono overflow-x-auto">
 {`{
   "mcpServers": {

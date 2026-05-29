@@ -37,11 +37,10 @@ export async function GET(request: NextRequest) {
     if (userIdHeader) headers['x-user-id'] = userIdHeader
 
     // Aggregate data from multiple services
-    const [reposResponse, docsResponse, urlsResponse, agentsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
+    const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
       dataClient.get('/api/repositories', headers),
       dataClient.get('/api/v1/documents', headers),
       dataClient.get('/api/v1/external/urls', headers),
-      clientConnectorClient.get('/api/agents', headers),
       authClient.get('/api/users/stats', headers),
       dataClient.get('/api/v1/jobs?limit=5', headers)
     ])
@@ -56,8 +55,7 @@ export async function GET(request: NextRequest) {
     const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
       (urlsResponse.value as any).data || [] : []
     
-    const agents = agentsResponse.status === 'fulfilled' && agentsResponse.value ?
-      (Array.isArray(agentsResponse.value) ? agentsResponse.value : (agentsResponse.value as any).data || []) : []
+    const agents = [];
     
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
       (usersResponse.value as any).data : {} as UserStats
@@ -74,7 +72,6 @@ export async function GET(request: NextRequest) {
       reposStatus: reposResponse.status,
       docsStatus: docsResponse.status,
       urlsStatus: urlsResponse.status,
-      agentsStatus: agentsResponse.status,
       jobsStatus: jobsResponse.status
     });
 
