@@ -268,6 +268,10 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
           repoUrl: repositoryUrl.trim(),
           credentials: Object.keys(fetchCredentials).length > 0 ? fetchCredentials : null
         }, headers);
+
+        if (result && result.success === false) {
+          throw new Error(result.error || "Failed to fetch branches.");
+        }
       } catch (err: any) {
         let message = err.message || 'Repository access check failed. Please verify the URL and permissions.';
         if (message.toLowerCase().includes('connect') && message.toLowerCase().includes('social connections')) {
