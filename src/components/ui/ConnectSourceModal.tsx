@@ -129,20 +129,22 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const handleThirdPartyConnect = async (service: string) => {
     setConnectionStatus({ status: "connecting" });
     try {
-      if (service === 'google_drive' || service === 'dropbox' || service === 'onedrive') {
-        const connected = await ensureProviderConnected(service);
-        if (!connected) {
-          const providerName = service === 'google_drive' ? 'Google Drive' : service === 'onedrive' ? 'OneDrive' : 'Dropbox';
-          setConnectionStatus({ status: "error", message: `Please connect ${providerName} in Social Connections first` });
-          return;
-        }
+      const connected = await ensureProviderConnected(service);
+      if (!connected) {
+        const providerName = service === 'google_drive' ? 'Google Drive' :
+                             service === 'onedrive' ? 'OneDrive' :
+                             service === 'dropbox' ? 'Dropbox' :
+                             service === 'notion' ? 'Notion' :
+                             service === 'confluence' ? 'Confluence' : service;
+        setConnectionStatus({ status: "error", message: `Please connect ${providerName} in Social Connections first` });
+        return;
+      }
 
-        if (service === 'onedrive') {
-           setConnectionStatus({ status: "idle" });
-           setActiveProvider(service);
-           setBrowserOpen(true);
-           return;
-        }
+      if (service === 'onedrive') {
+         setConnectionStatus({ status: "idle" });
+         setActiveProvider(service);
+         setBrowserOpen(true);
+         return;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setConnectionStatus({ status: "success", message: `Successfully connected to ${service}` });
@@ -271,7 +273,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
             {needsSocialConnect && (
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  {`You need to connect ${needsSocialConnect === 'google_drive' ? 'Google Drive' : 'Dropbox'} before proceeding.`}
+                  {`You need to connect ${needsSocialConnect === 'google_drive' ? 'Google Drive' : needsSocialConnect === 'onedrive' ? 'OneDrive' : needsSocialConnect === 'dropbox' ? 'Dropbox' : needsSocialConnect === 'notion' ? 'Notion' : needsSocialConnect === 'confluence' ? 'Confluence' : needsSocialConnect} before proceeding.`}
                 </p>
                 <div className="mt-2">
                   <Button

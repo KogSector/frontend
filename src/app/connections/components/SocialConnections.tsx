@@ -302,13 +302,7 @@ export function SocialConnections() {
         );
 
         // Monitor popup close (the message handler in useEffect will handle the code exchange)
-        if (popup) {
-          const checkClosed = setInterval(() => {
-            if (popup.closed) {
-              clearInterval(checkClosed);
-            }
-          }, 1000);
-        }
+        // Note: popup.closed polling removed due to COOP restrictions on cross-origin windows.
 
         return;
       }
