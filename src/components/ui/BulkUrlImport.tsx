@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Upload, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api";
+import { createUrl } from "@/lib/api";
 
 interface BulkUrlImportProps {
   open: boolean;
@@ -80,7 +80,7 @@ export function BulkUrlImport({ open, onOpenChange, onImportComplete }: BulkUrlI
         });
       } else {
         try {
-          const result = await apiClient.createUrl({ url });
+          const result = await createUrl({ url });
           importResults.push({
             url,
             success: !!result?.success,

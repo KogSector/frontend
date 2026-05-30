@@ -1,1 +1,1 @@
-export { DataSourcesSettings } from '../../sources/components/settings';
+export { DataSourcesSettings } from '../../../sources/components/settings';

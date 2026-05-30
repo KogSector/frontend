@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
       (urlsResponse.value as any).data || [] : []
     
-    const agents = [];
+    const agents: any[] = [];
     
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
       (usersResponse.value as any).data : {} as UserStats

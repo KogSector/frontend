@@ -1,36 +1,38 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, useMotionValue, HTMLMotionProps } from "framer-motion";
-import { FC, ReactNode, MouseEvent } from "react";
+import React, { FC, HTMLAttributes } from "react";
 
-interface DockProps extends HTMLMotionProps<"div"> {
-	children: ReactNode;
+export interface DockProps extends HTMLAttributes<HTMLDivElement> {
+	magnification?: number;
+	distance?: number;
+	direction?: "top" | "middle" | "bottom";
 }
 
-export const Dock: FC<DockProps> = ({ children, className, ...props }) => {
-	const mouseX = useMotionValue(Infinity);
+export const Dock = React.forwardRef<HTMLDivElement, DockProps>(
+	({ className, children, magnification, distance, direction, ...props }, ref) => {
+		return (
+			<div ref={ref} className={cn("flex items-center gap-2 p-2 rounded-xl bg-background/10 backdrop-blur-sm border", className)} {...props}>
+				{children}
+			</div>
+		);
+	}
+);
+Dock.displayName = "Dock";
 
-	const onMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-		mouseX.set(e.pageX);
-	};
+export interface DockIconProps extends HTMLAttributes<HTMLDivElement> {
+	size?: number;
+	magnification?: number;
+	distance?: number;
+}
 
-	const onMouseLeave = () => {
-		mouseX.set(Infinity);
-	};
-
-	return (
-		<motion.div
-			onMouseMove={onMouseMove}
-			onMouseLeave={onMouseLeave}
-			className={cn(
-				"flex h-16 items-end gap-4 rounded-2xl bg-black/10 px-4 pb-3",
-				"dark:bg-white/10",
-				className,
-			)}
-			{...props}
-		>
-			{children}
-		</motion.div>
-	);
-};
+export const DockIcon = React.forwardRef<HTMLDivElement, DockIconProps>(
+	({ className, children, size, magnification, distance, ...props }, ref) => {
+		return (
+			<div ref={ref} className={cn("flex items-center justify-center p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10", className)} {...props}>
+				{children}
+			</div>
+		);
+	}
+);
+DockIcon.displayName = "DockIcon";

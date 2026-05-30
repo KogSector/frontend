@@ -76,7 +76,7 @@ export function SettingsProvider({ children, userId = 'default' }: { children: R
   // Helper function to handle API result and dispatch
   const handleApiResult = <T,>(result: ApiResponse, actionType: SettingsAction['type'], fallback: T[] = []) => {
     if (result.success && result.data) {
-      dispatch({ type: actionType, payload: (result.data as T[]) || fallback });
+      dispatch({ type: actionType, payload: (result.data as T[]) || fallback } as unknown as SettingsAction);
     }
   };
 

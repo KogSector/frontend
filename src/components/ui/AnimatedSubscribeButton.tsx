@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, HTMLMotionProps } from "framer-motion";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, ButtonHTMLAttributes, useState } from "react";
+import { cn } from "@/lib/utils";
 
-interface AnimatedSubscribeButtonProps extends HTMLMotionProps<"button"> {
+interface AnimatedSubscribeButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	buttonTextColor?: string;
 	initialText: ReactNode;
 	changeText: ReactNode;
@@ -13,32 +13,18 @@ export const AnimatedSubscribeButton: FC<AnimatedSubscribeButtonProps> = ({
 	buttonTextColor,
 	initialText,
 	changeText,
+	className,
 	...props
 }) => {
+	const [isSubscribed, setIsSubscribed] = useState(false);
 	return (
-		<motion.button
-			className="relative flex w-[200px] items-center justify-center rounded-md border-2 border-black bg-white p-4 font-semibold"
-			style={{
-				color: buttonTextColor,
-			}}
+		<button
+			onClick={(e) => { setIsSubscribed(!isSubscribed); if (props.onClick) props.onClick(e); }}
+			className={cn("relative flex w-[200px] items-center justify-center rounded-md border-2 border-black bg-white p-4 font-semibold", className)}
+			style={{ color: buttonTextColor }}
 			{...props}
 		>
-			<motion.span
-				className="absolute inset-0 flex items-center justify-center"
-				initial={{ y: 0 }}
-				animate={{ y: -50 }}
-				transition={{ duration: 0.5 }}
-			>
-				{initialText}
-			</motion.span>
-			<motion.span
-				className="absolute inset-0 flex items-center justify-center"
-				initial={{ y: 50 }}
-				animate={{ y: 0 }}
-				transition={{ duration: 0.5 }}
-			>
-				{changeText}
-			</motion.span>
-		</motion.button>
+			{isSubscribed ? changeText : initialText}
+		</button>
 	);
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient, ApiResponse } from '@/lib/api';
+import { getUrls as apiGetUrls, createUrl as apiCreateUrl, deleteUrl as apiDeleteUrl, ApiResponse } from '@/lib/api';
 
 export interface UrlRecord {
   id: string;
@@ -27,7 +27,7 @@ export function useUrls() {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await apiClient.getUrls() as ApiResponse<UrlRecord[]>;
+      const result = await apiGetUrls() as ApiResponse<UrlRecord[]>;
       if (result.success) {
         setUrls(result.data || []);
       } else {
@@ -42,7 +42,7 @@ export function useUrls() {
 
   const createUrl = async (data: CreateUrlData) => {
     try {
-      const result = await apiClient.createUrl(data) as ApiResponse<UrlRecord>;
+      const result = await apiCreateUrl(data) as ApiResponse<UrlRecord>;
       if (result.success && result.data) {
         setUrls(prev => [...prev, result.data as UrlRecord]);
         return { success: true, data: result.data };
@@ -56,7 +56,7 @@ export function useUrls() {
 
   const deleteUrl = async (id: string) => {
     try {
-      const result = await apiClient.deleteUrl(id);
+      const result = await apiDeleteUrl(id);
       if (result.success) {
         setUrls(prev => prev.filter(url => url.id !== id));
         return { success: true };

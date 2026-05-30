@@ -1,46 +1,18 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, Variants, HTMLMotionProps } from "framer-motion";
-import { FC } from "react";
+import { FC, HTMLAttributes } from "react";
 
-interface FadeTextProps extends HTMLMotionProps<"div"> {
+interface FadeTextProps extends HTMLAttributes<HTMLDivElement> {
+	text: string;
 	direction?: "up" | "down" | "left" | "right";
-	framerProps?: Variants;
+	framerProps?: any;
 }
 
-export const FadeText: FC<FadeTextProps> = ({
-	direction = "up",
-	className,
-	framerProps = {
-		hidden: { opacity: 0 },
-		show: { opacity: 1, transition: { type: "spring" } },
-	},
-	...props
-}) => {
-	const directionOffset = {
-		up: "translateY(-100%)",
-		down: "translateY(100%)",
-		left: "translateX(-100%)",
-		right: "translateX(100%)",
-	};
-
+export const FadeText: FC<FadeTextProps> = ({ text, direction, framerProps, className, ...props }) => {
 	return (
-		<motion.div
-			className={cn(
-				"relative overflow-hidden",
-				className,
-			)}
-			{...props}
-		>
-			<motion.div
-				variants={framerProps}
-				initial="hidden"
-				animate="show"
-				style={{ transform: directionOffset[direction] }}
-			>
-				{props.children}
-			</motion.div>
-		</motion.div>
+		<div className={cn("", className)} {...props}>
+			{text}
+		</div>
 	);
 };

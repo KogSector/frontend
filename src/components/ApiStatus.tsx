@@ -16,7 +16,7 @@ export function ApiStatus({ showDetails = false, className = '' }: ApiStatusProp
   const checkApiStatus = async () => {
     setStatus('checking');
     try {
-      const isHealthy = await apiClient.checkBackendHealth();
+      const isHealthy = await apiClient.checkHealth();
       setStatus(isHealthy ? 'connected' : 'disconnected');
       setLastCheck(new Date());
     } catch (error) {

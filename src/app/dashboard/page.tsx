@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +79,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const fetchData = async (isAutoRefresh = false) => {
+  const fetchData = useCallback(async (isAutoRefresh = false) => {
     try {
       if (!isAutoRefresh) {
         setLoading(true);
@@ -146,7 +146,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     }
-  };
+  }, []); // Empty dependency array as this function doesn't depend on external props
 
   useEffect(() => {
     fetchData();
@@ -419,7 +419,33 @@ export default function Dashboard() {
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4" onClick={(e) => {
+                const target = e.target as HTMLElement;
+                const deleteBtn = target.closest('button[data-action="delete-source"]');
+                if (deleteBtn) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const sourceId = deleteBtn.getAttribute('data-id');
+                  const sourceType = deleteBtn.getAttribute('data-type');
+                  if (sourceId && sourceType) {
+                    // handleDeleteSource is not defined so we'll implement the logic here
+                    if (confirm('Are you sure you want to delete this source?')) {
+                      try {
+                        if (sourceType === 'url') {
+                          deleteUrl(sourceId);
+                        } else {
+                          deleteRepository(sourceId);
+                        }
+                        setRecentSources(prev => prev.filter(s => s.id !== sourceId));
+                        fetchData(true);
+                        toast({ title: "Source Deleted", description: "The source has been removed." });
+                      } catch (error) {
+                        toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete source." });
+                      }
+                    }
+                  }
+                }
+              }}>
                 {loading ? (
                   <div className="flex justify-center p-4">
                     <Activity className="w-6 h-6 animate-spin text-primary" />
@@ -458,25 +484,10 @@ export default function Dashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              data-action="delete-source"
+                              data-id={source.id}
+                              data-type={source.type}
                               className="h-8 w-8 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (confirm('Are you sure you want to delete this source?')) {
-                                  try {
-                                    if (source.type === 'url') {
-                                      await deleteUrl(source.id);
-                                    } else {
-                                      await deleteRepository(source.id);
-                                    }
-                                    setRecentSources(prev => prev.filter(s => s.id !== source.id));
-                                    fetchData(true);
-                                    toast({ title: "Source Deleted", description: "The source has been removed." });
-                                  } catch (error) {
-                                    toast({ variant: "destructive", title: "Delete Failed", description: "Could not delete source." });
-                                  }
-                                }
-                              }}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

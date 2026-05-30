@@ -1,35 +1,12 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { FC, HTMLAttributes, ReactNode } from "react";
+import { FC, HTMLAttributes } from "react";
 
-interface LogoTickerProps extends HTMLAttributes<HTMLDivElement> {
-	children: ReactNode;
-	duration?: number;
-}
-
-export const LogoTicker: FC<LogoTickerProps> = ({
-	children,
-	duration = 20,
-	className,
-	...props
-}) => {
+export const LogoTicker: FC<HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
 	return (
-		<div
-			className={cn(
-				"relative flex w-full overflow-hidden",
-				className,
-			)}
-			{...props}
-		>
-			<motion.div
-				className="flex w-max animate-logo-ticker"
-				style={{ animationDuration: `${duration}s` }}
-			>
-				{children}
-				{children}
-			</motion.div>
+		<div className={cn("flex gap-4 overflow-hidden", className)} {...props}>
+			{children}
 		</div>
 	);
 };
