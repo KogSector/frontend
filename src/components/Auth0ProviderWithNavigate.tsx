@@ -2,8 +2,10 @@
 
 import { Auth0Provider } from '@auth0/auth0-react';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 const Auth0ProviderWithNavigate = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   const redirectUri = `${origin}/auth/callback`;
   const domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
@@ -18,6 +20,10 @@ const Auth0ProviderWithNavigate = ({ children }: { children: React.ReactNode }) 
     return <>{children}</>;
   }
 
+  const onRedirectCallback = (appState?: any) => {
+    router.push(appState?.returnTo || '/dashboard');
+  };
+
   return (
     <Auth0Provider
       domain={domain}
@@ -28,6 +34,7 @@ const Auth0ProviderWithNavigate = ({ children }: { children: React.ReactNode }) 
       }}
       cacheLocation="localstorage"
       useRefreshTokens={true}
+      onRedirectCallback={onRedirectCallback}
     >
       {children}
     </Auth0Provider>
