@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [connections, setConnections] = useState<Array<{ id: string; platform: string; username?: string; is_active: boolean }> | null>(null)
   const router = useRouter()
 
@@ -443,6 +444,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = useCallback(() => {
+    setIsLoggingOut(true)
     clearSession()
     
     // If Auth0 is authenticated, logout via Auth0 SDK
@@ -470,7 +472,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user && !!token,
-    isLoading: isLoading || isSyncing,
+    isLoading: isLoading || isSyncing || (auth0IsAuthenticated && !(!!user && !!token)) || isLoggingOut,
     // Traditional auth methods
     login,
     register,
