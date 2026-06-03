@@ -10,8 +10,9 @@ export const SERVICE_URLS = {
   dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:3030',
   unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL || 'http://localhost:8090',
   embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL || 'http://localhost:3001',
-  mcpServer: process.env.NEXT_PUBLIC_MCP_URL || 'http://localhost:3004',
   clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020',
+  dataVent: process.env.NEXT_PUBLIC_DATA_VENT_URL || 'http://localhost:3005',
+  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL || 'http://localhost:3099',
 } as const;
 
 /**

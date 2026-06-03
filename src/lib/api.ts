@@ -291,10 +291,11 @@ export const dataClient = new ApiClient(SERVICE_URLS.dataConnector, 'data-connec
 /** Unified processor service (document/code processing, embeddings) */
 export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'unified-processor');
 
-/** Relation graph service (search, relationships, entity evolution) */
-export const graphClient = new ApiClient(SERVICE_URLS.relationGraph, 'relation-graph');
-/** MCP server (Agent protocol) */
-export const mcpClient = new ApiClient(SERVICE_URLS.mcpServer, 'mcp-server');
+/** Data vent service (semantic search and graph queries) */
+export const dataVentClient = new ApiClient(SERVICE_URLS.dataVent, 'data-vent');
+
+/** Feature toggle service */
+export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-context-toggle');
 
 /** Embeddings service */
 export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
@@ -449,10 +450,10 @@ export async function deleteRepository(id: string): Promise<ApiResponse> {
 // =============================================================================
 
 export async function hybridSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
-  return graphClient.post('/api/v1/search', { query, ...options });
+  return dataVentClient.post('/api/v1/search', { query, ...options });
 }
 export async function vectorSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
-  return graphClient.post('/api/v1/temporal-search', { query, ...options });
+  return dataVentClient.post('/api/v1/temporal-search', { query, ...options });
 }
 
 // =============================================================================
@@ -509,15 +510,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/toggles`);
-  return res.json();
+  return featureToggleClient.get('/api/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/toggles/${encodeURIComponent(name)}`);
-  return res.json();
+  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {
