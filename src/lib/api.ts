@@ -299,8 +299,7 @@ export const mcpClient = new ApiClient(SERVICE_URLS.mcpServer, 'mcp-server');
 /** Embeddings service */
 export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
 
-/** Feature toggle service */
-export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 
 /**
