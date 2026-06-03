@@ -97,7 +97,7 @@ export default function AgentsPage() {
   "mcpServers": {
     "confuse-remote": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/client-sse", "--url", "${mcpUrl}"]
+      "args": ["-y", "mcp-remote", "${mcpUrl}"]
     }
   }
 }`}
