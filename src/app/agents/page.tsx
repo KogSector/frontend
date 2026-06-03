@@ -12,7 +12,7 @@ export default function AgentsPage() {
   const [copied, setCopied] = useState(false);
 
   const mcpUrl = typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.hostname}:3004/mcp` 
+    ? `${window.location.protocol}//${window.location.hostname}:3020/mcp` 
     : 'https://api.yourdomain.com/mcp';
 
   const handleCopy = async () => {
