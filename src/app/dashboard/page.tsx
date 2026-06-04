@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/layout/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
-import { getSources, deleteUrl, deleteRepository, authClient, isToggleEnabled } from "@/lib/api";
+import { getSources, deleteUrl, deleteRepository, authClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -151,23 +151,11 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
 
-    // Fetch hideSwitchUse toggle and keep it fresh in real-time
-    const checkToggles = () => {
-      isToggleEnabled('hideSwitchUse')
-        .then(setHideSwitchUse)
-        .catch(() => setHideSwitchUse(false));
-    };
-
-    checkToggles();
-    const toggleInterval = setInterval(checkToggles, 5000);
-
-    // Set up auto-refresh interval (every 30 seconds)
     const interval = setInterval(() => {
       fetchData(true);
     }, 30000);
 
     return () => {
-      clearInterval(toggleInterval);
       clearInterval(interval);
     };
   }, []);
