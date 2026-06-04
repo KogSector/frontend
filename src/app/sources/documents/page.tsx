@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
-import { dataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
+import { dataClient, deleteSource, syncSource } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
 
   // Custom dialog states
   const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
-  const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const hasLoadedRef = useRef(false);
@@ -290,41 +290,7 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleDeleteDocument = (docId: string) => {
-    setDeleteDocId(docId);
-  };
 
-  const confirmDeleteDocument = async () => {
-    if (!deleteDocId) return;
-
-    const docId = deleteDocId;
-    setDeleteDocId(null);
-    setIsDeleting(true);
-
-    try {
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const resp = await dataClient.delete<{ success: boolean }>(`/api/v1/documents/${docId}`, headers);
-      if ((resp as any)?.success) {
-        // Update local state immediately
-        setDocuments(prev => prev.filter(d => d.id !== docId));
-        toast({
-          title: "Success",
-          description: "Document deleted successfully"
-        });
-        // Refresh to update sources/analytics in background
-        fetchDocuments();
-      }
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete document",
-        variant: "destructive"
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -471,79 +437,7 @@ export default function DocumentsPage() {
           )}
         </div>
 
-        {/* Individual Documents List */}
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Individual Documents</h2>
-              <p className="text-sm text-muted-foreground">Manage and view details for each indexed document</p>
-            </div>
-          </div>
 
-          <Card className="bg-card border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Name</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Source</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Type</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Size</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Status</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {documents.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                        No individual documents found.
-                      </td>
-                    </tr>
-                  ) : (
-                    documents.map((doc) => (
-                      <tr key={doc.id} className="hover:bg-accent/5 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-foreground">{doc.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge variant="secondary" className="capitalize">
-                            {getTypeName(doc.source)}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground uppercase">
-                          {doc.doc_type}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {doc.size}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(doc.status)}`}></div>
-                            <span className="text-sm capitalize">{doc.status}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-500/10"
-                            onClick={() => handleDeleteDocument(doc.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
       </div>
 
       <Footer />
@@ -575,23 +469,7 @@ export default function DocumentsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deleteDocId} onOpenChange={(open) => !open && setDeleteDocId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will remove &quot;{documents.find(d => d.id === deleteDocId)?.name}&quot; from the system.
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteDocument} className="bg-red-500 hover:bg-red-600">
-              Delete Document
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </div>
   );
 }
