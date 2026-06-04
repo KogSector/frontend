@@ -40,6 +40,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const [activeProvider, setActiveProvider] = useState("");
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedCloudFiles, setSelectedCloudFiles] = useState<{ file: CloudFile, provider: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Expanded file types: documents, code, config files
@@ -72,29 +73,44 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     e.target.value = "";
   };
 
-  const handleLocalFileUpload = async () => {
-    if (!selectedFiles || selectedFiles.length === 0) {
+  const handleUploadSelected = async () => {
+    if (selectedFiles.length === 0 && selectedCloudFiles.length === 0) {
       toast({ title: "Error", description: "Please select files to upload", variant: "destructive" });
       return;
     }
     setConnectionStatus({ status: "connecting" });
     try {
-      const uploadPromises = selectedFiles.map(async (file) => {
+      const localPromises = selectedFiles.map(async (file) => {
         const formData = new FormData();
         formData.append("files", file);
         formData.append("source_name", file.name);
         return dataApiClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/v1/documents/upload", formData);
       });
-      const results = await Promise.all(uploadPromises);
+
+      const cloudPromises = selectedCloudFiles.map(async ({ file, provider }) => {
+        const payload = {
+          type: provider,
+          name: file.name,
+          uri: `oauth://${provider}`,
+          credentials: { item_ids: [file.id] }
+        };
+        return dataApiClient.post("/api/v1/sources", payload);
+      });
+
+      const [localResults, cloudResults] = await Promise.all([
+        Promise.all(localPromises),
+        Promise.all(cloudPromises)
+      ]);
       
-      const allSuccess = results.every(res => {
+      const allLocalSuccess = localResults.every(res => {
         const resultData = (res as any).data;
         return resultData?.source_id || resultData?.files_processed > 0;
       });
 
-      if (allSuccess) {
-        setConnectionStatus({ status: "success", message: `Successfully uploaded ${selectedFiles.length} file(s)` });
-        toast({ title: "Success", description: `Uploaded ${selectedFiles.length} file(s) successfully` });
+      if (allLocalSuccess) {
+        const total = selectedFiles.length + selectedCloudFiles.length;
+        setConnectionStatus({ status: "success", message: `Successfully uploaded ${total} file(s)` });
+        toast({ title: "Success", description: `Uploaded ${total} file(s) successfully` });
         setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);
       } else {
         throw new Error("One or more uploads failed");
@@ -157,32 +173,16 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   };
 
   const handleFilesSelected = async (files: CloudFile[]) => {
-    setConnectionStatus({ status: "connecting" });
-    try {
-      const syncPromises = files.map(async (file) => {
-        const payload = {
-          type: activeProvider,
-          name: file.name,
-          uri: `oauth://${activeProvider}`,
-          credentials: { item_ids: [file.id] }
-        };
-        return dataApiClient.post("/api/v1/sources", payload);
-      });
-
-      await Promise.all(syncPromises);
-      setConnectionStatus({ status: "success", message: `Successfully synced ${files.length} file(s) from ${activeProvider}` });
-      toast({ title: "Success", description: `Synced ${files.length} file(s) successfully` });
-      setTimeout(() => { onSourceConnected?.(); onOpenChange(false); resetForm(); }, 1500);
-    } catch {
-      setConnectionStatus({ status: "error", message: "Failed to sync files" });
-      toast({ title: "Error", description: "Failed to sync files", variant: "destructive" });
-    }
+    const newFiles = files.map(file => ({ file, provider: activeProvider }));
+    setSelectedCloudFiles(prev => [...prev, ...newFiles]);
+    toast({ title: "Files added", description: `Added ${files.length} file(s) from ${activeProvider} to selection` });
   };
 
   const resetForm = () => {
     setActiveTab("local_files");
     setConnectionStatus({ status: "idle" });
     setSelectedFiles([]);
+    setSelectedCloudFiles([]);
   };
 
   const renderStatusIcon = () => {
@@ -228,21 +228,8 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                 <div className="mt-3 text-sm text-muted-foreground">
                   {selectedFiles.length > 0 ? `${selectedFiles.length} file(s) selected` : 'No files chosen'}
                 </div>
-                {selectedFiles.length > 0 && (
-                  <div className="mt-4 max-h-36 overflow-auto text-left mx-auto inline-block">
-                    {selectedFiles.map((f, i) => (
-                      <div key={i} className="text-xs text-muted-foreground">{f.name}</div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-            {connectionStatus.status !== "idle" && (
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-md">{renderStatusIcon()}<span className="text-sm">{connectionStatus.message}</span></div>
-            )}
-            <Button onClick={handleLocalFileUpload} disabled={connectionStatus.status === "connecting" || selectedFiles.length === 0} className="w-full">
-              {connectionStatus.status === "connecting" ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>) : (<><Upload className="w-4 h-4 mr-2" />Upload Selected ({selectedFiles.length || 0})</>)}
-            </Button>
           </TabsContent>
 
           
@@ -288,11 +275,46 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                 </div>
               </div>
             )}
-            {connectionStatus.status !== "idle" && (
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-md">{renderStatusIcon()}<span className="text-sm">{connectionStatus.message}</span></div>
-            )}
           </TabsContent>
         </Tabs>
+
+        {/* Selected files summary shared across tabs */}
+        {(selectedFiles.length > 0 || selectedCloudFiles.length > 0) && (
+          <div className="mt-2 mb-2 p-3 border rounded-md bg-muted/30">
+            <h4 className="text-sm font-semibold mb-2">Selected Files to Upload</h4>
+            <div className="max-h-36 overflow-auto space-y-1">
+              {selectedFiles.map((f, i) => (
+                <div key={`local-${i}`} className="text-xs text-muted-foreground flex justify-between items-center group">
+                  <span className="truncate pr-2">{f.name} (Local)</span>
+                  <button 
+                    onClick={() => setSelectedFiles(prev => prev.filter((_, idx) => idx !== i))} 
+                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {selectedCloudFiles.map((f, i) => (
+                <div key={`cloud-${i}`} className="text-xs text-muted-foreground flex justify-between items-center group">
+                  <span className="truncate pr-2">{f.file.name} ({f.provider})</span>
+                  <button 
+                    onClick={() => setSelectedCloudFiles(prev => prev.filter((_, idx) => idx !== i))} 
+                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {connectionStatus.status !== "idle" && (
+          <div className="flex items-center gap-2 p-3 bg-muted rounded-md mb-2">{renderStatusIcon()}<span className="text-sm">{connectionStatus.message}</span></div>
+        )}
+        <Button onClick={handleUploadSelected} disabled={connectionStatus.status === "connecting" || (selectedFiles.length === 0 && selectedCloudFiles.length === 0)} className="w-full">
+          {connectionStatus.status === "connecting" ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>) : (<><Upload className="w-4 h-4 mr-2" />Upload Selected ({selectedFiles.length + selectedCloudFiles.length})</>)}
+        </Button>
 
         <div className="mt-4 text-xs text-muted-foreground">
           <p>
