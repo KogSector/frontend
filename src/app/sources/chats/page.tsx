@@ -175,7 +175,7 @@ export default function ChatsPage() {
               <div className="flex justify-center w-full max-w-2xl">
                 <Button onClick={() => setShowConnectModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Connect Your First Data Source
+                  Connect Your First Chat
                 </Button>
               </div>
             </CardContent>

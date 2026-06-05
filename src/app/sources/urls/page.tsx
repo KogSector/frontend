@@ -177,7 +177,7 @@ export default function UrlsPage() {
                 </p>
                 <Button onClick={() => setIsModalOpen(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Connect Your First Data Source
+                  Connect Your First URL
                 </Button>
               </div>
             ) : (

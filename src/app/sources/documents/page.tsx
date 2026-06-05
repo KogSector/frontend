@@ -386,7 +386,7 @@ export default function DocumentsPage() {
                 </p>
                 <Button onClick={() => setShowConnectModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Connect Your First Data Source
+                  Connect Your First Document
                 </Button>
               </CardContent>
             </Card>
