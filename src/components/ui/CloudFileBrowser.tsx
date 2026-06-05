@@ -107,12 +107,18 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
     setSelectedIds(newSelected);
   };
 
+  const isSelectable = (file: CloudFile) => {
+    if (provider === 'onedrive' && file.type === 'folder') return false;
+    return true;
+  };
+
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredFiles.length && filteredFiles.length > 0) {
+    const selectableFiles = filteredFiles.filter(isSelectable);
+    if (selectedIds.size === selectableFiles.length && selectableFiles.length > 0) {
       setSelectedIds(new Set());
     } else {
       const newSelected = new Set<string>();
-      filteredFiles.forEach(f => newSelected.add(f.id));
+      selectableFiles.forEach(f => newSelected.add(f.id));
       setSelectedIds(newSelected);
     }
   };
@@ -229,9 +235,9 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                 <tr>
                   <th scope="col" className="p-3 w-10 text-center">
                     <Checkbox
-                      checked={filteredFiles.length > 0 && selectedIds.size === filteredFiles.length}
+                      checked={filteredFiles.filter(isSelectable).length > 0 && selectedIds.size === filteredFiles.filter(isSelectable).length}
                       onCheckedChange={handleSelectAll}
-                      disabled={filteredFiles.length === 0}
+                      disabled={filteredFiles.filter(isSelectable).length === 0}
                     />
                   </th>
                   <th scope="col" className="p-3 font-medium">Name</th>
@@ -256,11 +262,13 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
                       className={`hover:bg-muted/40 transition-colors group ${selectedIds.has(file.id) ? 'bg-primary/5 hover:bg-primary/10' : ''}`}
                     >
                       <td className="p-3 text-center">
-                        <Checkbox
-                          checked={selectedIds.has(file.id)}
-                          onCheckedChange={() => handleToggleSelect(file)}
-                          className={selectedIds.has(file.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 transition-opacity"}
-                        />
+                        {isSelectable(file) && (
+                          <Checkbox
+                            checked={selectedIds.has(file.id)}
+                            onCheckedChange={() => handleToggleSelect(file)}
+                            className={selectedIds.has(file.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 transition-opacity"}
+                          />
+                        )}
                       </td>
                       <td className="p-3 font-medium text-foreground">
                         {file.type === "folder" ? (
