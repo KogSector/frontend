@@ -65,10 +65,10 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
     }
     
     let combined = [...selectedFiles, ...validFiles];
-    if (combined.length > 10) {
-      toast({ title: "Limit reached", description: "You can upload up to 10 files at once", variant: "destructive" });
+    if (combined.length > 100) {
+      toast({ title: "Limit reached", description: "You can upload up to 100 files at once", variant: "destructive" });
     }
-    combined = combined.slice(0, 10);
+    combined = combined.slice(0, 100);
     setSelectedFiles(combined);
     e.target.value = "";
   };
@@ -210,7 +210,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
 
           <TabsContent value="local_files" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="files">Select Files (max 10) - Documents, code, and config files</Label>
+              <Label htmlFor="files">Select Files (max 100) - Documents, code, and config files</Label>
               <div className="rounded-xl p-10 text-center border border-border bg-card/60 hover:bg-card transition-colors">
                 <FolderOpen className="w-12 h-12 mx-auto text-primary mb-6" />
                 <input
