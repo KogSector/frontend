@@ -44,6 +44,7 @@ interface DocumentRecord {
   created_at: string;
   updated_at: string;
   status: string;
+  source_id?: string;
 }
 
 interface DocumentAnalytics {
@@ -124,14 +125,21 @@ export default function DocumentsPage() {
 
         // Add document counts and handle derived sources
         docsData.forEach((doc: DocumentRecord) => {
-          // Try to find if this doc belongs to a real source (by name match for demo, or id if we had it)
           let sourceFound = false;
-          sourceMap.forEach((s) => {
-            if (s.type === doc.source) {
-              s.documentCount += 1;
-              sourceFound = true;
+          if (doc.source_id && sourceMap.has(doc.source_id)) {
+            const s = sourceMap.get(doc.source_id)!;
+            s.documentCount += 1;
+            sourceFound = true;
+          } else {
+            // Fallback for demo docs without source_id
+            for (const s of Array.from(sourceMap.values())) {
+              if (s.type === doc.source) {
+                s.documentCount += 1;
+                sourceFound = true;
+                break; // Only add to the first matching source
+              }
             }
-          });
+          }
 
           if (!sourceFound) {
             const sourceType = doc.source as DocumentSource['type'];
