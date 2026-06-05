@@ -311,7 +311,7 @@ export default function RepositoriesPage() {
                   </p>
                   <Button onClick={() => setShowConnectDialog(true)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Connect Your First Repository
+                    Connect Your First Data Source
                   </Button>
                 </CardContent>
               </Card>

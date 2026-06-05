@@ -172,18 +172,10 @@ export default function ChatsPage() {
               <p className="text-muted-foreground text-center mb-6 max-w-md">
                 Connect your first chat platform to start indexing conversations and enable AI-powered insights.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
-                <Button variant="outline" className="h-24 flex flex-col space-y-2" onClick={handleConnectSlack}>
-                  <span className="text-2xl">💬</span>
-                  <span>Slack</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col space-y-2">
-                  <span className="text-2xl">👥</span>
-                  <span>Microsoft Teams</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col space-y-2">
-                  <span className="text-2xl">📱</span>
-                  <span>WhatsApp</span>
+              <div className="flex justify-center w-full max-w-2xl">
+                <Button onClick={() => setShowConnectModal(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Connect Your First Data Source
                 </Button>
               </div>
             </CardContent>
