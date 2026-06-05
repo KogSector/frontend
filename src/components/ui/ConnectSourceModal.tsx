@@ -87,19 +87,12 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         return dataApiClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/v1/documents/upload", formData);
       });
 
-      const cloudFilesByProvider = selectedCloudFiles.reduce((acc, { file, provider }) => {
-        if (!acc[provider]) acc[provider] = { item_ids: [], names: [] };
-        acc[provider].item_ids.push(file.id);
-        acc[provider].names.push(file.name);
-        return acc;
-      }, {} as Record<string, { item_ids: string[], names: string[] }>);
-
-      const cloudPromises = Object.entries(cloudFilesByProvider).map(async ([provider, data]) => {
+      const cloudPromises = selectedCloudFiles.map(async ({ file, provider }) => {
         const payload = {
           type: provider,
-          name: data.names.length > 1 ? `${data.names[0]} and ${data.names.length - 1} more` : data.names[0],
+          name: file.name,
           uri: `oauth://${provider}`,
-          credentials: { item_ids: data.item_ids }
+          credentials: { item_ids: [file.id] }
         };
         return dataApiClient.post("/api/v1/sources", payload);
       });
