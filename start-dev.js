@@ -4,17 +4,20 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 
 // Load environment variables from custom files
-const envPath = path.resolve(process.cwd(), '.env');
+const envMapPath = path.resolve(process.cwd(), '.env.map');
+const envSecretPath = path.resolve(process.cwd(), '.env.secret');
 
-const envVars = fs.existsSync(envPath) ? dotenv.parse(fs.readFileSync(envPath)) : {};
+const mapEnv = fs.existsSync(envMapPath) ? dotenv.parse(fs.readFileSync(envMapPath)) : {};
+const secretEnv = fs.existsSync(envSecretPath) ? dotenv.parse(fs.readFileSync(envSecretPath)) : {};
 
 // Merge with process.env
 const mergedEnv = {
     ...process.env,
-    ...envVars,
+    ...mapEnv,
+    ...secretEnv,
 };
 
-console.log('🚀 Loading custom environment variables from .env');
+console.log('🚀 Loading custom environment variables from .env.map and .env.secret');
 
 const port = mergedEnv.APP_PORT || '3000';
 const nextProcess = spawn('npx', ['next', 'dev', '-p', port], {
