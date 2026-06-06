@@ -64,7 +64,10 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
       toast({ title: "Invalid file type", description: "Some files were skipped. Supported: docs, code, and config files.", variant: "destructive" });
     }
     
-    let combined = [...selectedFiles, ...validFiles];
+    const existingNames = new Set(selectedFiles.map(f => f.name));
+    const newFiles = validFiles.filter(f => !existingNames.has(f.name));
+    
+    let combined = [...selectedFiles, ...newFiles];
     if (combined.length > 100) {
       toast({ title: "Limit reached", description: "You can upload up to 100 files at once", variant: "destructive" });
     }
@@ -91,7 +94,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         const payload = {
           type: provider,
           name: file.name,
-          uri: `oauth://${provider}`,
+          uri: `oauth://${provider}/${file.id}`,
           credentials: { item_ids: [file.id] }
         };
         return dataApiClient.post("/api/v1/sources", payload);
