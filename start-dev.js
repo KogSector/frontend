@@ -16,7 +16,8 @@ const mergedEnv = {
 
 console.log('🚀 Loading custom environment variables from .env');
 
-const nextProcess = spawn('npx', ['next', 'dev', '-p', '3000'], {
+const port = mergedEnv.APP_PORT || '3000';
+const nextProcess = spawn('npx', ['next', 'dev', '-p', port], {
     stdio: ['inherit', 'pipe', 'pipe'],
     env: mergedEnv,
     shell: true
