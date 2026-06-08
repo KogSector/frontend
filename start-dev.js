@@ -4,8 +4,8 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 
 // Load environment variables from custom files
-const envMapPath = path.resolve(process.cwd(), '../.env');
-const envSecretPath = path.resolve(process.cwd(), '../.env.secret');
+const envMapPath = path.resolve(process.cwd(), '.env.map');
+const envSecretPath = path.resolve(process.cwd(), '.env.secret');
 
 const mapEnv = fs.existsSync(envMapPath) ? dotenv.parse(fs.readFileSync(envMapPath)) : {};
 const secretEnv = fs.existsSync(envSecretPath) ? dotenv.parse(fs.readFileSync(envSecretPath)) : {};
