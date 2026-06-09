@@ -6,13 +6,13 @@
  */
 
 export const SERVICE_URLS = {
-  auth: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3010',
-  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL || 'http://localhost:3030',
-  unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL || 'http://localhost:8090',
-  embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL || 'http://localhost:3001',
-  clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || 'http://localhost:3020',
-  dataVent: process.env.NEXT_PUBLIC_DATA_VENT_URL || 'http://localhost:3005',
-  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL || 'http://localhost:3099',
+  auth: process.env.NEXT_PUBLIC_AUTH_URL as string,
+  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL as string,
+  unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL as string,
+  embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL as string,
+  clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string,
+  dataVent: process.env.NEXT_PUBLIC_DATA_VENT_URL as string,
+  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL as string,
 } as const;
 
 /**
@@ -21,9 +21,9 @@ export const SERVICE_URLS = {
  */
 export const API_CONFIG = {
   baseUrl: SERVICE_URLS.dataConnector,
-  timeout: 10000,
-  retries: 3,
-  retryDelay: 1000,
+  timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT as string, 10) || 10000,
+  retries: parseInt(process.env.NEXT_PUBLIC_API_RETRIES as string, 10) || 3,
+  retryDelay: parseInt(process.env.NEXT_PUBLIC_API_RETRY_DELAY as string, 10) || 1000,
 } as const;
 
 export const ENDPOINTS = {
@@ -46,7 +46,9 @@ if (typeof window !== 'undefined') {
 
   // Validate all service URLs
   Object.entries(SERVICE_URLS).forEach(([name, url]) => {
-    if (!isValidUrl(url)) {
+    if (!url) {
+      console.error(`Missing ${name} service URL`);
+    } else if (!isValidUrl(url)) {
       console.error(`Invalid ${name} service URL:`, url);
     }
   });
