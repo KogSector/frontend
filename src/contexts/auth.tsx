@@ -502,7 +502,3 @@ export function useAuth() {
   return context
 }
 
-// Legacy export for backward compatibility
-export function useAuth0() {
-  return useAuth()
-}

@@ -120,10 +120,7 @@ export function SocialConnections() {
 
       const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string; state?: string }
 
-      if (data.type === 'oauth-connected') {
-        // Legacy: popup already did the exchange
-        fetchConnections()
-      } else if (data.type === 'oauth-code' && data.provider && data.code) {
+      if (data.type === 'oauth-code' && data.provider && data.code) {
         // Prevent duplicate exchange calls - OAuth codes are single-use
         const codeKey = `${data.provider}:${data.code}`
         if (processedCodesRef.current.has(codeKey)) {

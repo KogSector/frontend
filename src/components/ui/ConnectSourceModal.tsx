@@ -270,7 +270,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                     title="Go to Social Connections"
                     aria-label="Go to Social Connections"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => { window.location.href = '/dashboard/social'; }}
+                    onClick={() => { window.location.href = '/connections'; }}
                     disabled={checkingConnection}
                   >
                     Go to Social Connections
