@@ -21,6 +21,7 @@ import NotionIcon from '@/components/icons/NotionIcon'
 import JiraIcon from '@/components/icons/JiraIcon'
 import ConfluenceIcon from '@/components/icons/ConfluenceIcon'
 import CustomAppsIcon from '@/components/icons/CustomAppsIcon'
+import OneDriveIcon from '@/components/icons/OneDriveIcon'
 import { OAuthEmailDialog } from './OAuthEmailDialog';
 
 interface SocialConnection {
@@ -36,7 +37,7 @@ const PLATFORM_CONFIGS = {
   slack: { name: 'Slack', description: 'Connect to sync messages and channels', icon: (cls: string) => <SlackIcon className={cls} /> },
   notion: { name: 'Notion', description: 'Sync pages and databases', icon: (cls: string) => <NotionIcon className={cls} /> },
   google_drive: { name: 'Google Drive', description: 'Access files and documents', icon: (cls: string) => <GoogleDriveIcon className={cls} /> },
-  onedrive: { name: 'OneDrive', description: 'Access files and documents', icon: (cls: string) => <Cloud className={cls} /> },
+  onedrive: { name: 'OneDrive', description: 'Access files and documents', icon: (cls: string) => <OneDriveIcon className={cls} /> },
   dropbox: { name: 'Dropbox', description: 'Sync files and folders', icon: (cls: string) => <DropboxIcon className={cls} /> },
   github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} /> },
   bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} /> },
