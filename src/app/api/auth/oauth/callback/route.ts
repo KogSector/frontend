@@ -44,6 +44,8 @@ export async function GET(req: NextRequest) {
 
   const safeProvider = sanitize(provider)
   const safeCode = sanitize(code)
+  const rawState = searchParams.get('state') || ''
+  const safeState = sanitize(rawState)
 
   // Render an HTML page that will postMessage back to the opener and close itself
   const html = `
@@ -54,7 +56,7 @@ export async function GET(req: NextRequest) {
       <p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Connecting your account...</p>
       <script>
         if (window.opener) {
-          window.opener.postMessage({ type: 'oauth-code', provider: '${safeProvider}', code: '${safeCode}' }, '*');
+          window.opener.postMessage({ type: 'oauth-code', provider: '${safeProvider}', code: '${safeCode}', state: '${safeState}' }, '*');
           setTimeout(function() { window.close(); }, 500);
         } else {
           document.body.innerHTML = '<p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Authentication successful! You can close this window.</p>';

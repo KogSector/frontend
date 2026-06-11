@@ -118,7 +118,7 @@ export function SocialConnections() {
         return
       }
 
-      const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string }
+      const data = dataUnknown as { type: string; provider?: string; code?: string; error?: string; state?: string }
 
       if (data.type === 'oauth-connected') {
         // Legacy: popup already did the exchange
@@ -147,7 +147,7 @@ export function SocialConnections() {
             return
           }
           const headers: Record<string, string> = { Authorization: `Bearer ${effectiveToken}` }
-          await authClient.post('/api/auth/oauth/exchange', { provider: data.provider, code: data.code }, headers)
+          await authClient.post('/api/auth/oauth/exchange', { provider: data.provider, code: data.code, state: data.state }, headers)
           toast({
             title: "Success",
             description: `${data.provider} connected successfully!`,
