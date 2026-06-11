@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')
   const provider = searchParams.get('provider') || searchParams.get('state')?.split(':')[0] || 'github'
-  
+
   // Sanitize inputs to prevent XSS in the inline script
   const sanitize = (str: string | null): string => {
     if (!str) return '';
@@ -55,16 +55,32 @@ export async function GET(req: NextRequest) {
     <body>
       <p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Connecting your account...</p>
       <script>
+        // Store in localStorage for the main window to pick up (works even if window.opener is lost due to COOP)
+        try {
+          localStorage.setItem('oauth_callback_data', JSON.stringify({
+            type: 'oauth-code',
+            provider: '${safeProvider}',
+            code: '${safeCode}',
+            state: '${safeState}',
+            ts: Date.now()
+          }));
+        } catch (e) {
+          console.error('LocalStorage error', e);
+        }
+
         if (window.opener) {
           window.opener.postMessage({ type: 'oauth-code', provider: '${safeProvider}', code: '${safeCode}', state: '${safeState}' }, '*');
-          setTimeout(function() { window.close(); }, 500);
-        } else {
-          document.body.innerHTML = '<p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Authentication successful! You can close this window.</p>';
         }
+        
+        // Always try to close after a short delay
+        setTimeout(function() { 
+          window.close(); 
+          document.body.innerHTML = '<p style="font-family: sans-serif; text-align: center; margin-top: 40px;">Authentication successful! You can safely close this window.</p>';
+        }, 500);
       </script>
     </body>
     </html>
   `;
-  
+
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } });
 }

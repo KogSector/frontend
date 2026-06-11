@@ -137,7 +137,7 @@ export function SocialConnections() {
         // to ensure consistent user_id across all flows. Fall back to localStorage
         // only if useAuth token is not yet available.
         try {
-          const effectiveToken = token || localStorage.getItem('auth_token')
+          const effectiveToken = token || localStorage.getItem('confuse_auth_token')
           if (!effectiveToken) {
             toast({
               title: "Error",
@@ -194,7 +194,7 @@ export function SocialConnections() {
               title: "Error",
               description: errorMsg,
               variant: "destructive"
-            })
+            });
           }
         }
       } else if (data.type === 'oauth-error' && data.error) {
@@ -202,11 +202,32 @@ export function SocialConnections() {
           title: "Error",
           description: data.error,
           variant: "destructive"
-        })
+        });
       }
-    }
+    }; // End of handler
+
+    // Add storage event handler for when window.opener is lost (e.g. COOP headers from Microsoft)
+    const storageHandler = async (e: StorageEvent) => {
+      if (e.key === 'oauth_callback_data' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          // Only process recent codes (within 30 seconds)
+          if (data && data.type && (Date.now() - (data.ts || 0) < 30000)) {
+            await handler({ data } as MessageEvent);
+            localStorage.removeItem('oauth_callback_data');
+          }
+        } catch (err) {
+          console.error('Error parsing oauth_callback_data', err);
+        }
+      }
+    };
+
     window.addEventListener('message', handler)
-    return () => window.removeEventListener('message', handler)
+    window.addEventListener('storage', storageHandler)
+    return () => {
+      window.removeEventListener('message', handler)
+      window.removeEventListener('storage', storageHandler)
+    }
   }, [fetchConnections, toast]);
 
 
