@@ -24,8 +24,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . ./
 
-# Create feature-toggles.json if not present (for standalone builds)
-RUN echo '{}' > ../feature-toggles.json 2>/dev/null || true
+
 
 # Build the frontend
 RUN npm run build

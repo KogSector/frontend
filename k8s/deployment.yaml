@@ -38,7 +38,7 @@ spec:
         - name: NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL
           value: "http://embeddings-service:3001"
         - name: NEXT_PUBLIC_FEATURE_TOGGLE_URL
-          value: "http://feature-context-toggle:3099"
+          value: "http://feature-toggle:3099"
         
         # Auth0 Public Configuration
         - name: NEXT_PUBLIC_AUTH0_DOMAIN

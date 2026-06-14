@@ -295,7 +295,7 @@ export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'uni
 export const dataVentClient = new ApiClient(SERVICE_URLS.dataVent, 'data-vent');
 
 /** Feature toggle service */
-export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-context-toggle');
+export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
 
 /** Embeddings service */
 export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
