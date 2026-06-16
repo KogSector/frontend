@@ -151,6 +151,17 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     setIsValidated(false);
     setBranches([]);
     setFetchBranchesError(null);
+    
+    // Auto-detect provider from URL
+    if (repositoryUrl) {
+      if (repositoryUrl.includes('gitlab.com')) {
+        setProvider('gitlab');
+      } else if (repositoryUrl.includes('bitbucket.org')) {
+        setProvider('bitbucket');
+      } else if (repositoryUrl.includes('github.com')) {
+        setProvider('github');
+      }
+    }
   }, [repositoryUrl]);
 
   const isUrlValid = useMemo(() => {
