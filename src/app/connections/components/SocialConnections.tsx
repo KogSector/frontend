@@ -125,7 +125,7 @@ export function SocialConnections() {
         // Prevent duplicate exchange calls - OAuth codes are single-use
         const codeKey = `${data.provider}:${data.code}`
         if (processedCodesRef.current.has(codeKey)) {
-          console.log('OAuth code already processed, skipping duplicate:', codeKey)
+          // OAuth code already processed, skipping duplicate (not logging to avoid huge string dumps)
           return
         }
         processedCodesRef.current.add(codeKey)
