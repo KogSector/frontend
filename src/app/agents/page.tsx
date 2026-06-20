@@ -60,9 +60,9 @@ export default function AgentsPage() {
               </p>
             </div>
 
-            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-8">
               <div className="flex justify-between items-center px-4 py-3 bg-muted/50 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">Server-Sent Events (SSE) Endpoint</span>
+                <span className="text-sm font-medium text-muted-foreground">Your Secure Connection URL</span>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -83,18 +83,38 @@ export default function AgentsPage() {
                 </Button>
               </div>
               <div className="p-4 overflow-x-auto">
-                <pre className="text-lg text-foreground font-mono text-center py-4">
+                <pre className="text-sm text-foreground font-mono text-center py-2">
                   <code>{mcpUrl}</code>
                 </pre>
               </div>
             </div>
 
-            <div className="mt-8 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <h4 className="text-blue-500 font-semibold mb-2">How to connect</h4>
-              <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
-                <li><strong>Native SSE Support:</strong> If your AI coding tool (IDE or Agent) natively supports Server-Sent Events (SSE) for MCP, simply select the SSE transport option and paste the URL above.</li>
-                <li><strong>Stdio-only Tools:</strong> If your tool only supports local CLI commands (stdio) for MCP, you can bridge it to our remote server using the official MCP CLI:
-                  <pre className="bg-background/50 p-3 rounded-md mt-2 text-xs font-mono overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Native SSE Card */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-5 flex flex-col">
+                <h4 className="text-blue-500 font-semibold mb-3">Native HTTP/SSE Support</h4>
+                <p className="text-sm text-muted-foreground mb-4 flex-1">
+                  Use this for tools that support direct HTTP connections (like <strong>VS Code Cline/Roo</strong>, <strong>Windsurf</strong>, or <strong>Antigravity</strong>). Just paste this into your MCP settings:
+                </p>
+                <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
+{`{
+  "mcpServers": {
+    "confuse-remote": {
+      "url": "${mcpUrl}",
+      "type": "sse"
+    }
+  }
+}`}
+                </pre>
+              </div>
+
+              {/* Stdio Proxy Card */}
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-5 flex flex-col">
+                <h4 className="text-purple-500 font-semibold mb-3">Stdio Proxy (CLI)</h4>
+                <p className="text-sm text-muted-foreground mb-4 flex-1">
+                  Use this for tools that only support local CLI execution (like <strong>Cursor</strong> or <strong>Claude Desktop</strong>). This runs a small bridge proxy:
+                </p>
+                <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
   "mcpServers": {
     "confuse-remote": {
@@ -103,9 +123,8 @@ export default function AgentsPage() {
     }
   }
 }`}
-                  </pre>
-                </li>
-              </ul>
+                </pre>
+              </div>
             </div>
           </div>
         </div>
