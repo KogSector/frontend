@@ -89,12 +89,30 @@ export default function AgentsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Native SSE Card */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Native HTTP Card */}
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-5 flex flex-col">
-                <h4 className="text-blue-500 font-semibold mb-3">Native HTTP/SSE Support</h4>
+                <h4 className="text-blue-500 font-semibold mb-3">Native (type: http)</h4>
                 <p className="text-sm text-muted-foreground mb-4 flex-1">
-                  Use this for tools that support direct HTTP connections (like <strong>VS Code Cline/Roo</strong>, <strong>Windsurf</strong>, or <strong>Antigravity</strong>). Just paste this into your MCP settings:
+                  Commonly used by <strong>VS Code</strong> native settings for remote connections.
+                </p>
+                <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
+{`{
+  "mcpServers": {
+    "confuse-remote": {
+      "url": "${mcpUrl}",
+      "type": "http"
+    }
+  }
+}`}
+                </pre>
+              </div>
+
+              {/* Native SSE Card */}
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-5 flex flex-col">
+                <h4 className="text-emerald-500 font-semibold mb-3">Native (type: sse)</h4>
+                <p className="text-sm text-muted-foreground mb-4 flex-1">
+                  Commonly used by <strong>Windsurf</strong> or <strong>Antigravity</strong> in their config files.
                 </p>
                 <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
@@ -112,7 +130,7 @@ export default function AgentsPage() {
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-5 flex flex-col">
                 <h4 className="text-purple-500 font-semibold mb-3">Stdio Proxy (CLI)</h4>
                 <p className="text-sm text-muted-foreground mb-4 flex-1">
-                  Use this for tools that only support local CLI execution (like <strong>Cursor</strong> or <strong>Claude Desktop</strong>). This runs a small bridge proxy:
+                  Required for <strong>Cursor</strong> or <strong>Claude Desktop</strong> which only support local scripts.
                 </p>
                 <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
