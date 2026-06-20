@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/contexts/auth";
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
 import { Footer } from "@/components/layout/footer";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
@@ -10,10 +11,11 @@ import Link from "next/link";
 
 export default function AgentsPage() {
   const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
 
   const mcpUrl = typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.hostname}:3020/mcp` 
-    : 'https://api.yourdomain.com/mcp';
+    ? `${window.location.protocol}//${window.location.hostname}:3020/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}` 
+    : `https://api.yourdomain.com/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
   const handleCopy = async () => {
     try {
