@@ -27,7 +27,7 @@ export default function Home() {
   // Render the landing page content instantly.
   // We prioritize speed and "above-the-fold" visibility.
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background text-foreground">
       <Navbar showUserMenu={false} />
       <HeroSection />
       <FeaturesSection />

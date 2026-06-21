@@ -13,6 +13,7 @@ import { getSources, deleteUrl, deleteRepository, authClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   Bot,
   Plus,
@@ -28,7 +29,9 @@ import {
   FileText,
   Link as LinkIcon,
   BookOpen,
-  Globe
+  Globe,
+  Sun,
+  Moon
 } from "lucide-react";
 
 interface SourceItem {
@@ -78,6 +81,12 @@ export default function Dashboard() {
   const [hideSwitchUse, setHideSwitchUse] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = useCallback(async (isAutoRefresh = false) => {
     try {
@@ -166,9 +175,24 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-20">
               <div className="flex items-center space-x-3">
-                <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConFuse</h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</h1>
               </div>
               <div className="flex items-center gap-4">
+                {mounted && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="h-9 w-9 rounded-full"
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                )}
                 <ProfileAvatar />
               </div>
             </div>
@@ -179,126 +203,98 @@ export default function Dashboard() {
           <div className="grid lg:grid-cols-2 gap-12 mb-8">
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-6 mt-7">
-                <Link href="/sources/repositories" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl p-6 shadow-2xl border border-blue-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <GitBranch className="w-7 h-7" />
+              <div className="grid grid-cols-2 gap-4 mt-7">
+                {[
+                  {
+                    href: "/sources/repositories",
+                    icon: GitBranch,
+                    label: "Repository",
+                    buttonText: "Connect",
+                    gradient: "from-blue-500 to-purple-600",
+                    bgIcon: "bg-blue-500/10 text-blue-500",
+                    btnColor: "bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20"
+                  },
+                  {
+                    href: "/sources/documents",
+                    icon: FileText,
+                    label: "Documents",
+                    buttonText: "Add",
+                    gradient: "from-emerald-500 to-teal-600",
+                    bgIcon: "bg-emerald-500/10 text-emerald-500",
+                    btnColor: "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
+                  },
+                  {
+                    href: "/sources/urls",
+                    icon: LinkIcon,
+                    label: "URLs",
+                    buttonText: "Add",
+                    gradient: "from-orange-500 to-red-600",
+                    bgIcon: "bg-orange-500/10 text-orange-500",
+                    btnColor: "bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20"
+                  },
+                  {
+                    href: "/sources/chats",
+                    icon: MessageSquare,
+                    label: "Chats",
+                    buttonText: "Connect",
+                    gradient: "from-pink-500 to-rose-600",
+                    bgIcon: "bg-pink-500/10 text-pink-500",
+                    btnColor: "bg-pink-500 hover:bg-pink-600 text-white shadow-pink-500/20"
+                  },
+                  {
+                    href: "/connections",
+                    icon: Users,
+                    label: "Connections",
+                    buttonText: "View",
+                    gradient: "from-indigo-500 to-purple-600",
+                    bgIcon: "bg-indigo-500/10 text-indigo-500",
+                    btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
+                  },
+                  {
+                    href: "/agents",
+                    icon: Bot,
+                    label: "Agents",
+                    buttonText: "Manage",
+                    gradient: "from-purple-500 to-pink-600",
+                    bgIcon: "bg-purple-500/10 text-purple-500",
+                    btnColor: "bg-purple-500 hover:bg-purple-600 text-white shadow-purple-500/20"
+                  },
+                  {
+                    href: "/agents/rules",
+                    icon: Network,
+                    label: "Agent Rules",
+                    buttonText: "Configure",
+                    gradient: "from-cyan-500 to-blue-600",
+                    bgIcon: "bg-cyan-500/10 text-cyan-500",
+                    btnColor: "bg-cyan-500 hover:bg-cyan-600 text-white shadow-cyan-500/20"
+                  },
+                  {
+                    href: "/docs",
+                    icon: BookOpen,
+                    label: "Documentation",
+                    buttonText: "View",
+                    gradient: "from-indigo-500 to-purple-600",
+                    bgIcon: "bg-indigo-500/10 text-indigo-500",
+                    btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
+                  }
+                ].map((action, idx) => (
+                  <Card key={idx} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none`}></div>
+                    <CardContent className="p-5 relative z-10 flex flex-col justify-between h-full space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2.5 rounded-lg ${action.bgIcon}`}>
+                          <action.icon className="w-5 h-5" />
                         </div>
-                        <span className="font-semibold text-center leading-tight">Connect Repository</span>
+                        <span className="font-semibold text-foreground">{action.label}</span>
                       </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/sources/documents" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl p-6 shadow-2xl border border-emerald-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <FileText className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Add Documents</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/sources/urls" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl p-6 shadow-2xl border border-orange-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <LinkIcon className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Add URLs</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/sources/chats" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-pink-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl p-6 shadow-2xl border border-pink-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <MessageSquare className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Connect Chats</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/connections" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-purple-600 text-white rounded-2xl p-6 shadow-2xl border border-indigo-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <Users className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Connections</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/agents" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-6 shadow-2xl border border-purple-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <Bot className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Manage Agents</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/agents/rules" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl p-6 shadow-2xl border border-cyan-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <Network className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">Agent Rules</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-
-                <Link href="/docs" className="group">
-                  <div className="relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-purple-600 text-white rounded-2xl p-6 shadow-2xl border border-indigo-400/20 backdrop-blur-sm transition-all duration-300">
-                      <div className="flex flex-col items-center space-y-3">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <BookOpen className="w-7 h-7" />
-                        </div>
-                        <span className="font-semibold text-center leading-tight">View Documentation</span>
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
+                      <Link href={action.href} className="w-full">
+                        <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
+                          {action.buttonText}
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
 

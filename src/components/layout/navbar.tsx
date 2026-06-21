@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
- import { Menu, X, LogOut, User } from "lucide-react";
- import { useState } from "react";
+ import { Menu, X, LogOut, User, Moon, Sun } from "lucide-react";
+ import { useState, useEffect } from "react";
+ import { useTheme } from "next-themes";
  import Link from "next/link";
  // 🆕 1. Import the router hook for navigation
  import { useRouter } from "next/navigation"; 
@@ -20,6 +21,12 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
   
   // 🆕 2. Initialize the router
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // We keep loginWithRedirect here just in case, but we won't use it in handleLogin anymore
   const { isAuthenticated, isLoading, loginWithRedirect, logout, user } = useAuth0();
@@ -44,7 +51,7 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
         <div className="flex justify-between items-center h-20">
           
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">ConFuse</span>
+            <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</span>
           </Link>
 
           {/* --- DESKTOP MENU --- */}
@@ -58,6 +65,22 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
             <Link href="/billing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
+
+            {showUserMenu && mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="h-9 w-9 rounded-full"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            )}
 
             {showUserMenu && (
               isLoading ? (
@@ -92,7 +115,22 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
           </div>
 
           {/* --- MOBILE TOGGLE --- */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {showUserMenu && mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="h-9 w-9 rounded-full"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            )}
             <Button
               variant="ghost" 
               size="sm"
