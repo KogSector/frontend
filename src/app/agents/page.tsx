@@ -98,8 +98,8 @@ export default function AgentsPage() {
                 </p>
                 <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
-  "mcpServers": {
-    "confuse-remote": {
+  "servers": {
+    "ConFuse": {
       "url": "${mcpUrl}",
       "type": "http"
     }
@@ -117,7 +117,7 @@ export default function AgentsPage() {
                 <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
   "mcpServers": {
-    "confuse-remote": {
+    "ConFuse": {
       "url": "${mcpUrl}",
       "type": "sse"
     }
@@ -135,7 +135,7 @@ export default function AgentsPage() {
                 <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
 {`{
   "mcpServers": {
-    "confuse-remote": {
+    "ConFuse": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "${mcpUrl}"]
     }
