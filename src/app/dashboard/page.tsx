@@ -13,7 +13,6 @@ import { getSources, deleteUrl, deleteRepository, authClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   Bot,
   Plus,
@@ -29,9 +28,7 @@ import {
   FileText,
   Link as LinkIcon,
   BookOpen,
-  Globe,
-  Sun,
-  Moon
+  Globe
 } from "lucide-react";
 
 interface SourceItem {
@@ -81,12 +78,6 @@ export default function Dashboard() {
   const [hideSwitchUse, setHideSwitchUse] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fetchData = useCallback(async (isAutoRefresh = false) => {
     try {
@@ -178,21 +169,6 @@ export default function Dashboard() {
                 <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</h1>
               </div>
               <div className="flex items-center gap-4">
-                {mounted && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="h-9 w-9 rounded-full"
-                  >
-                    {theme === "dark" ? (
-                      <Sun className="h-4 w-4" />
-                    ) : (
-                      <Moon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Toggle theme</span>
-                  </Button>
-                )}
                 <ProfileAvatar />
               </div>
             </div>
