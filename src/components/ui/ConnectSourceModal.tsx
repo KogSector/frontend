@@ -159,7 +159,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         return;
       }
 
-      if (service === 'onedrive') {
+      if (['onedrive', 'google_drive', 'dropbox'].includes(service)) {
          setConnectionStatus({ status: "idle" });
          setActiveProvider(service);
          setBrowserOpen(true);

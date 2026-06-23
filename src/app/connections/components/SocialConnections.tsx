@@ -236,16 +236,13 @@ export function SocialConnections() {
       // Auth0-based providers (Google Drive, Bitbucket, GitLab, Dropbox)
       // These use Auth0's loginWithPopup to link the social provider
       // ----------------------------------------------------------------
-      if (platform === 'google_drive' || platform === 'dropbox') {
+      if (platform === 'google_drive') {
         let connectionName = platform;
         let authorizationParams: any = {};
 
         if (platform === 'google_drive') {
           connectionName = 'google-oauth2';
           authorizationParams.connection_scope = 'https://www.googleapis.com/auth/drive.readonly';
-          if (emailHint) authorizationParams.login_hint = emailHint;
-        } else if (platform === 'dropbox') {
-          connectionName = 'dropbox';
           if (emailHint) authorizationParams.login_hint = emailHint;
         }
 
@@ -286,10 +283,10 @@ export function SocialConnections() {
       }
 
       // ----------------------------------------------------------------
-      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence, OneDrive)
+      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence, OneDrive, Dropbox)
       // These open a popup to the provider's OAuth authorize URL directly
       // ----------------------------------------------------------------
-      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence' || platform === 'onedrive') {
+      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence' || platform === 'onedrive' || platform === 'dropbox') {
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 
@@ -502,7 +499,7 @@ export function SocialConnections() {
                     title={`Connect ${config.name}`}
                     aria-label={`Connect ${config.name}`}
                     onClick={() => {
-                      if (['google_drive', 'dropbox', 'notion'].includes(platform)) {
+                      if (['google_drive', 'notion'].includes(platform)) {
                         setEmailDialogPlatform(platform);
                         setEmailDialogOpen(true);
                       } else {
