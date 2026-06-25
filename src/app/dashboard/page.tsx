@@ -28,7 +28,8 @@ import {
   FileText,
   Link as LinkIcon,
   BookOpen,
-  Globe
+  Globe,
+  PenTool
 } from "lucide-react";
 
 interface SourceItem {
@@ -210,6 +211,15 @@ export default function Dashboard() {
                     gradient: "from-pink-500 to-rose-600",
                     bgIcon: "bg-pink-500/10 text-pink-500",
                     btnColor: "bg-pink-500 hover:bg-pink-600 text-white shadow-pink-500/20"
+                  },
+                  {
+                    href: "/connections",
+                    icon: PenTool,
+                    label: "Design Files",
+                    buttonText: "Connect",
+                    gradient: "from-fuchsia-500 to-purple-600",
+                    bgIcon: "bg-fuchsia-500/10 text-fuchsia-500",
+                    btnColor: "bg-fuchsia-500 hover:bg-fuchsia-600 text-white shadow-fuchsia-500/20"
                   },
                   {
                     href: "/connections",
