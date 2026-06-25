@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
-import { dataClient, deleteSource, syncSource } from "@/lib/api";
+import { dataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
 
   // Custom dialog states
-  const [deleteSourceId, setDeleteSourceId] = useState<string | null>(null);
+  const [deleteDocumentId, setDeleteDocumentId] = useState<string | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -230,45 +230,31 @@ export default function DocumentsPage() {
     });
   };
 
-  const handleDeleteSource = (sourceId: string) => {
-    // Check if it's a UUID (real source) or a derived demo source
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId);
-
-    if (!isUuid) {
-      // Demo source - just remove from local state
-      setSources(prev => prev.filter(s => s.id !== sourceId));
-      toast({
-        title: "Demo source removed",
-        description: "The demo document source has been removed locally.",
-      });
-      return;
-    }
-
-    setDeleteSourceId(sourceId);
+  const handleDeleteDocument = (docId: string) => {
+    setDeleteDocumentId(docId);
   };
 
-  const confirmDeleteSource = async () => {
-    if (!deleteSourceId) return;
+  const confirmDeleteDocument = async () => {
+    if (!deleteDocumentId) return;
 
-    const sourceId = deleteSourceId;
-    setDeleteSourceId(null);
+    const docId = deleteDocumentId;
+    setDeleteDocumentId(null);
     setIsDeleting(true);
 
     try {
-      const resp = await deleteSource(sourceId);
+      const resp = await deleteDocument(docId);
       if (resp.success) {
         toast({
-          title: "Source deleted",
-          description: "The document source has been removed.",
+          title: "Document deleted",
+          description: "The document has been removed.",
         });
-        // Update local state immediately for better UX
-        setSources(prev => prev.filter(s => s.id !== sourceId));
-        fetchDocuments(); // Refresh list in background to sync everything
+        setDocuments(prev => prev.filter(d => d.id !== docId));
+        fetchDocuments();
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete source",
+        description: "Failed to delete document",
         variant: "destructive",
       });
     } finally {
@@ -359,8 +345,8 @@ export default function DocumentsPage() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Connected Documents</h2>
-            <p className="text-sm text-muted-foreground">Connect and manage your document sources</p>
+            <h2 className="text-xl font-semibold text-foreground">Uploaded Documents</h2>
+            <p className="text-sm text-muted-foreground">Manage documents from your connected sources</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => fetchDocuments()}>
@@ -376,62 +362,53 @@ export default function DocumentsPage() {
 
         {/* Document Sources */}
         <div className="space-y-4 mb-12">
-          {sources.length === 0 ? (
+          {documents.length === 0 ? (
             <Card className="bg-muted/50 border-dashed border-muted-foreground/25">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No document sources connected</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">No documents found</h3>
                 <p className="text-muted-foreground text-center mb-6 max-w-md">
-                  Connect your first document source to start indexing and accessing your documents with AI.
+                  Upload a document or connect a source from the Connections page to start indexing.
                 </p>
                 <Button onClick={() => setShowConnectModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Connect Your First Document
+                  Upload Document
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4">
-              {sources.map((source) => (
-                <Card key={source.id} className="bg-card border-border hover:bg-accent/5 transition-colors">
+              {documents.map((doc) => (
+                <Card key={doc.id} className="bg-card border-border hover:bg-accent/5 transition-colors">
                   <div className="flex flex-col px-6 py-4 gap-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {getTypeIcon(source.type)}
+                        {getTypeIcon(doc.source)}
                         <div>
-                          <h3 className="font-semibold text-foreground">{source.name}</h3>
-                          <p className="text-sm text-muted-foreground">{getTypeName(source.type)}</p>
+                          <h3 className="font-semibold text-foreground">{doc.name}</h3>
+                          <p className="text-sm text-muted-foreground">{getTypeName(doc.source)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getStatusColor(source.status)}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${getStatusColor(doc.status)}`}></div>
                         <Badge variant="outline" className="text-xs">
-                          {source.status}
+                          {doc.status || 'Processed'}
                         </Badge>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                      <span>{source.documentCount} documents</span>
-                      {source.size && <span>{source.size}</span>}
-                      {source.lastSync && <span>Last sync: {source.lastSync}</span>}
+                      {doc.size && <span>{doc.size}</span>}
+                      {doc.created_at && <span>Uploaded: {new Date(doc.created_at).toLocaleDateString()}</span>}
+                      {doc.doc_type && <Badge variant="secondary" className="text-xs uppercase">{doc.doc_type}</Badge>}
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSyncSource(source.id)}
-                        disabled={loading}
-                      >
-                        <RefreshCw className={`w-4 h-4 mr-1 ${source.status === 'syncing' ? 'animate-spin' : ''}`} />
-                        Sync
-                      </Button>
+                    <div className="flex gap-2 justify-end">
                       <Button
                         variant="outline"
                         size="sm"
                         className="text-red-500 hover:text-red-700"
-                        onClick={() => handleDeleteSource(source.id)}
+                        onClick={() => handleDeleteDocument(doc.id)}
                         disabled={loading}
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
@@ -456,22 +433,19 @@ export default function DocumentsPage() {
         onSourceConnected={handleSourceConnected}
       />
 
-      <AlertDialog open={!!deleteSourceId} onOpenChange={(open) => !open && setDeleteSourceId(null)}>
+      <AlertDialog open={!!deleteDocumentId} onOpenChange={(open) => !open && setDeleteDocumentId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this source?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the document source
-              and all {documents.filter(d => {
-                const source = sources.find(s => s.id === deleteSourceId);
-                return d.source === source?.type;
-              }).length} associated documents from our knowledge base.
+              This action cannot be undone. This will permanently delete the document
+              from our knowledge base.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteSource} className="bg-red-500 hover:bg-red-600">
-              Delete Source
+            <AlertDialogAction onClick={confirmDeleteDocument} className="bg-red-500 hover:bg-red-600">
+              Delete Document
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
