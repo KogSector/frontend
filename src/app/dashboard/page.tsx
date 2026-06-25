@@ -231,15 +231,6 @@ export default function Dashboard() {
                     btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
                   },
                   {
-                    href: "/agents",
-                    icon: Bot,
-                    label: "Agents",
-                    buttonText: "Manage",
-                    gradient: "from-purple-500 to-pink-600",
-                    bgIcon: "bg-purple-500/10 text-purple-500",
-                    btnColor: "bg-purple-500 hover:bg-purple-600 text-white shadow-purple-500/20"
-                  },
-                  {
                     href: "/agents/rules",
                     icon: Network,
                     label: "Agent Rules",
@@ -341,20 +332,6 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Security Score
-                    </CardTitle>
-                    <Shield className="w-4 h-4 text-accent" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-foreground">{loading ? '...' : `${stats.security_score}%`}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Excellent
-                    </p>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </div>
