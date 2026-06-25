@@ -289,7 +289,7 @@ export default function RepositoriesPage() {
               <p className="text-sm text-muted-foreground">Connect and manage your code repositories</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => fetchDataSources()}>
+              <Button variant="outline" onClick={() => { fetchRepositories(); fetchDataSources(); }}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </Button>
@@ -341,7 +341,7 @@ export default function RepositoriesPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => syncRepository(repo)}
-                          disabled={syncingRepoId === repo.id || repo.status === 'syncing'}
+                          disabled={syncingRepoId === repo.id}
                         >
                           <RefreshCw className={`w-4 h-4 mr-1 ${syncingRepoId === repo.id ? 'animate-spin' : ''}`} />
                           {syncingRepoId === repo.id ? 'Syncing...' : syncStatus[repo.id]?.status === 'success' ? '✓ Synced' : syncStatus[repo.id]?.status === 'error' ? '✗ Error' : 'Sync'}

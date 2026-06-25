@@ -54,7 +54,6 @@ interface DashboardStats {
   repositories: number;
   documents: number;
   urls: number;
-  agents: number;
   connections: number;
   context_requests: number;
   security_score: number;
@@ -66,7 +65,6 @@ export default function Dashboard() {
     repositories: 0,
     documents: 0,
     urls: 0,
-    agents: 0,
     connections: 0,
     context_requests: 0,
     security_score: 98,
@@ -124,16 +122,12 @@ export default function Dashboard() {
 
       setRecentSources(Array.isArray(sources) ? sources.slice(0, 4) : []);
 
-      // Agents are handled via DashboardStats now
-      let agents: AgentItem[] = [];
-
       // Update stats from the dashboard API
       setStats({
         repositories: dashboardStats.repositories || 0,
         documents: dashboardStats.documents || 0,
         urls: dashboardStats.urls || 0,
-        agents: dashboardStats.agents || 0,
-        connections: dashboardStats.connections || (sources.length + agents.length),
+        connections: dashboardStats.connections || (sources.length),
         context_requests: dashboardStats.context_requests || 0,
         security_score: dashboardStats.security_score || 98,
         activity: dashboardStats.activity || [],
@@ -318,21 +312,6 @@ export default function Dashboard() {
                     <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
                     <p className="text-xs text-muted-foreground">
                       Connected URLs
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-card border-border">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      AI Agents
-                    </CardTitle>
-                    <Bot className="w-4 h-4 text-accent" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.agents}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Active agents
                     </p>
                   </CardContent>
                 </Card>

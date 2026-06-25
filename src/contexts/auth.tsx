@@ -256,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
       console.log('Auth service response data:', data)
 
-      saveSession(auth0AccessToken, data.user)
+      saveSession(data.token, data.user)
       await refreshConnections()
       router.push('/dashboard')
     } catch (error: any) {

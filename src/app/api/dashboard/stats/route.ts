@@ -24,7 +24,6 @@ interface DashboardStats {
   repositories?: number
   documents?: number
   urls?: number
-  agents?: number
 }
 
 export async function GET(request: NextRequest) {
@@ -36,13 +35,28 @@ export async function GET(request: NextRequest) {
     if (authHeader) headers['Authorization'] = authHeader
     if (userIdHeader) headers['x-user-id'] = userIdHeader
 
-    // Aggregate data from multiple services
+    // Helper function for timeout
+    const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> => {
+      let timeoutId: NodeJS.Timeout;
+      const timeoutPromise = new Promise<null>((resolve) => {
+        timeoutId = setTimeout(() => resolve(null), timeoutMs);
+      });
+      return Promise.race([
+        promise.then(res => {
+          clearTimeout(timeoutId);
+          return res;
+        }),
+        timeoutPromise
+      ]);
+    };
+
+    // Aggregate data from multiple services with a 1500ms timeout
     const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
-      dataClient.get('/api/repositories', headers),
-      dataClient.get('/api/v1/documents', headers),
-      dataClient.get('/api/v1/external/urls', headers),
-      authClient.get('/api/users/stats', headers),
-      dataClient.get('/api/v1/jobs?limit=5', headers)
+      withTimeout(dataClient.get('/api/repositories', headers), 1500),
+      withTimeout(dataClient.get('/api/v1/documents', headers), 1500),
+      withTimeout(dataClient.get('/api/v1/external/urls', headers), 1500),
+      withTimeout(authClient.get('/api/users/stats', headers), 1500),
+      withTimeout(dataClient.get('/api/v1/jobs?limit=5', headers), 1500)
     ])
 
     // Extract data safely with proper typing
@@ -103,9 +117,8 @@ export async function GET(request: NextRequest) {
       repositories: Array.isArray(reposData) ? reposData.length : 0,
       documents: Array.isArray(docs) ? docs.length : (docs.total || 0),
       urls: Array.isArray(urls) ? urls.length : 0,
-      agents: Array.isArray(agents) ? agents.length : 0,
       activity: activity,
-      connections: calculateConnections(reposData, urls, agents),
+      connections: calculateConnections(reposData, urls),
       context_requests: userStatsData?.context_requests || 0,
       security_score: userStatsData?.security_score || 100,
       total_users: userStatsData?.total_users || 0,
@@ -128,7 +141,6 @@ export async function GET(request: NextRequest) {
       repositories: 0,
       documents: 0,
       urls: 0,
-      agents: 0,
       activity: [],
       connections: 0,
       context_requests: 0,
@@ -145,8 +157,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateConnections(repos: any[], urls: any[], agents: any[]): number {
-  // Calculate active connections based on repositories, URLs, and agents
+function calculateConnections(repos: any[], urls: any[]): number {
+  // Calculate active connections based on repositories, URLs
   const repoConnections = Array.isArray(repos) ? repos.filter(r => 
     ['connected', 'cloned', 'active', 'syncing'].includes(r.status?.toLowerCase())
   ).length : 0
@@ -155,9 +167,6 @@ function calculateConnections(repos: any[], urls: any[], agents: any[]): number 
     ['active', 'syncing', 'connected'].includes(u.status?.toLowerCase())
   ).length : 0
   
-  const agentConnections = Array.isArray(agents) ? agents.filter(a => 
-    ['connected', 'active'].includes(a.status?.toLowerCase())
-  ).length : 0
-  
-  return repoConnections + urlConnections + agentConnections
+  return repoConnections + urlConnections
 }
+
