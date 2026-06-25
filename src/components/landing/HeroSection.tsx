@@ -30,7 +30,7 @@ export function HeroSection() {
   };
 
   const handleViewDocs = () => {
-    window.location.href = "/docs";
+    window.open("/docs", "_blank");
   };
 
   return (

@@ -257,7 +257,7 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-foreground">{action.label}</span>
                       </div>
-                      <Link href={action.href} className="w-full">
+                      <Link href={action.href} target={action.href === '/docs' ? '_blank' : undefined} className="w-full">
                         <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
                           {action.buttonText}
                         </Button>

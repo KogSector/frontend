@@ -2,25 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
- import { Menu, X, LogOut, User, Moon, Sun } from "lucide-react";
- import { useState, useEffect } from "react";
- import { useTheme } from "next-themes";
- import Link from "next/link";
- // 🆕 1. Import the router hook for navigation
- import { useRouter } from "next/navigation"; 
+import { Menu, X, LogOut, User, Moon, Sun, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation"; 
 
 import { useAuth0 } from "@auth0/auth0-react";
 import SocialConnections from '@/app/connections/components/SocialConnections';
 
- type NavbarProps = {
-   showUserMenu?: boolean;
- };
+type NavbarProps = {
+  showUserMenu?: boolean;
+};
 
- export const Navbar = ({ showUserMenu = true }: NavbarProps) => {
+export const Navbar = ({ showUserMenu = true }: NavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // 🆕 2. Initialize the router
   const router = useRouter();
+  const pathname = usePathname();
+  const isBilling = pathname === '/billing';
+  const isDocs = pathname?.startsWith('/docs');
+  const hideMenus = isBilling || isDocs;
+
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -28,7 +31,6 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
     setMounted(true);
   }, []);
 
-  // We keep loginWithRedirect here just in case, but we won't use it in handleLogin anymore
   const { isAuthenticated, isLoading, loginWithRedirect, logout, user } = useAuth0();
 
   const getInitial = (s?: string) => {
@@ -37,7 +39,6 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
   }
 
   const handleLogin = () => {
-    // 🆕 3. CHANGED: Navigate to your custom login page instead of Auth0 default
     router.push("/auth/login");
   };
 
@@ -50,16 +51,31 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            {isBilling && (
+              <Button variant="ghost" size="icon" onClick={() => router.push('/')} title="Back to Home">
+                <ArrowLeft className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+              </Button>
+            )}
+            {!isBilling && !isDocs && (
+              <Link href="/" className="flex items-center space-x-2">
+                <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</span>
+              </Link>
+            )}
+            {!isBilling && isDocs && (
+              <div className="flex items-center space-x-2">
+                <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent cursor-default">ConFuse</span>
+              </div>
+            )}
+          </div>
 
           {/* --- DESKTOP MENU --- */}
-          <div className="hidden md:flex items-center space-x-8">
+          {!hideMenus && (
+            <div className="hidden md:flex items-center space-x-8">
             <Link href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/docs" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors">
               Documentation
             </Link>
             <Link href="/billing" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -113,9 +129,11 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
               ) : null
             )}
           </div>
+          )}
 
           {/* --- MOBILE TOGGLE --- */}
-          <div className="md:hidden flex items-center space-x-2">
+          {!hideMenus && (
+            <div className="md:hidden flex items-center space-x-2">
             {showUserMenu && mounted && (
               <Button
                 variant="ghost"
@@ -139,16 +157,17 @@ import SocialConnections from '@/app/connections/components/SocialConnections';
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
+          )}
         </div>
 
         {/* --- MOBILE MENU --- */}
-        {isMenuOpen && (
+        {isMenuOpen && !hideMenus && (
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col space-y-3">
               <Link href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
                 Features
               </Link>
-              <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/docs" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors">
                 Documentation
               </Link>
               <Link href="/billing" className="text-muted-foreground hover:text-foreground transition-colors">

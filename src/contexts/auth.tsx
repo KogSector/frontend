@@ -256,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
       console.log('Auth service response data:', data)
 
-      saveSession(data.token, data.user)
+      saveSession(auth0AccessToken, data.user)
       await refreshConnections()
       router.push('/dashboard')
     } catch (error: any) {
@@ -285,6 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(session.token);
           updateLastActivity();
           if (!user) {
+            setIsSyncing(true);
             fetchUserProfile(session.token)
               .then(() => refreshConnections())
               .finally(() => setIsSyncing(false));
@@ -294,6 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else {
           // We need to fetch the token and sync the profile with backend via handleAuth0Callback
+          setIsSyncing(true);
           getAccessTokenSilently()
             .then(async (authToken) => {
               await handleAuth0Callback(authToken);
@@ -472,7 +474,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user && !!token,
-    isLoading: isLoading || isSyncing || (auth0IsAuthenticated && !(!!user && !!token)) || isLoggingOut,
+    isLoading: isLoading || auth0IsLoading || isSyncing || isLoggingOut,
     // Traditional auth methods
     login,
     register,
