@@ -36,9 +36,10 @@ interface SocialLoginButtonsProps {
   mode: 'login' | 'register'
   onSocialLogin: (provider: string) => void
   disabled?: boolean
+  showMicrosoft?: boolean
 }
 
-function SocialLoginButtons({ mode, onSocialLogin, disabled }: SocialLoginButtonsProps) {
+function SocialLoginButtons({ mode, onSocialLogin, disabled, showMicrosoft }: SocialLoginButtonsProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Google Button - Top */}
@@ -53,15 +54,17 @@ function SocialLoginButtons({ mode, onSocialLogin, disabled }: SocialLoginButton
       </Button>
 
       {/* Microsoft Button */}
-      <Button
-        type="button"
-        onClick={() => onSocialLogin('windowslive')}
-        disabled={disabled}
-        className="w-full h-11 bg-white text-black hover:bg-gray-200 border-none text-base font-normal transition-transform transform hover:scale-[1.02] shadow-lg"
-      >
-        <MicrosoftLogo className="mr-3 h-6 w-6" />
-        Continue with Microsoft
-      </Button>
+      {showMicrosoft && (
+        <Button
+          type="button"
+          onClick={() => onSocialLogin('windowslive')}
+          disabled={disabled}
+          className="w-full h-11 bg-white text-black hover:bg-gray-200 border-none text-base font-normal transition-transform transform hover:scale-[1.02] shadow-lg"
+        >
+          <MicrosoftLogo className="mr-3 h-6 w-6" />
+          Continue with Microsoft
+        </Button>
+      )}
     </div>
   )
 }
@@ -70,9 +73,16 @@ function SocialLoginButtons({ mode, onSocialLogin, disabled }: SocialLoginButton
 export function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showMicrosoft, setShowMicrosoft] = useState(false)
 
   // Use our custom Auth0 hook
   const { loginWithRedirect } = useAuth()
+
+  React.useEffect(() => {
+    import('@/lib/api').then(api => {
+      api.isToggleEnabled('enableMicrosoftAuth').then(setShowMicrosoft).catch(console.error);
+    });
+  }, []);
 
   const handleSocialLogin = async (provider: string) => {
     console.log('🔘 Social login button clicked:', provider)
@@ -118,6 +128,7 @@ export function LoginForm() {
               mode="login"
               onSocialLogin={handleSocialLogin}
               disabled={isLoading}
+              showMicrosoft={showMicrosoft}
             />
 
           </CardContent>

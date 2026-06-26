@@ -300,6 +300,9 @@ export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'e
 
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 
+/** Feature Toggle service */
+export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+
 /**
  * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
  * Kept for backward-compat during migration. Points to data-connector.
@@ -507,11 +510,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return dataClient.get('/api/v1/toggles');
+  return featureToggleClient.get('/api/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return dataClient.get(`/api/v1/toggles/${encodeURIComponent(name)}`);
+  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {

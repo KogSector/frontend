@@ -71,6 +71,13 @@ export default function Dashboard() {
     security_score: 98,
     activity: [],
   });
+  const [toggles, setToggles] = useState<Record<string, boolean>>({
+    enableRepositories: true,
+    enableDocuments: true,
+    enableURLs: true,
+    enableChats: true,
+    enableDesign: true,
+  });
   const [loading, setLoading] = useState(true);
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
@@ -85,9 +92,10 @@ export default function Dashboard() {
       }
 
       // Use the centralized dashboard stats API
-      const [dashboardStatsResp, sourcesResp] = await Promise.all([
+      const [dashboardStatsResp, sourcesResp, togglesResp] = await Promise.all([
         import('@/lib/api').then(api => api.getDashboardStats()).catch(() => null),
-        getSources().catch(() => null)
+        getSources().catch(() => null),
+        import('@/lib/api').then(api => api.getAllToggles()).catch(() => null)
       ]);
 
       if (dashboardStatsResp && dashboardStatsResp.success === false) {
@@ -95,6 +103,17 @@ export default function Dashboard() {
       }
 
       const dashboardStats = (dashboardStatsResp as any).data || dashboardStatsResp;
+
+      if (togglesResp && (togglesResp as any).success) {
+        const tData = (togglesResp as any).data;
+        if (tData) {
+          const newToggles: Record<string, boolean> = {};
+          Object.keys(tData).forEach(key => {
+            newToggles[key] = tData[key].enabled;
+          });
+          setToggles(prev => ({ ...prev, ...newToggles }));
+        }
+      }
 
       // Extract sources for the "Connected Sources" list
       let sources: SourceItem[] = [];
@@ -177,6 +196,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-4 mt-7">
                 {[
                   {
+                    toggleId: "enableRepositories",
                     href: "/sources/repositories",
                     icon: GitBranch,
                     label: "Repository",
@@ -186,6 +206,7 @@ export default function Dashboard() {
                     btnColor: "bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20"
                   },
                   {
+                    toggleId: "enableDocuments",
                     href: "/sources/documents",
                     icon: FileText,
                     label: "Documents",
@@ -195,6 +216,7 @@ export default function Dashboard() {
                     btnColor: "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
                   },
                   {
+                    toggleId: "enableURLs",
                     href: "/sources/urls",
                     icon: LinkIcon,
                     label: "URLs",
@@ -204,6 +226,7 @@ export default function Dashboard() {
                     btnColor: "bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20"
                   },
                   {
+                    toggleId: "enableChats",
                     href: "/sources/chats",
                     icon: MessageSquare,
                     label: "Chats",
@@ -213,6 +236,7 @@ export default function Dashboard() {
                     btnColor: "bg-pink-500 hover:bg-pink-600 text-white shadow-pink-500/20"
                   },
                   {
+                    toggleId: "enableDesign",
                     href: "/sources/design",
                     icon: PenTool,
                     label: "Design",
@@ -248,7 +272,7 @@ export default function Dashboard() {
                     bgIcon: "bg-indigo-500/10 text-indigo-500",
                     btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
                   }
-                ].map((action, idx) => (
+                ].filter(action => action.toggleId ? toggles[action.toggleId] !== false : true).map((action, idx) => (
                   <Card key={idx} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border">
                     <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none`}></div>
                     <CardContent className="p-5 relative z-10 flex flex-col justify-between h-full space-y-4">
@@ -272,50 +296,56 @@ export default function Dashboard() {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-card border-border">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Repositories
-                    </CardTitle>
-                    <GitBranch className="w-4 h-4 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.repositories}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Connected repos
-                    </p>
-                  </CardContent>
-                </Card>
+                {toggles.enableRepositories !== false && (
+                  <Card className="bg-card border-border">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Repositories
+                      </CardTitle>
+                      <GitBranch className="w-4 h-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.repositories}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Connected repos
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-card border-border">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Documents
-                    </CardTitle>
-                    <FileText className="w-4 h-4 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.documents}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Indexed documents
-                    </p>
-                  </CardContent>
-                </Card>
+                {toggles.enableDocuments !== false && (
+                  <Card className="bg-card border-border">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Documents
+                      </CardTitle>
+                      <FileText className="w-4 h-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.documents}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Indexed documents
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-card border-border">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      URLs
-                    </CardTitle>
-                    <LinkIcon className="w-4 h-4 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Connected URLs
-                    </p>
-                  </CardContent>
-                </Card>
+                {toggles.enableURLs !== false && (
+                  <Card className="bg-card border-border">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        URLs
+                      </CardTitle>
+                      <LinkIcon className="w-4 h-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
+                      <p className="text-xs text-muted-foreground">
+                        Connected URLs
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <Card className="bg-card border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
