@@ -213,9 +213,9 @@ export default function Dashboard() {
                     btnColor: "bg-pink-500 hover:bg-pink-600 text-white shadow-pink-500/20"
                   },
                   {
-                    href: "/connections",
+                    href: "/sources/design",
                     icon: PenTool,
-                    label: "Design Files",
+                    label: "Design",
                     buttonText: "Connect",
                     gradient: "from-fuchsia-500 to-purple-600",
                     bgIcon: "bg-fuchsia-500/10 text-fuchsia-500",
