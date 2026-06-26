@@ -12,7 +12,6 @@ export const SERVICE_URLS = {
   embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL as string,
   clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string,
   dataVent: process.env.NEXT_PUBLIC_DATA_VENT_URL as string,
-  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL as string,
 } as const;
 
 /**

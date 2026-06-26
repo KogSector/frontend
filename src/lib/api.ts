@@ -294,9 +294,6 @@ export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'uni
 /** Data vent service (semantic search and graph queries) */
 export const dataVentClient = new ApiClient(SERVICE_URLS.dataVent, 'data-vent');
 
-/** Feature toggle service */
-export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
-
 /** Embeddings service */
 export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
 
@@ -510,11 +507,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return featureToggleClient.get('/api/toggles');
+  return dataClient.get('/api/v1/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
+  return dataClient.get(`/api/v1/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {
