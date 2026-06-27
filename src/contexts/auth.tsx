@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getAccessTokenSilently
   } = useAuth0React()
 
-  const auth0LogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI || 'http://localhost:3000/'
+  const auth0LogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH0_LOGOUT_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000/')
 
   // ============================================================================
   // SESSION MANAGEMENT
