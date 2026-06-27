@@ -266,6 +266,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push(`/?error=auth_failed&detail=${encodeURIComponent(errorMessage)}`)
     } finally {
       setIsSyncing(false)
+      setIsLoading(false)
     }
   }, [saveSession, clearSession, router, refreshConnections])
 
@@ -276,6 +277,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ============================================================================
 
   useEffect(() => {
+    if (auth0IsLoading) return; // Wait for Auth0 to finish loading
+
     const initAuth = async () => {
       // Check if Auth0 is authenticated
       if (auth0IsAuthenticated) {
@@ -288,10 +291,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsSyncing(true);
             fetchUserProfile(session.token)
               .then(() => refreshConnections())
-              .finally(() => setIsSyncing(false));
+              .finally(() => {
+                setIsSyncing(false);
+                setIsLoading(false);
+              });
           } else {
             refreshConnections();
             setIsSyncing(false);
+            setIsLoading(false);
           }
         } else {
           // We need to fetch the token and sync the profile with backend via handleAuth0Callback
@@ -304,6 +311,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.error('Failed to get token silently to restore session', err);
               clearSession();
               setIsSyncing(false);
+              setIsLoading(false);
             });
         }
       } else {
