@@ -194,7 +194,18 @@ export default function Dashboard() {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4 mt-7">
-                {[
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="animate-pulse bg-card/50 border-border h-32 flex flex-col justify-between p-5">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-lg bg-muted"></div>
+                        <div className="h-5 w-24 bg-muted rounded"></div>
+                      </div>
+                      <div className="h-10 w-full bg-muted rounded"></div>
+                    </Card>
+                  ))
+                ) : (
+                  [
                   {
                     toggleId: "enableRepositories",
                     href: "/sources/repositories",
@@ -289,14 +300,26 @@ export default function Dashboard() {
                       </Link>
                     </CardContent>
                   </Card>
-                ))}
+                )))}
               </div>
             </div>
 
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {toggles.enableRepositories !== false && (
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i} className="animate-pulse bg-card/50 border-border h-[104px] flex flex-col justify-between p-5">
+                      <div className="flex justify-between items-center">
+                        <div className="h-4 w-20 bg-muted rounded"></div>
+                        <div className="w-4 h-4 bg-muted rounded"></div>
+                      </div>
+                      <div className="h-8 w-12 bg-muted rounded mt-2"></div>
+                    </Card>
+                  ))
+                ) : (
+                  <>
+                    {toggles.enableRepositories !== false && (
                   <Card className="bg-card border-border">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -361,7 +384,8 @@ export default function Dashboard() {
                     </p>
                   </CardContent>
                 </Card>
-
+                  </>
+                )}
               </div>
             </div>
           </div>
