@@ -26,7 +26,7 @@ import {
 interface DocumentSource {
   id: string;
   name: string;
-  type: 'local_files' | 'google_drive' | 'dropbox' | 'onedrive' | 'notion' | 'confluence';
+  type: 'local_files' | 'google_drive' | 'dropbox' | 'onedrive' | 'notion';
   status: 'connected' | 'syncing' | 'error' | 'disconnected';
   documentCount: number;
   lastSync?: string;
@@ -109,7 +109,7 @@ export default function DocumentsPage() {
         // Add real document sources
         realSourcesMap.forEach((s) => {
           // Only show document-related sources here (upload, gdrive, etc)
-          const docTypes = ['upload', 'google_drive', 'gdrive', 'dropbox', 'onedrive', 'notion', 'confluence'];
+          const docTypes = ['upload', 'google_drive', 'gdrive', 'dropbox', 'onedrive', 'notion'];
           if (docTypes.includes(s.type)) {
             sourceMap.set(s.id, {
               id: s.id,
@@ -192,7 +192,7 @@ export default function DocumentsPage() {
       case 'dropbox': return <Cloud className="w-5 h-5 text-blue-600" />;
       case 'onedrive': return <Cloud className="w-5 h-5 text-blue-700" />;
       case 'notion': return <FileText className="w-5 h-5 text-gray-700" />;
-      case 'confluence': return <FileText className="w-5 h-5 text-blue-800" />;
+
       default: return <FileText className="w-5 h-5 text-gray-500" />;
     }
   };
@@ -205,7 +205,7 @@ export default function DocumentsPage() {
       case 'dropbox': return 'Dropbox';
       case 'onedrive': return 'OneDrive';
       case 'notion': return 'Notion';
-      case 'confluence': return 'Confluence';
+
       default: return type;
     }
   };

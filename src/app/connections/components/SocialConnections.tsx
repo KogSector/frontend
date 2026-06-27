@@ -18,8 +18,6 @@ import SlackIcon from '@/components/icons/SlackIcon'
 import GoogleDriveIcon from '@/components/icons/GoogleDriveIcon'
 import DropboxIcon from '@/components/icons/DropboxIcon'
 import NotionIcon from '@/components/icons/NotionIcon'
-import JiraIcon from '@/components/icons/JiraIcon'
-import ConfluenceIcon from '@/components/icons/ConfluenceIcon'
 import CustomAppsIcon from '@/components/icons/CustomAppsIcon'
 import OneDriveIcon from '@/components/icons/OneDriveIcon'
 import FigmaIcon from '@/components/icons/FigmaIcon'
@@ -28,7 +26,7 @@ import { OAuthEmailDialog } from './OAuthEmailDialog';
 
 interface SocialConnection {
   id: string;
-  platform: 'slack' | 'notion' | 'google_drive' | 'gmail' | 'dropbox' | 'linkedin' | 'github' | 'bitbucket' | 'gitlab' | 'jira' | 'confluence' | 'custom_apps' | 'google' | 'windowslive' | 'figma' | 'zeplin';
+  platform: 'slack' | 'notion' | 'google_drive' | 'gmail' | 'dropbox' | 'linkedin' | 'github' | 'bitbucket' | 'gitlab' | 'custom_apps' | 'google' | 'windowslive' | 'figma' | 'zeplin';
   username: string;
   is_active: boolean;
   connected_at: string;
@@ -44,8 +42,6 @@ const PLATFORM_CONFIGS = {
   github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
   bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
   gitlab: { name: 'GitLab', description: 'Connect your GitLab account', icon: (cls: string) => <GitLabIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
-  jira: { name: 'Jira', description: 'Sync issues and projects', icon: (cls: string) => <JiraIcon className={cls} />, toggleId: 'enableTickets', groupName: 'Tickets' },
-  confluence: { name: 'Confluence', description: 'Sync pages and spaces', icon: (cls: string) => <ConfluenceIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
   figma: { name: 'Figma', description: 'Connect to sync designs and assets', icon: (cls: string) => <FigmaIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },
   zeplin: { name: 'Zeplin', description: 'Sync your Zeplin screens', icon: (cls: string) => <ZeplinIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },
   custom_apps: { name: 'Custom Apps', description: 'Integrate third party apps', icon: (cls: string) => <CustomAppsIcon className={cls} />, toggleId: 'always', groupName: 'Other Integrations' },
@@ -306,10 +302,10 @@ export function SocialConnections() {
       }
 
       // ----------------------------------------------------------------
-      // Direct OAuth popup providers (GitHub, Slack, Notion, Jira, Confluence, OneDrive, Dropbox, Figma, Zeplin)
+      // Direct OAuth popup providers (GitHub, Slack, Notion, OneDrive, Dropbox, Figma, Zeplin)
       // These open a popup to the provider's OAuth authorize URL directly
       // ----------------------------------------------------------------
-      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'jira' || platform === 'confluence' || platform === 'onedrive' || platform === 'dropbox' || platform === 'figma' || platform === 'zeplin') {
+      if (platform === 'github' || platform === 'gitlab' || platform === 'bitbucket' || platform === 'slack' || platform === 'notion' || platform === 'onedrive' || platform === 'dropbox' || platform === 'figma' || platform === 'zeplin') {
         const effectiveToken = token || localStorage.getItem('confuse_auth_token') || '';
         const headers: Record<string, string> = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 

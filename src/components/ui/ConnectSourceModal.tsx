@@ -153,8 +153,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         const providerName = service === 'google_drive' ? 'Google Drive' :
                              service === 'onedrive' ? 'OneDrive' :
                              service === 'dropbox' ? 'Dropbox' :
-                             service === 'notion' ? 'Notion' :
-                             service === 'confluence' ? 'Confluence' : service;
+                             service === 'notion' ? 'Notion' : service;
         setConnectionStatus({ status: "error", message: `Please connect ${providerName} in Social Connections first` });
         return;
       }
@@ -255,15 +254,11 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                 <BookOpen className="w-8 h-8 text-gray-700" />
                 <span className="text-sm font-medium">Notion</span>
               </Button>
-              <Button variant="outline" title="Connect Confluence" aria-label="Connect Confluence" className="h-24 flex flex-col items-center justify-center space-y-2 hover:bg-accent col-span-2" onClick={() => handleThirdPartyConnect('confluence')}>
-                <FileText className="w-8 h-8 text-blue-800" />
-                <span className="text-sm font-medium">Confluence</span>
-              </Button>
             </div>
             {needsSocialConnect && (
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  {`You need to connect ${needsSocialConnect === 'google_drive' ? 'Google Drive' : needsSocialConnect === 'onedrive' ? 'OneDrive' : needsSocialConnect === 'dropbox' ? 'Dropbox' : needsSocialConnect === 'notion' ? 'Notion' : needsSocialConnect === 'confluence' ? 'Confluence' : needsSocialConnect} before proceeding.`}
+                  {`You need to connect ${needsSocialConnect === 'google_drive' ? 'Google Drive' : needsSocialConnect === 'onedrive' ? 'OneDrive' : needsSocialConnect === 'dropbox' ? 'Dropbox' : needsSocialConnect === 'notion' ? 'Notion' : needsSocialConnect} before proceeding.`}
                 </p>
                 <div className="mt-2">
                   <Button

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       {
         id: 'multi-source',
         name: 'Multi-Source Integration',
-        description: 'Connect and sync data from GitHub, GitLab, Bitbucket, Confluence, and more',
+        description: 'Connect and sync data from GitHub, GitLab, Bitbucket, and more',
         icon: 'git-branch',
         category: 'data-integration'
       },
