@@ -303,9 +303,6 @@ export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector,
 /** Frontend's own API routes */
 export const frontendClient = new ApiClient('', 'frontend');
 
-/** Feature Toggle API */
-export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle || '', 'feature-toggle');
-
 /**
  * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
  * Kept for backward-compat during migration. Points to data-connector.
@@ -513,11 +510,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return featureToggleClient.get('/api/toggles');
+  return frontendClient.get('/api/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
+  return frontendClient.get(`/api/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {
