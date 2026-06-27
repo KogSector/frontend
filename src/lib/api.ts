@@ -300,8 +300,8 @@ export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'e
 
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 
-/** Feature Toggle service */
-export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+/** Frontend's own API routes */
+export const frontendClient = new ApiClient('', 'frontend');
 
 /**
  * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
@@ -510,11 +510,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return featureToggleClient.get('/api/toggles');
+  return frontendClient.get('/api/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
+  return frontendClient.get(`/api/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {
