@@ -26,7 +26,7 @@ export async function GET(
     
     try {
       const result = await client.query(
-        'SELECT * FROM feature_toggles.toggles WHERE name = $1',
+        'SELECT * FROM public.toggles WHERE name = $1',
         [name]
       );
       
