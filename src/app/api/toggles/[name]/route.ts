@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
-// Only create a pool if we have a connection string
 const pool = process.env.DATABASE_URL 
-  ? new Pool({ connectionString: process.env.DATABASE_URL }) 
+  ? new Pool({ 
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'development' ? false : { rejectUnauthorized: false }
+    }) 
   : null;
 
 export async function GET(
