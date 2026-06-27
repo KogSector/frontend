@@ -44,7 +44,7 @@ const PLATFORM_CONFIGS = {
   github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
   bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
   gitlab: { name: 'GitLab', description: 'Connect your GitLab account', icon: (cls: string) => <GitLabIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
-  jira: { name: 'Jira', description: 'Sync issues and projects', icon: (cls: string) => <JiraIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
+  jira: { name: 'Jira', description: 'Sync issues and projects', icon: (cls: string) => <JiraIcon className={cls} />, toggleId: 'enableTickets', groupName: 'Tickets' },
   confluence: { name: 'Confluence', description: 'Sync pages and spaces', icon: (cls: string) => <ConfluenceIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
   figma: { name: 'Figma', description: 'Connect to sync designs and assets', icon: (cls: string) => <FigmaIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },
   zeplin: { name: 'Zeplin', description: 'Sync your Zeplin screens', icon: (cls: string) => <ZeplinIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },

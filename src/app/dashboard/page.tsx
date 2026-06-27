@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/layout/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
-import { getSources, deleteUrl, deleteRepository, authClient } from "@/lib/api";
+import { getSources, deleteUrl, deleteRepository, authClient, getDashboardStats, getAllToggles, getRepositories } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -92,17 +92,18 @@ export default function Dashboard() {
       }
 
       // Use the centralized dashboard stats API
-      const [dashboardStatsResp, sourcesResp, togglesResp] = await Promise.all([
-        import('@/lib/api').then(api => api.getDashboardStats()).catch(() => null),
+      const [dashboardStatsResp, sourcesResp, togglesResp, reposResp] = await Promise.all([
+        getDashboardStats().catch(() => null),
         getSources().catch(() => null),
-        import('@/lib/api').then(api => api.getAllToggles()).catch(() => null)
+        getAllToggles().catch(() => null),
+        getRepositories().catch(() => null)
       ]);
 
       if (dashboardStatsResp && dashboardStatsResp.success === false) {
         console.warn('Dashboard stats API returned failure, using fallback calculation');
       }
 
-      const dashboardStats = (dashboardStatsResp as any).data || dashboardStatsResp;
+      const dashboardStats = (dashboardStatsResp as any)?.data || dashboardStatsResp || {};
 
       if (togglesResp && (togglesResp as any).success) {
         const tData = (togglesResp as any).data;
@@ -122,7 +123,6 @@ export default function Dashboard() {
       }
 
       // Merge in repositories if needed for the recent list
-      const reposResp = await import('@/lib/api').then(api => api.getRepositories()).catch(() => null);
       if (reposResp && (reposResp as any).success) {
         const repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
         const repoSources = repos.map((repo: any) => ({
@@ -133,8 +133,9 @@ export default function Dashboard() {
           uri: repo.url,
         }));
 
+        const existingIds = new Set(sources.map(s => s.id));
         repoSources.forEach((rs: SourceItem) => {
-          if (!sources.some(s => s.id === rs.id)) {
+          if (!existingIds.has(rs.id)) {
             sources.push(rs);
           }
         });
@@ -167,7 +168,7 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       fetchData(true);
-    }, 30000);
+    }, 5000);
 
     return () => {
       clearInterval(interval);
