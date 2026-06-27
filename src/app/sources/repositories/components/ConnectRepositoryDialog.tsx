@@ -233,12 +233,6 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
       return;
     }
 
-    console.log('[FRONTEND] isUrlValid:', isUrlValid);
-    const connected = await ensureProviderConnected();
-    if (!connected) {
-      setFetchBranchesError(`Please connect ${provider === 'github' ? 'GitHub' : provider === 'gitlab' ? 'GitLab' : 'BitBucket'} in Social Connections first.`);
-      return;
-    }
     if (!isUrlValid) {
       setFetchBranchesError("Please enter a valid repository URL.");
       return;
@@ -353,11 +347,8 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
     setError(null);
 
     try {
-      const connected = await ensureProviderConnected();
-      if (!connected) {
-        setError(`Please connect ${provider === 'github' ? 'GitHub' : provider === 'gitlab' ? 'GitLab' : 'BitBucket'} in Social Connections before connecting.`);
-        return;
-      }
+      // Just to update the UI warning if they aren't connected, but don't block.
+      await ensureProviderConnected();
       let finalCredentials = { ...credentials };
       if (!finalCredentials.access_token) {
         try {
