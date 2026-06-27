@@ -36,19 +36,19 @@ interface SocialConnection {
 }
 
 const PLATFORM_CONFIGS = {
-  slack: { name: 'Slack', description: 'Connect to sync messages and channels', icon: (cls: string) => <SlackIcon className={cls} /> },
-  notion: { name: 'Notion', description: 'Sync pages and databases', icon: (cls: string) => <NotionIcon className={cls} /> },
-  google_drive: { name: 'Google Drive', description: 'Access files and documents', icon: (cls: string) => <GoogleDriveIcon className={cls} /> },
-  onedrive: { name: 'OneDrive', description: 'Access files and documents', icon: (cls: string) => <OneDriveIcon className={cls} /> },
-  dropbox: { name: 'Dropbox', description: 'Sync files and folders', icon: (cls: string) => <DropboxIcon className={cls} /> },
-  github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} /> },
-  bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} /> },
-  gitlab: { name: 'GitLab', description: 'Connect your GitLab account', icon: (cls: string) => <GitLabIcon className={cls} /> },
-  jira: { name: 'Jira', description: 'Sync issues and projects', icon: (cls: string) => <JiraIcon className={cls} /> },
-  confluence: { name: 'Confluence', description: 'Sync pages and spaces', icon: (cls: string) => <ConfluenceIcon className={cls} /> },
-  figma: { name: 'Figma', description: 'Connect to sync designs and assets', icon: (cls: string) => <FigmaIcon className={cls} /> },
-  zeplin: { name: 'Zeplin', description: 'Sync your Zeplin screens', icon: (cls: string) => <ZeplinIcon className={cls} /> },
-  custom_apps: { name: 'Custom Apps', description: 'Integrate third party apps', icon: (cls: string) => <CustomAppsIcon className={cls} /> },
+  slack: { name: 'Slack', description: 'Connect to sync messages and channels', icon: (cls: string) => <SlackIcon className={cls} />, toggleId: 'enableChats', groupName: 'Chats' },
+  notion: { name: 'Notion', description: 'Sync pages and databases', icon: (cls: string) => <NotionIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
+  google_drive: { name: 'Google Drive', description: 'Access files and documents', icon: (cls: string) => <GoogleDriveIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
+  onedrive: { name: 'OneDrive', description: 'Access files and documents', icon: (cls: string) => <OneDriveIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
+  dropbox: { name: 'Dropbox', description: 'Sync files and folders', icon: (cls: string) => <DropboxIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
+  github: { name: 'GitHub', description: 'Connect your GitHub account', icon: (cls: string) => <GitHubIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
+  bitbucket: { name: 'Bitbucket', description: 'Connect your Bitbucket account', icon: (cls: string) => <BitbucketIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
+  gitlab: { name: 'GitLab', description: 'Connect your GitLab account', icon: (cls: string) => <GitLabIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
+  jira: { name: 'Jira', description: 'Sync issues and projects', icon: (cls: string) => <JiraIcon className={cls} />, toggleId: 'enableRepositories', groupName: 'Repositories' },
+  confluence: { name: 'Confluence', description: 'Sync pages and spaces', icon: (cls: string) => <ConfluenceIcon className={cls} />, toggleId: 'enableDocuments', groupName: 'Documents' },
+  figma: { name: 'Figma', description: 'Connect to sync designs and assets', icon: (cls: string) => <FigmaIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },
+  zeplin: { name: 'Zeplin', description: 'Sync your Zeplin screens', icon: (cls: string) => <ZeplinIcon className={cls} />, toggleId: 'enableDesign', groupName: 'Design' },
+  custom_apps: { name: 'Custom Apps', description: 'Integrate third party apps', icon: (cls: string) => <CustomAppsIcon className={cls} />, toggleId: 'always', groupName: 'Other Integrations' },
 } as const;
 
 export function SocialConnections() {
@@ -57,6 +57,7 @@ export function SocialConnections() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailDialogPlatform, setEmailDialogPlatform] = useState<string | null>(null);
+  const [toggles, setToggles] = useState<Record<string, boolean>>({});
   // Use a Set in a ref to track codes that have been processed (prevents duplicate exchanges)
   const processedCodesRef = useRef<Set<string>>(new Set());
   // Track whether initial load has completed to avoid skeleton flash on subsequent fetches
@@ -112,6 +113,24 @@ export function SocialConnections() {
         setLoading(false);
         hasLoadedRef.current = true;
       }
+    }
+    
+    // Fetch toggles alongside connections
+    try {
+      import('@/lib/api').then(api => api.getAllToggles()).then(togglesResp => {
+        if (togglesResp && (togglesResp as any).success) {
+          const tData = (togglesResp as any).data;
+          if (tData) {
+            const newToggles: Record<string, boolean> = {};
+            Object.keys(tData).forEach(key => {
+              newToggles[key] = tData[key].enabled;
+            });
+            setToggles(newToggles);
+          }
+        }
+      }).catch(err => console.error('Failed to fetch toggles:', err));
+    } catch (err) {
+      console.error('Error initializing toggles fetch:', err);
     }
   }, [toast, token]);
 
@@ -459,69 +478,85 @@ export function SocialConnections() {
           Connect your accounts to enhance context and collaboration across platforms
         </p>
 
-        {/* All Platforms Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(Object.keys(PLATFORM_CONFIGS) as Array<keyof typeof PLATFORM_CONFIGS>).map((platform) => {
-          const config = PLATFORM_CONFIGS[platform];
+        {/* Grouped Platforms */}
+        <div className="space-y-8">
+          {Array.from(new Set(Object.values(PLATFORM_CONFIGS).map(c => c.groupName))).map(groupName => {
+            const platforms = (Object.keys(PLATFORM_CONFIGS) as Array<keyof typeof PLATFORM_CONFIGS>).filter(p => PLATFORM_CONFIGS[p].groupName === groupName);
+            const enabledPlatforms = platforms.filter(p => {
+              const toggleId = PLATFORM_CONFIGS[p].toggleId;
+              return toggleId === 'always' || toggles[toggleId] !== false;
+            });
+            
+            if (enabledPlatforms.length === 0) return null;
+            
+            return (
+              <div key={groupName} className="space-y-4">
+                <h3 className="text-xl font-semibold text-foreground/80 border-b border-border pb-2">{groupName}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {enabledPlatforms.map((platform) => {
+                    const config = PLATFORM_CONFIGS[platform];
+                    let connection = connections.find(c => c.platform === platform);
+                    const isConnected = connection?.is_active;
 
-          let connection = connections.find(c => c.platform === platform);
-          const isConnected = connection?.is_active;
-
-          return (
-            <Card key={platform} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                    {config.icon('w-8 h-8')}
-                  </div>
-                  <CardTitle className="text-lg">{config.name}</CardTitle>
+                    return (
+                      <Card key={platform} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                              {config.icon('w-8 h-8')}
+                            </div>
+                            <CardTitle className="text-lg">{config.name}</CardTitle>
+                          </div>
+                          <CardDescription>
+                            {isConnected ? (
+                              <span className="text-green-600 dark:text-green-400">
+                                Connected
+                              </span>
+                            ) : (
+                              config.description
+                            )}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          {isConnected ? (
+                            <Button
+                              title={`Disconnect ${config.name}`}
+                              aria-label={`Disconnect ${config.name}`}
+                              onClick={() => connection && disconnectPlatform(connection.id, platform)}
+                              className="w-full bg-red-600 hover:bg-red-700 text-white"
+                              variant="destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Disconnect
+                            </Button>
+                          ) : (
+                            <Button
+                              title={`Connect ${config.name}`}
+                              aria-label={`Connect ${config.name}`}
+                              onClick={() => {
+                                if (['google_drive', 'notion'].includes(platform)) {
+                                  setEmailDialogPlatform(platform);
+                                  setEmailDialogOpen(true);
+                                } else {
+                                  connectPlatform(platform);
+                                }
+                              }}
+                              className="w-full"
+                              variant="outline"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Connect
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-                <CardDescription>
-                  {isConnected ? (
-                    <span className="text-green-600 dark:text-green-400">
-                      Connected
-                    </span>
-                  ) : (
-                    config.description
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {isConnected ? (
-                  <Button
-                    title={`Disconnect ${config.name}`}
-                    aria-label={`Disconnect ${config.name}`}
-                    onClick={() => connection && disconnectPlatform(connection.id, platform)}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    variant="destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Disconnect
-                  </Button>
-                ) : (
-                  <Button
-                    title={`Connect ${config.name}`}
-                    aria-label={`Connect ${config.name}`}
-                    onClick={() => {
-                      if (['google_drive', 'notion'].includes(platform)) {
-                        setEmailDialogPlatform(platform);
-                        setEmailDialogOpen(true);
-                      } else {
-                        connectPlatform(platform);
-                      }
-                    }}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Connect
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
       
       {emailDialogPlatform && (

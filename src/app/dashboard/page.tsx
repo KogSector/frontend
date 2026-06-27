@@ -431,7 +431,15 @@ export default function Dashboard() {
                     <Activity className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : recentSources.length > 0 ? (
-                  recentSources.map((source, index) => {
+                  recentSources.filter(source => {
+                    const type = (source.type || '').toLowerCase();
+                    if (['github', 'gitlab', 'bitbucket', 'repository'].includes(type)) return toggles.enableRepositories !== false;
+                    if (['url', 'web'].includes(type)) return toggles.enableURLs !== false;
+                    if (['document', 'upload', 'file'].includes(type)) return toggles.enableDocuments !== false;
+                    if (['slack', 'chat'].includes(type)) return toggles.enableChats !== false;
+                    if (['figma', 'zeplin', 'design'].includes(type)) return toggles.enableDesign !== false;
+                    return true;
+                  }).map((source, index) => {
                     const getIcon = (type: string) => {
                       switch (type.toLowerCase()) {
                         case 'github':
