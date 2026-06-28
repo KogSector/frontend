@@ -17,7 +17,6 @@ const publicEnv = Object.keys(combinedEnv)
 
 const nextConfig = {
   env: publicEnv,
-  output: 'standalone',
   reactStrictMode: false,
   experimental: {
     outputFileTracingRoot: undefined,
