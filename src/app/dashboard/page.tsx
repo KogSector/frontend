@@ -298,16 +298,6 @@ export default function Dashboard() {
                     btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
                   },
                   {
-                    href: "#",
-                    onClick: () => setActiveTab("agents"),
-                    icon: Bot,
-                    label: "Agents",
-                    buttonText: "Connect",
-                    gradient: "from-purple-500 to-indigo-600",
-                    bgIcon: "bg-purple-500/10 text-purple-500",
-                    btnColor: "bg-purple-500 hover:bg-purple-600 text-white shadow-purple-500/20"
-                  },
-                  {
                     toggleId: "enableAgentRules",
                     href: "/agents/rules",
                     icon: Network,
@@ -336,17 +326,11 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-foreground">{action.label}</span>
                       </div>
-                      {action.onClick ? (
-                        <Button onClick={action.onClick} className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
+                      <Link prefetch={false} href={action.href} target={action.href === '/docs' ? '_blank' : undefined} className="w-full">
+                        <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
                           {action.buttonText}
                         </Button>
-                      ) : (
-                        <Link prefetch={false} href={action.href} target={action.href === '/docs' ? '_blank' : undefined} className="w-full">
-                          <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
-                            {action.buttonText}
-                          </Button>
-                        </Link>
-                      )}
+                      </Link>
                     </CardContent>
                   </Card>
                 )))}
