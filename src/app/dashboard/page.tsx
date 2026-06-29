@@ -86,7 +86,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
-  const [hideSwitchUse, setHideSwitchUse] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
   const router = useRouter();
 
@@ -210,7 +210,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="flex-1 flex flex-col w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
           <div className="border-b border-border bg-card">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <TabsList className="bg-transparent h-12 p-0 rounded-none w-full justify-start border-none mt-2">
@@ -298,7 +298,8 @@ export default function Dashboard() {
                     btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
                   },
                   {
-                    href: "/agents",
+                    href: "#",
+                    onClick: () => setActiveTab("agents"),
                     icon: Bot,
                     label: "Agents",
                     buttonText: "Connect",
@@ -335,11 +336,17 @@ export default function Dashboard() {
                         </div>
                         <span className="font-semibold text-foreground">{action.label}</span>
                       </div>
-                      <Link prefetch={false} href={action.href} target={action.href === '/docs' ? '_blank' : undefined} className="w-full">
-                        <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
+                      {action.onClick ? (
+                        <Button onClick={action.onClick} className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
                           {action.buttonText}
                         </Button>
-                      </Link>
+                      ) : (
+                        <Link prefetch={false} href={action.href} target={action.href === '/docs' ? '_blank' : undefined} className="w-full">
+                          <Button className={`w-full shadow-md transition-all duration-300 ${action.btnColor}`}>
+                            {action.buttonText}
+                          </Button>
+                        </Link>
+                      )}
                     </CardContent>
                   </Card>
                 )))}

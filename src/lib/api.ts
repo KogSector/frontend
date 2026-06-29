@@ -6,7 +6,6 @@
  */
 import { SERVICE_URLS, API_CONFIG } from './config';
 import logger, { TRACE_ID_HEADER, SPAN_ID_HEADER, REQUEST_ID_HEADER } from './logger';
-
 // =============================================================================
 // Types
 // =============================================================================
