@@ -44,3 +44,13 @@ nextProcess.stderr.on('data', (data) => {
 nextProcess.on('close', (code) => {
     process.exit(code);
 });
+
+// Ensure child process is killed when parent exits
+['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) => {
+    process.on(signal, () => {
+        if (!nextProcess.killed) {
+            nextProcess.kill(signal);
+        }
+        process.exit();
+    });
+});

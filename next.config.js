@@ -18,12 +18,7 @@ const publicEnv = Object.keys(combinedEnv)
 const nextConfig = {
   env: publicEnv,
   reactStrictMode: false,
-  experimental: {
-    outputFileTracingRoot: undefined,
-  },
-  eslint: {
-    ignoreDuringBuilds: true, // Enable ESLint during builds
-  },
+  experimental: {},
   typescript: {
     ignoreBuildErrors: true, // Enable TypeScript checking during builds
   },
