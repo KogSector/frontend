@@ -13,8 +13,12 @@ import { getSources, deleteUrl, deleteRepository, authClient, getDashboardStats,
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/auth";
 import {
   Bot,
+  Copy,
+  Check,
   Plus,
   Settings,
   Activity,
@@ -72,6 +76,7 @@ export default function Dashboard() {
     activity: [],
   });
   const [toggles, setToggles] = useState<Record<string, boolean>>({
+    enableAgentRules: false,
     enableRepositories: true,
     enableDocuments: true,
     enableURLs: true,
@@ -174,6 +179,21 @@ export default function Dashboard() {
       clearInterval(interval);
     };
   }, []);
+
+  const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
+  const mcpUrl = `https://client-connector.onrender.com/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
@@ -190,8 +210,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid lg:grid-cols-2 gap-12 mb-8">
+        <Tabs defaultValue="overview" className="flex-1 flex flex-col w-full">
+          <div className="border-b border-border bg-card">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <TabsList className="bg-transparent h-12 p-0 rounded-none w-full justify-start border-none mt-2">
+                <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 h-12 text-sm font-medium">Overview</TabsTrigger>
+                <TabsTrigger value="agents" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 h-12 text-sm font-medium">Agents Config</TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+
+          <TabsContent value="overview" className="m-0 border-none outline-none">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="grid lg:grid-cols-2 gap-12 mb-8">
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4 mt-7">
@@ -267,6 +298,16 @@ export default function Dashboard() {
                     btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
                   },
                   {
+                    href: "/agents",
+                    icon: Bot,
+                    label: "Agents",
+                    buttonText: "Connect",
+                    gradient: "from-purple-500 to-indigo-600",
+                    bgIcon: "bg-purple-500/10 text-purple-500",
+                    btnColor: "bg-purple-500 hover:bg-purple-600 text-white shadow-purple-500/20"
+                  },
+                  {
+                    toggleId: "enableAgentRules",
                     href: "/agents/rules",
                     icon: Network,
                     label: "Agent Rules",
@@ -536,6 +577,106 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+        </TabsContent>
+
+        <TabsContent value="agents" className="m-0 border-none outline-none flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+            <div className="max-w-3xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-foreground mb-4">Connect Your AI Agent</h2>
+                <p className="text-muted-foreground text-lg">
+                  ConFuse provides a remote Model Context Protocol (MCP) server. Provide the URL below to your AI agent or IDE (like Cursor or Windsurf) to connect.
+                </p>
+              </div>
+
+              <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-8">
+                <div className="flex justify-between items-center px-4 py-3 bg-muted/50 border-b border-border">
+                  <span className="text-sm font-medium text-muted-foreground">Your Secure Connection URL</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleCopy}
+                    className="h-8 flex items-center gap-2"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span className="text-green-500 text-xs">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span className="text-xs">Copy</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="p-4 overflow-x-auto">
+                  <pre className="text-sm text-foreground font-mono text-center py-2">
+                    <code>{mcpUrl}</code>
+                  </pre>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Native HTTP Card */}
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-5 flex flex-col">
+                  <h4 className="text-blue-500 font-semibold mb-3">Native (type: http)</h4>
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
+                    Commonly used by <strong>VS Code</strong> native settings for remote connections.
+                  </p>
+                  <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
+{`{
+  "servers": {
+    "ConFuse": {
+      "url": "${mcpUrl}",
+      "type": "http"
+    }
+  }
+}`}
+                  </pre>
+                </div>
+
+                {/* Native SSE Card */}
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-5 flex flex-col">
+                  <h4 className="text-emerald-500 font-semibold mb-3">Native (type: sse)</h4>
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
+                    Commonly used by <strong>Windsurf</strong> or <strong>Antigravity</strong> in their config files.
+                  </p>
+                  <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
+{`{
+  "mcpServers": {
+    "ConFuse": {
+      "url": "${mcpUrl}",
+      "type": "sse"
+    }
+  }
+}`}
+                  </pre>
+                </div>
+
+                {/* Stdio Proxy Card */}
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-5 flex flex-col">
+                  <h4 className="text-purple-500 font-semibold mb-3">Stdio Proxy (CLI)</h4>
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
+                    Required for <strong>Cursor</strong> or <strong>Claude Desktop</strong> which only support local scripts.
+                  </p>
+                  <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
+{`{
+  "mcpServers": {
+    "ConFuse": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "${mcpUrl}"]
+    }
+  }
+}`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
         <Footer />
       </div>

@@ -13,9 +13,7 @@ export default function AgentsPage() {
   const [copied, setCopied] = useState(false);
   const { user } = useAuth();
 
-  const mcpUrl = typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.hostname}:3020/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}` 
-    : `https://api.yourdomain.com/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
+  const mcpUrl = `https://client-connector.onrender.com/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
   const handleCopy = async () => {
     try {
