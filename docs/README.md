@@ -176,10 +176,10 @@ src/
 ```typescript
 // API client configuration
 const apiClient = {
-  authMiddleware: createApiClient('http://localhost:3010'),
-  dataConnector: createApiClient('http://localhost:3030'),
-  clientConnector: createApiClient('http://localhost:3020'),
-  dataVent: createApiClient('http://localhost:3040'),
+  authMiddleware: createApiClient('https://auth-middleware-k3bb.onrender.com'),
+  dataConnector: createApiClient('https://data-connector-y472.onrender.com'),
+  clientConnector: createApiClient('https://client-connector-xi.vercel.app'),
+  dataVent: createApiClient('https://data-vent.onrender.com'),
   featureToggle: createApiClient('http://localhost:3099')
 }
 
@@ -222,7 +222,7 @@ const useMCPClient = () => {
   const [client, setClient] = useState<MCPClient | null>(null);
   
   const connect = async (token: string) => {
-    const mcpClient = new MCPClient('ws://localhost:3020/ws', token);
+    const mcpClient = new MCPClient('wss://client-connector-xi.vercel.app/ws', token);
     await mcpClient.initialize();
     setClient(mcpClient);
   };
@@ -382,10 +382,10 @@ NEXT_PUBLIC_AUTH0_AUDIENCE=https://api.confuse.dev
 
 # Service URLs
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=http://localhost:3010
-NEXT_PUBLIC_DATA_CONNECTOR_URL=http://localhost:3030
-NEXT_PUBLIC_CLIENT_CONNECTOR_URL=http://localhost:3020
-NEXT_PUBLIC_DATA_VENT_URL=http://localhost:3040
+NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth-middleware-k3bb.onrender.com
+NEXT_PUBLIC_DATA_CONNECTOR_URL=https://data-connector-y472.onrender.com
+NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://client-connector-xi.vercel.app
+NEXT_PUBLIC_DATA_VENT_URL=https://data-vent.onrender.com
 NEXT_PUBLIC_FEATURE_TOGGLE_URL=http://localhost:3099
 
 # Application Configuration

@@ -85,12 +85,11 @@ npm start
 ### Environment Variables
 ```bash
 # API URLs
-NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_AUTH_URL=http://localhost:3010
+NEXT_PUBLIC_API_URL=https://unified-processor.onrender.com
+NEXT_PUBLIC_AUTH_URL=https://auth-middleware-k3bb.onrender.com
 
-# Authentication
-NEXTAUTH_SECRET=your_secret_key
-NEXTAUTH_URL=http://localhost:3000
+# NextAuth configuration (if applicable)
+NEXTAUTH_URL=https://frontend-alpha-bay-60.vercel.app
 
 # Features
 NEXT_PUBLIC_ENABLE_SEARCH=true
