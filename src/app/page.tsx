@@ -24,6 +24,10 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  if (isAuthenticated) {
+    return null;
+  }
+
   // Render the landing page content instantly.
   // We prioritize speed and "above-the-fold" visibility.
   return (

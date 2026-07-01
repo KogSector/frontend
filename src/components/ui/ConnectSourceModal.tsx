@@ -198,7 +198,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px]">
+      <DialogContent className="sm:max-w-[720px]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Connect Data Source</DialogTitle>
           <DialogDescription>Connect to repositories, cloud storage, or upload local files</DialogDescription>
