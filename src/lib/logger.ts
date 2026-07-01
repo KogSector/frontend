@@ -491,7 +491,7 @@ class ConFuseLogger {
 
     try {
 
-      await fetch('/api/logs', {
+      await fetch('/api/telemetry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -529,7 +529,7 @@ class ConFuseLogger {
 
     for (const payload of logs) {
       try {
-        await fetch('/api/logs', {
+        await fetch('/api/telemetry', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
