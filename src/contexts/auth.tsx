@@ -106,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('auth_session', JSON.stringify(sessionData))
     localStorage.setItem('auth_token', authToken)
     localStorage.setItem('confuse_auth_token', authToken)
+    document.cookie = `auth_token=${authToken}; path=/; max-age=7200; SameSite=Lax`
 
     setToken(authToken)
     if (userProfile) {
@@ -145,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('confuse_auth_token')
     localStorage.removeItem('confuse_user_id')
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     setToken(null)
     setUser(null)
     setConnections(null)
