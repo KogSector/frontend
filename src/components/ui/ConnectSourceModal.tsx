@@ -95,7 +95,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
           type: provider,
           name: file.name,
           uri: `oauth://${provider}/${file.id}`,
-          credentials: { item_ids: [file.id] }
+          metadata: { item_ids: [file.id] }
         };
         return dataApiClient.post("/api/v1/sources", payload);
       });
