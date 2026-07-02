@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,21 @@ interface DashboardStats {
   security_score: number;
   activity: any[];
 }
+
+const TrustmaryWidget = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current && !containerRef.current.querySelector("script")) {
+      const script = document.createElement("script");
+      script.src = "https://widget.trustmary.com/a8wUYUDcGh";
+      script.async = true;
+      containerRef.current.appendChild(script);
+    }
+  }, []);
+
+  return <div ref={containerRef} className="flex justify-center items-center py-6" />;
+};
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -533,7 +548,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
 
-
+                <TrustmaryWidget />
 
                 <Card className="bg-card border-border">
                   <CardHeader>
@@ -671,7 +686,6 @@ export default function Dashboard() {
         </Tabs>
 
         <Footer />
-        <Script src="https://widget.trustmary.com/a8wUYUDcGh" strategy="lazyOnload" />
       </div>
     </AuthGuard>
   );
