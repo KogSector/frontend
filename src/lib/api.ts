@@ -335,7 +335,7 @@ export async function getDocuments(search?: string): Promise<ApiResponse<{ data:
   return dataClient.get(`/api/v1/documents${params}`);
 }
 export async function deleteDocument(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/v1/documents/${id}`);
+  return dataClient.delete(`/api/v1/documents/${encodeURIComponent(id)}`);
 }
 export async function getDocumentAnalytics(): Promise<ApiResponse> {
   return dataClient.get('/api/v1/documents/analytics');
