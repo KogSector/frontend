@@ -445,7 +445,7 @@ export default function DocumentsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteDocument} className="bg-red-500 hover:bg-red-600">
-              Delete Document
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

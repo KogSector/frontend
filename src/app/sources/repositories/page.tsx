@@ -414,7 +414,7 @@ export default function RepositoriesPage() {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={deleteRepository}>
-                Continue
+                Delete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
