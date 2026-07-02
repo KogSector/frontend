@@ -13,6 +13,7 @@ import { getSources, deleteUrl, deleteRepository, authClient, getDashboardStats,
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth";
 import {
@@ -182,7 +183,7 @@ export default function Dashboard() {
 
   const [copied, setCopied] = useState(false);
   const { user } = useAuth();
-  const mcpUrl = `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector-xi.vercel.app"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
+  const mcpUrl = `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector.onrender.com"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
   const handleCopy = async () => {
     try {
@@ -670,6 +671,7 @@ export default function Dashboard() {
         </Tabs>
 
         <Footer />
+        <Script src="https://widget.trustmary.com/a8wUYUDcGh" strategy="lazyOnload" />
       </div>
     </AuthGuard>
   );
