@@ -317,12 +317,12 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         {connectionStatus.status !== "idle" && (
           <div className="flex items-center gap-2 p-3 bg-muted rounded-md mb-2">{renderStatusIcon()}<span className="text-sm">{connectionStatus.message}</span></div>
         )}
-        {isTesting && (selectedFiles.length + selectedCloudFiles.length > 4) && (
+        {isTesting && (selectedFiles.length + selectedCloudFiles.length > 5) && (
           <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-md mb-2 border border-red-200">
-            <span className="text-sm font-medium">Max. limit reached (4 documents)</span>
+            <span className="text-sm font-medium">Max. limit reached (5 documents)</span>
           </div>
         )}
-        <Button onClick={handleUploadSelected} disabled={connectionStatus.status === "connecting" || (selectedFiles.length === 0 && selectedCloudFiles.length === 0) || (isTesting && (selectedFiles.length + selectedCloudFiles.length > 4))} className="w-full">
+        <Button onClick={handleUploadSelected} disabled={connectionStatus.status === "connecting" || (selectedFiles.length === 0 && selectedCloudFiles.length === 0) || (isTesting && (selectedFiles.length + selectedCloudFiles.length > 5))} className="w-full">
           {connectionStatus.status === "connecting" ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>) : (<><Upload className="w-4 h-4 mr-2" />Upload Selected ({selectedFiles.length + selectedCloudFiles.length})</>)}
         </Button>
 
