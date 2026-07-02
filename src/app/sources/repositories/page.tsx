@@ -390,6 +390,7 @@ export default function RepositoriesPage() {
           open={showConnectDialog}
           onOpenChange={setShowConnectDialog}
           onSuccess={handleRepositoryConnected}
+          currentCount={repositories.length}
         />
         <ChangeBranchDialog
           open={showChangeBranchDialog}

@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { dataApiClient, authClient, apiClient, ApiResponse, unwrapResponse } from '@/lib/api';
+import { dataApiClient, authClient, apiClient, ApiResponse, unwrapResponse, isToggleEnabled } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,9 +69,10 @@ interface ConnectRepositoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  currentCount?: number;
 }
 
-export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: ConnectRepositoryDialogProps) {
+export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, currentCount = 0 }: ConnectRepositoryDialogProps) {
   const router = useRouter();
   const { token, connections } = useAuth()
   const [provider, setProvider] = useState('');
@@ -98,6 +99,15 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
   const [availableFileExtensions, setAvailableFileExtensions] = useState<string[]>(DEFAULT_FILE_EXTENSIONS);
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  
+  const [isTesting, setIsTesting] = useState(false);
+  useEffect(() => {
+    isToggleEnabled('deployedTesting')
+      .then(enabled => setIsTesting(enabled))
+      .catch(console.error);
+  }, []);
+  const limitReached = isTesting && currentCount >= 2;
+
   // Get connected providers
   const connectedProviders = useMemo(() => {
     if (!connections || !Array.isArray(connections)) return [];
@@ -655,13 +665,16 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess }: Conne
             </div>
           )}
 
-          <div className="flex justify-end space-x-3 pt-6">
+          <div className="flex justify-end space-x-3 pt-6 items-center">
+            {limitReached && (
+              <span className="text-red-500 text-sm font-medium mr-auto">Max. limit reached (2 repositories)</span>
+            )}
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
             <Button
               onClick={handleConnect}
-              disabled={!isValidated || !isProviderSelected || !repositoryUrl || loading}
+              disabled={!isValidated || !isProviderSelected || !repositoryUrl || loading || limitReached}
             >
               {loading ? 'Connecting...' : 'Connect Repository'}
             </Button>

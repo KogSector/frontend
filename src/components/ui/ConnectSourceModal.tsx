@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { dataApiClient, listAuthConnections, unwrapResponse, ApiResponse } from "@/lib/api";
+import { dataApiClient, listAuthConnections, unwrapResponse, ApiResponse, isToggleEnabled } from "@/lib/api";
 import { Upload, Cloud, Loader2, CheckCircle2, XCircle, FolderOpen, FileText, HardDrive, Droplets, BookOpen } from "lucide-react";
 import { CloudFileBrowser, CloudFile } from "./CloudFileBrowser";
 
@@ -42,6 +42,13 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedCloudFiles, setSelectedCloudFiles] = useState<{ file: CloudFile, provider: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [isTesting, setIsTesting] = useState(false);
+  useEffect(() => {
+    isToggleEnabled('deployedTesting')
+      .then(enabled => setIsTesting(enabled))
+      .catch(console.error);
+  }, []);
 
   // Expanded file types: documents, code, config files
   const allowedExtensions = [
@@ -286,7 +293,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                   <span className="truncate pr-2">{f.name} (Local)</span>
                   <button 
                     onClick={() => setSelectedFiles(prev => prev.filter((_, idx) => idx !== i))} 
-                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-white hover:text-gray-200 bg-red-500 hover:bg-red-600 rounded-full transition-colors opacity-100 p-0.5"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
@@ -297,7 +304,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
                   <span className="truncate pr-2">{f.file.name} ({f.provider})</span>
                   <button 
                     onClick={() => setSelectedCloudFiles(prev => prev.filter((_, idx) => idx !== i))} 
-                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-white hover:text-gray-200 bg-red-500 hover:bg-red-600 rounded-full transition-colors opacity-100 p-0.5"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
@@ -310,7 +317,12 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         {connectionStatus.status !== "idle" && (
           <div className="flex items-center gap-2 p-3 bg-muted rounded-md mb-2">{renderStatusIcon()}<span className="text-sm">{connectionStatus.message}</span></div>
         )}
-        <Button onClick={handleUploadSelected} disabled={connectionStatus.status === "connecting" || (selectedFiles.length === 0 && selectedCloudFiles.length === 0)} className="w-full">
+        {isTesting && (selectedFiles.length + selectedCloudFiles.length > 4) && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-md mb-2 border border-red-200">
+            <span className="text-sm font-medium">Max. limit reached (4 documents)</span>
+          </div>
+        )}
+        <Button onClick={handleUploadSelected} disabled={connectionStatus.status === "connecting" || (selectedFiles.length === 0 && selectedCloudFiles.length === 0) || (isTesting && (selectedFiles.length + selectedCloudFiles.length > 4))} className="w-full">
           {connectionStatus.status === "connecting" ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>) : (<><Upload className="w-4 h-4 mr-2" />Upload Selected ({selectedFiles.length + selectedCloudFiles.length})</>)}
         </Button>
 
