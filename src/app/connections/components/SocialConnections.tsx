@@ -8,6 +8,7 @@ import { Trash2, RefreshCw, Plus, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { authClient, dataClient, unwrapResponse } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
+import { useToggles } from '@/contexts/toggle';
 import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
@@ -53,7 +54,7 @@ export function SocialConnections() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailDialogPlatform, setEmailDialogPlatform] = useState<string | null>(null);
-  const [toggles, setToggles] = useState<Record<string, boolean>>({});
+  const { toggles, ready: togglesReady } = useToggles();
   // Use a Set in a ref to track codes that have been processed (prevents duplicate exchanges)
   const processedCodesRef = useRef<Set<string>>(new Set());
   // Track whether initial load has completed to avoid skeleton flash on subsequent fetches
@@ -111,23 +112,6 @@ export function SocialConnections() {
       }
     }
     
-    // Fetch toggles alongside connections
-    try {
-      import('@/lib/api').then(api => api.getAllToggles()).then(togglesResp => {
-        if (togglesResp && (togglesResp as any).success) {
-          const tData = (togglesResp as any).data;
-          if (tData) {
-            const newToggles: Record<string, boolean> = {};
-            Object.keys(tData).forEach(key => {
-              newToggles[key] = tData[key].enabled;
-            });
-            setToggles(newToggles);
-          }
-        }
-      }).catch(err => console.error('Failed to fetch toggles:', err));
-    } catch (err) {
-      console.error('Error initializing toggles fetch:', err);
-    }
   }, [toast, token]);
 
   useEffect(() => {
@@ -438,7 +422,9 @@ export function SocialConnections() {
     }
   };
 
-  if (loading) {
+  const initialLoading = loading || !togglesReady;
+
+  if (initialLoading) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center space-y-4">
         <RefreshCw className="w-8 h-8 animate-spin text-primary" />

@@ -9,7 +9,8 @@ import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import("@/components/layout/footer").then(mod => mod.Footer));
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
-import { getSources, deleteUrl, deleteRepository, authClient, getDashboardStats, getAllToggles, getRepositories } from "@/lib/api";
+import { getSources, deleteUrl, deleteRepository, authClient, getDashboardStats, getRepositories } from "@/lib/api";
+import { useToggles } from "@/contexts/toggle";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -91,16 +92,10 @@ export default function Dashboard() {
     security_score: 98,
     activity: [],
   });
-  const [toggles, setToggles] = useState<Record<string, boolean>>({
-    enableAgentRules: false,
-    enableRepositories: true,
-    enableDocuments: true,
-    enableURLs: true,
-    enableChats: true,
-    enableDesign: true,
-  });
+  const { toggles, ready: togglesReady } = useToggles();
   const [loading, setLoading] = useState(true);
   const [recentSources, setRecentSources] = useState<SourceItem[]>([]);
+  const initialLoading = loading || !togglesReady;
   const [recentAgents, setRecentAgents] = useState<AgentItem[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
@@ -113,10 +108,9 @@ export default function Dashboard() {
       }
 
       // Use the centralized dashboard stats API
-      const [dashboardStatsResp, sourcesResp, togglesResp, reposResp] = await Promise.all([
+      const [dashboardStatsResp, sourcesResp, reposResp] = await Promise.all([
         getDashboardStats().catch(() => null),
         getSources().catch(() => null),
-        getAllToggles().catch(() => null),
         getRepositories().catch(() => null)
       ]);
 
@@ -125,17 +119,6 @@ export default function Dashboard() {
       }
 
       const dashboardStats = (dashboardStatsResp as any)?.data || dashboardStatsResp || {};
-
-      if (togglesResp && (togglesResp as any).success) {
-        const tData = (togglesResp as any).data;
-        if (tData) {
-          const newToggles: Record<string, boolean> = {};
-          Object.keys(tData).forEach(key => {
-            newToggles[key] = tData[key].enabled;
-          });
-          setToggles(prev => ({ ...prev, ...newToggles }));
-        }
-      }
 
       // Extract sources for the "Connected Sources" list
       let sources: SourceItem[] = [];
@@ -242,7 +225,7 @@ export default function Dashboard() {
                 <div>
                   <h2 className="text-2xl font-semibold text-foreground mb-6">Quick Actions</h2>
                   <div className="grid grid-cols-2 gap-4 mt-7">
-                    {loading ? (
+                    {initialLoading ? (
                       Array.from({ length: 6 }).map((_, i) => (
                         <Card key={i} className="animate-pulse bg-card/50 border-border h-32 flex flex-col justify-between p-5">
                           <div className="flex items-center space-x-3">
@@ -356,7 +339,7 @@ export default function Dashboard() {
                 <div>
                   <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {loading ? (
+                    {initialLoading ? (
                       Array.from({ length: 4 }).map((_, i) => (
                         <Card key={i} className="animate-pulse bg-card/50 border-border h-[104px] flex flex-col justify-between p-5">
                           <div className="flex justify-between items-center">
@@ -475,7 +458,7 @@ export default function Dashboard() {
                       }
                     }
                   }}>
-                    {loading ? (
+                    {initialLoading ? (
                       <div className="flex justify-center p-4">
                         <Activity className="w-6 h-6 animate-spin text-primary" />
                       </div>

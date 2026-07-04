@@ -8,6 +8,22 @@ const pool = process.env.DATABASE_URL
     }) 
   : null;
 
+let cachedTogglePayload: { success: boolean; data: Record<string, any> } | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 3000;
+
+function getCachedPayload() {
+  if (cachedTogglePayload && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+    return cachedTogglePayload;
+  }
+  return null;
+}
+
+function setCachedPayload(payload: { success: boolean; data: Record<string, any> }) {
+  cachedTogglePayload = payload;
+  cacheTimestamp = Date.now();
+}
+
 export async function GET() {
   if (!pool) {
     return NextResponse.json(
@@ -16,14 +32,19 @@ export async function GET() {
     );
   }
 
+  const cached = getCachedPayload();
+  if (cached) {
+    return NextResponse.json(cached);
+  }
+
   try {
     const client = await pool.connect();
-    
+
     try {
       const result = await client.query(
         'SELECT name, enabled, description, category, category_type as "categoryType", metadata FROM public.toggles'
       );
-      
+
       const toggles: Record<string, any> = {};
       for (const row of result.rows) {
         toggles[row.name] = {
@@ -34,11 +55,13 @@ export async function GET() {
           metadata: row.metadata || {}
         };
       }
-      
-      return NextResponse.json({
+
+      const payload = {
         success: true,
         data: toggles,
-      });
+      };
+      setCachedPayload(payload);
+      return NextResponse.json(payload);
     } finally {
       client.release();
     }

@@ -8,10 +8,31 @@ const pool = process.env.DATABASE_URL
     }) 
   : null;
 
+let cachedTogglePayload: Record<string, any> | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 3000;
+
+function getCachedPayload() {
+  if (cachedTogglePayload && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+    return cachedTogglePayload;
+  }
+  return null;
+}
+
+function setCachedPayload(payload: Record<string, any>) {
+  cachedTogglePayload = payload;
+  cacheTimestamp = Date.now();
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ name: string }> }
 ) {
+
+  const cached = getCachedPayload();
+  if (cached && cached.name === (await params).name) {
+    return NextResponse.json({ success: true, data: cached });
+  }
   if (!pool) {
     return NextResponse.json(
       { success: false, message: 'Database connection not configured' },

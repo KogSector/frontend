@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
 import { LoggingProvider } from "@/components/providers/LoggingProvider"
 import { AuthProvider } from "@/contexts/auth"
+import { ToggleProvider } from "@/contexts/toggle"
 import Auth0ProviderWithNavigate from "@/components/Auth0ProviderWithNavigate"
 
 function AuthLoggingWrapper({ children }: { children: React.ReactNode }) {
@@ -27,9 +28,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <Auth0ProviderWithNavigate>
           <AuthProvider>
-            <AuthLoggingWrapper>
-              {children}
-            </AuthLoggingWrapper>
+            <ToggleProvider>
+              <AuthLoggingWrapper>
+                {children}
+              </AuthLoggingWrapper>
+            </ToggleProvider>
           </AuthProvider>
         </Auth0ProviderWithNavigate>
       </ThemeProvider>
