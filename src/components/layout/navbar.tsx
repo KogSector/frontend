@@ -59,12 +59,12 @@ export const Navbar = ({ showUserMenu = true }: NavbarProps) => {
             )}
             {!isBilling && !isDocs && (
               <Link href="/" className="flex items-center space-x-2">
-                <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</span>
+                <span className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">ConFuse</span>
               </Link>
             )}
             {!isBilling && isDocs && (
               <div className="flex items-center space-x-2">
-                <span className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent cursor-default">ConFuse</span>
+                <span className="text-3xl md:text-4xl font-bold tracking-tight text-foreground cursor-default">ConFuse</span>
               </div>
             )}
           </div>

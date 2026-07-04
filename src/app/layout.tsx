@@ -1,13 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter, Orbitron } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'] })
-const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'ConFuse',
@@ -33,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${orbitron.variable}`}>
+      <body className={spaceGrotesk.className}>
         <Providers>
           <TooltipProvider>
             <Toaster />

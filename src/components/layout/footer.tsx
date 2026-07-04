@@ -7,10 +7,7 @@ export function Footer() {
         <div className="flex flex-col lg:flex-row justify-between gap-12">
           <div className="flex flex-col space-y-4 lg:max-w-xs">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">C</span>
-              </div>
-              <span className="text-xl font-bold tracking-tight">ConFuse</span>
+              <span className="text-xl font-bold tracking-tight text-foreground">ConFuse</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               Empowering AI agents with the world&apos;s most intelligent knowledge layer.
