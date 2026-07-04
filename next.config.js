@@ -33,7 +33,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.oaistatic.com' },
       { protocol: 'https', hostname: 'www.deepseek.com' },
       { protocol: 'https', hostname: 'claude.ai' },
-      { protocol: 'https', hostname: 'ollama.com' },
+      { protocol: 'https', hostname: 'example.com' },
     ],
   },
 }
