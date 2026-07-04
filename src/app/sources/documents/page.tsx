@@ -333,7 +333,7 @@ export default function DocumentsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {analytics?.total_documents ?? documents.length}
+                {Math.max(analytics?.total_documents ?? 0, documents.length)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Connected Documents
