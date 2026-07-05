@@ -69,7 +69,7 @@ export default function DocumentsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const hasLoadedRef = useRef(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { toast } = useToast();
 
   // Fetch documents and analytics from real API
@@ -79,8 +79,11 @@ export default function DocumentsPage() {
       setLoading(true);
     }
 
+    if (!token || !user) return; // Wait for both
     try {
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
 
       // Fetch documents, analytics and sources in parallel
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
@@ -242,7 +245,11 @@ export default function DocumentsPage() {
     setIsDeleting(true);
 
     try {
-      const resp = await deleteDocument(docId);
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
+
+      const resp = await dataClient.delete<{ success: boolean; message: string }>(`/api/v1/documents/${docId}`, headers);
       if (resp.success) {
         toast({
           title: "Document deleted",
