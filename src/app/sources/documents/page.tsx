@@ -362,7 +362,7 @@ export default function DocumentsPage() {
             </Button>
             <Button onClick={() => setShowConnectModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Connect
+              Upload
             </Button>
           </div>
         </div>

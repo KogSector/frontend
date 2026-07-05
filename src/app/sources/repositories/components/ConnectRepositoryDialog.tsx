@@ -74,7 +74,7 @@ interface ConnectRepositoryDialogProps {
 
 export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, currentCount = 0 }: ConnectRepositoryDialogProps) {
   const router = useRouter();
-  const { token, connections } = useAuth()
+  const { token, connections, user } = useAuth()
   const [provider, setProvider] = useState('');
   const [name, setName] = useState('');
   const [repositoryUrl, setRepositoryUrl] = useState('');
