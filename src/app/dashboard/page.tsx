@@ -200,7 +200,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-20">
               <div className="flex items-center space-x-3">
-                <h1 className="text-3xl md:text-4xl font-bold font-orbitron bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:via-primary-glow dark:to-accent bg-clip-text text-transparent">ConFuse</h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-orbitron tracking-tight text-foreground">ConFuse</h1>
               </div>
               <div className="flex items-center gap-4">
                 <ProfileAvatar />
@@ -292,9 +292,9 @@ export default function Dashboard() {
                           icon: Users,
                           label: "Connections",
                           buttonText: "View",
-                          gradient: "from-indigo-500 to-purple-600",
-                          bgIcon: "bg-indigo-500/10 text-indigo-500",
-                          btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
+                          gradient: "from-amber-500 to-orange-600",
+                          bgIcon: "bg-amber-500/10 text-amber-500",
+                          btnColor: "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
                         },
                         {
                           toggleId: "enableAgentRules",
@@ -311,9 +311,9 @@ export default function Dashboard() {
                           icon: BookOpen,
                           label: "Documentation",
                           buttonText: "View",
-                          gradient: "from-indigo-500 to-purple-600",
-                          bgIcon: "bg-indigo-500/10 text-indigo-500",
-                          btnColor: "bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20"
+                          gradient: "from-violet-500 to-purple-600",
+                          bgIcon: "bg-violet-500/10 text-violet-500",
+                          btnColor: "bg-violet-500 hover:bg-violet-600 text-white shadow-violet-500/20"
                         }
                       ].filter(action => action.toggleId ? toggles[action.toggleId] !== false : true).map((action, idx) => (
                         <Card key={idx} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border">
@@ -338,7 +338,8 @@ export default function Dashboard() {
 
                 <div>
                   <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex flex-col xl:flex-row gap-6 items-start">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 flex-1 w-full">
                     {initialLoading ? (
                       Array.from({ length: 4 }).map((_, i) => (
                         <Card key={i} className="animate-pulse bg-card/50 border-border h-[104px] flex flex-col justify-between p-5">
@@ -418,6 +419,11 @@ export default function Dashboard() {
                         </Card>
                       </>
                     )}
+                    </div>
+
+                    <div className="shrink-0 w-full xl:w-auto xl:min-w-[320px]">
+                      <TrustmaryWidget />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -530,8 +536,6 @@ export default function Dashboard() {
                     )}
                   </CardContent>
                 </Card>
-
-                <TrustmaryWidget />
 
                 <Card className="bg-card border-border">
                   <CardHeader>
