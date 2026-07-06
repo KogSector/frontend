@@ -100,8 +100,11 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
 
   const fetchData = useCallback(async (isAutoRefresh = false) => {
+    if (!isAuthenticated) return;
+    
     try {
       if (!isAutoRefresh) {
         setLoading(true);
@@ -165,22 +168,25 @@ export default function Dashboard() {
         setLoading(false);
       }
     }
-  }, []); // Empty dependency array as this function doesn't depend on external props
+  }, [isAuthenticated]); // Added isAuthenticated dependency
 
   useEffect(() => {
-    fetchData();
+    if (isAuthenticated) {
+      fetchData();
+    }
 
     const interval = setInterval(() => {
-      fetchData(true);
+      if (isAuthenticated) {
+        fetchData(true);
+      }
     }, 5000);
 
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [fetchData, isAuthenticated]);
 
   const [copied, setCopied] = useState(false);
-  const { user } = useAuth();
   const mcpUrl = `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector.onrender.com"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
   const handleCopy = async () => {
