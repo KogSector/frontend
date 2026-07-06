@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
     const response = await fetch(`${authServiceUrl}/api/auth/oauth/url?provider=${encodeURIComponent(provider)}`, {
       method: 'GET',
       headers,
+      cache: 'no-store',
     })
     
     if (!response.ok) {
