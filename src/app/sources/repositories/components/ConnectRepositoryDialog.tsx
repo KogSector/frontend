@@ -99,7 +99,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
   const [availableFileExtensions, setAvailableFileExtensions] = useState<string[]>(DEFAULT_FILE_EXTENSIONS);
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
-  
+
   const [isTesting, setIsTesting] = useState(false);
   useEffect(() => {
     isToggleEnabled('deployedTesting')
@@ -161,7 +161,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
     setIsValidated(false);
     setBranches([]);
     setFetchBranchesError(null);
-    
+
     // Auto-detect provider from URL
     if (repositoryUrl) {
       if (repositoryUrl.includes('gitlab.com')) {
@@ -276,7 +276,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       }
 
       const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
-      
+
       let result: any;
       try {
         const headers: Record<string, string> = {};
@@ -685,7 +685,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
               onClick={handleConnect}
               disabled={!isValidated || !isProviderSelected || !repositoryUrl || loading || limitReached}
             >
-              {loading ? 'Connecting...' : 'Connect Repository'}
+              {loading ? 'Connecting...' : 'Connect'}
             </Button>
           </div>
         </div>
