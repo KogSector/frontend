@@ -187,7 +187,9 @@ export default function Dashboard() {
   }, [fetchData, isAuthenticated]);
 
   const [copied, setCopied] = useState(false);
-  const mcpUrl = `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector.onrender.com"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
+  const mcpUrl = toggles.enableDeployedMcp !== false 
+    ? `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector.onrender.com"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`
+    : `http://localhost:3020/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
   const handleCopy = async () => {
     try {

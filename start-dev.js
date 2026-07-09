@@ -12,15 +12,33 @@ const mapEnv = fs.existsSync(envMapPath) ? dotenv.parse(fs.readFileSync(envMapPa
 const localEnv = fs.existsSync(envLocalPath) ? dotenv.parse(fs.readFileSync(envLocalPath)) : {};
 const secretEnv = fs.existsSync(envSecretPath) ? dotenv.parse(fs.readFileSync(envSecretPath)) : {};
 
-// Merge with process.env
-const mergedEnv = {
-    ...process.env,
-    ...mapEnv,
-    ...secretEnv,
-    ...localEnv,
-};
+// Determine the toggle state from any of the available sources
+const useDeployedUrls = 
+    process.env.USE_DEPLOYED_URLS === 'true' || 
+    localEnv.USE_DEPLOYED_URLS === 'true' || 
+    secretEnv.USE_DEPLOYED_URLS === 'true' || 
+    mapEnv.USE_DEPLOYED_URLS === 'true';
 
-console.log('🚀 Loading custom environment variables from .env.map, .env.local, and .env.secret');
+// Merge with process.env
+let mergedEnv;
+
+if (useDeployedUrls) {
+    console.log('🚀 USE_DEPLOYED_URLS toggle is ON: Loading custom environment variables, prioritizing .env.map (deployed URLs)');
+    mergedEnv = {
+        ...process.env,
+        ...localEnv,
+        ...secretEnv,
+        ...mapEnv,
+    };
+} else {
+    console.log('🚀 USE_DEPLOYED_URLS toggle is OFF: Loading custom environment variables, prioritizing .env.local (localhost URLs)');
+    mergedEnv = {
+        ...process.env,
+        ...mapEnv,
+        ...secretEnv,
+        ...localEnv,
+    };
+}
 
 const port = mergedEnv.FRONTEND_PORT || '3000';
 const nextProcess = spawn('npx', ['next', 'dev', '-p', port], {
