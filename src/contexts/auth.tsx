@@ -473,7 +473,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('🔐 loginWithRedirect called with provider:', provider)
 
     await auth0LoginWithRedirect({
-      authorizationParams: provider ? { connection: provider } : undefined
+      authorizationParams: {
+        ...(provider ? { connection: provider } : {}),
+        redirect_uri: `${window.location.origin}/auth/callback`
+      }
     });
   }, [auth0LoginWithRedirect])
 
