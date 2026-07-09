@@ -115,3 +115,10 @@ kubectl apply -f k8s/frontend.yaml
 2. Use Tailwind CSS for styling
 3. Test responsive design
 4. Update documentation
+
+## How to run the microservice
+
+```bash
+npm install
+npm run dev
+```
