@@ -62,7 +62,7 @@ interface DataSource {
 }
 
 export default function RepositoriesPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
@@ -76,14 +76,19 @@ export default function RepositoriesPage() {
 
 
   useEffect(() => {
-    fetchRepositories();
-    fetchDataSources();
-  }, []);
+    if (token && user) {
+      fetchRepositories();
+      fetchDataSources();
+    }
+  }, [token, user]);
 
   const fetchRepositories = async () => {
     try {
       // Fetch real repository data from the API with auth header
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
+
       const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
       console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
@@ -115,7 +120,10 @@ export default function RepositoriesPage() {
   const fetchDataSources = async () => {
     try {
       // Fetch data sources with auth header
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
+
       const resp = await dataApiClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
       if (resp && resp.sources) {
         const repoDataSources = resp.sources.filter((ds: DataSource) =>
@@ -146,7 +154,9 @@ export default function RepositoriesPage() {
     try {
       console.log(`Deleting repository ${selectedRepoId}`);
 
-      const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const tokenHeader: Record<string, string> = {};
+      if (token) tokenHeader['Authorization'] = `Bearer ${token}`;
+      if (user?.id) tokenHeader['x-user-id'] = user.id;
       const resp = await dataApiClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
 
       console.log('Delete response:', resp);
@@ -174,7 +184,9 @@ export default function RepositoriesPage() {
     setSyncStatus(prev => ({ ...prev, [repo.id]: { status: 'syncing', message: 'Starting sync...' } }));
 
     try {
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
 
       const resp = await dataApiClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
         source_id: repo.source_id,
@@ -311,7 +323,7 @@ export default function RepositoriesPage() {
                   </p>
                   <Button onClick={() => setShowConnectDialog(true)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Connect Your First Repository
+                    Connect Repository
                   </Button>
                 </CardContent>
               </Card>

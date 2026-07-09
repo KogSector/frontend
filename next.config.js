@@ -2,12 +2,13 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Load local .env.map first (non-sensitive defaults), then .env.secret (sensitive overrides)
+// Load local .env.map first (non-sensitive defaults), then .env.local, then .env.secret
 const mapEnv = dotenv.config({ path: path.resolve(__dirname, '.env.map') }).parsed || {};
+const localEnv = dotenv.config({ path: path.resolve(__dirname, '.env.local') }).parsed || {};
 const secretEnv = dotenv.config({ path: path.resolve(__dirname, '.env.secret') }).parsed || {};
 
 // Only pass NEXT_PUBLIC_ variables explicitly to the client bundle
-const combinedEnv = { ...mapEnv, ...secretEnv };
+const combinedEnv = { ...mapEnv, ...secretEnv, ...localEnv };
 const publicEnv = Object.keys(combinedEnv)
   .filter(key => key.startsWith('NEXT_PUBLIC_'))
   .reduce((acc, key) => {

@@ -74,7 +74,7 @@ interface ConnectRepositoryDialogProps {
 
 export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, currentCount = 0 }: ConnectRepositoryDialogProps) {
   const router = useRouter();
-  const { token, connections } = useAuth()
+  const { token, connections, user } = useAuth()
   const [provider, setProvider] = useState('');
   const [name, setName] = useState('');
   const [repositoryUrl, setRepositoryUrl] = useState('');
@@ -99,7 +99,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
   const [availableFileExtensions, setAvailableFileExtensions] = useState<string[]>(DEFAULT_FILE_EXTENSIONS);
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
-  
+
   const [isTesting, setIsTesting] = useState(false);
   useEffect(() => {
     isToggleEnabled('deployedTesting')
@@ -161,7 +161,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
     setIsValidated(false);
     setBranches([]);
     setFetchBranchesError(null);
-    
+
     // Auto-detect provider from URL
     if (repositoryUrl) {
       if (repositoryUrl.includes('gitlab.com')) {
@@ -276,9 +276,13 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       }
 
       const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
-      
+
       let result: any;
       try {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (user?.id) headers['x-user-id'] = user.id;
+
         result = await dataApiClient.post('/api/repositories/fetch-branches', {
           repoUrl: repositoryUrl.trim(),
           credentials: Object.keys(fetchCredentials).length > 0 ? fetchCredentials : null
@@ -387,7 +391,10 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
         }
       };
 
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (user?.id) headers['x-user-id'] = user.id;
+
       const resp = await dataApiClient.post<any>('/api/v1/sources', payload, headers);
       if (resp && resp.id) {
         const backendAlreadyStartedSync = resp?.syncStarted === true;
@@ -398,7 +405,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
           console.log('[ConnectRepo] Connection successful, triggering auto-sync (fallback)...');
 
           try {
-            const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+            const headers: Record<string, string> = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (user?.id) headers['x-user-id'] = user.id;
             const syncPayload = {
               repo_url: repositoryUrl,
               branch: config.defaultBranch || 'main',
@@ -676,7 +685,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
               onClick={handleConnect}
               disabled={!isValidated || !isProviderSelected || !repositoryUrl || loading || limitReached}
             >
-              {loading ? 'Connecting...' : 'Connect Repository'}
+              {loading ? 'Connecting...' : 'Connect'}
             </Button>
           </div>
         </div>

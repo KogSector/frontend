@@ -101,6 +101,7 @@ class ConFuseLogger {
       [TRACE_ID_HEADER]: this.traceId,
       [SPAN_ID_HEADER]: this.generateSpanId(),
       [REQUEST_ID_HEADER]: `req_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 8)}`,
+      'x-correlation-id': typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `corr_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 8)}`,
     };
   }
 

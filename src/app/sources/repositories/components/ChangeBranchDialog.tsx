@@ -31,8 +31,8 @@ export function ChangeBranchDialog({
 }: ChangeBranchDialogProps) {
   const [branches, setBranches] = useState<string[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const { token, user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const { token } = useAuth();
 
   useEffect(() => {
     if (open && repositoryId) {
@@ -72,7 +72,9 @@ export function ChangeBranchDialog({
     try {
       console.log(`Changing branch for repo ${repositoryId} to ${selectedBranch}`);
 
-      const tokenHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const tokenHeader: Record<string, string> = {};
+      if (token) tokenHeader['Authorization'] = `Bearer ${token}`;
+      if (user?.id) tokenHeader['x-user-id'] = user.id;
       const resp = await dataApiClient.patch<ApiResponse>(
         `/api/repositories/${repositoryId}`,
         { branch: selectedBranch },
