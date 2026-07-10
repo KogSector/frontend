@@ -395,7 +395,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await docDataClient.post<any>('/api/v1/sources', payload, headers);
+      const resp = await repoDataClient.post<any>('/api/v1/sources', payload, headers);
       if (resp && resp.id) {
         const backendAlreadyStartedSync = resp?.syncStarted === true;
         if (backendAlreadyStartedSync) {

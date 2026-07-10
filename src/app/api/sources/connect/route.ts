@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { docDataClient, authClient, unwrapResponse } from '@/lib/api'
+import { docDataClient, repoDataClient, authClient, unwrapResponse } from '@/lib/api'
 
 
 function extractRepositoryName(url: string): string | null {
@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
       metadata: processedConfig,
     }
 
-    const resp = await docDataClient.post('/api/v1/sources', payload, headers)
+    const client = ['github', 'gitlab', 'bitbucket'].includes(type) ? repoDataClient : docDataClient
+    const resp = await client.post('/api/v1/sources', payload, headers)
     if (!succeeded(resp)) {
       const err = isApiResp(resp) ? resp.error : undefined
       return NextResponse.json({ success: false, error: err || 'Failed to connect data source' }, { status: 502 })
