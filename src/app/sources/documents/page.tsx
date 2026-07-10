@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { ConnectSourceModal } from "@/components/ui/ConnectSourceModal";
 import { ArrowLeft, FileText, Plus, Upload, Cloud, HardDrive, RefreshCw, Trash2, Download } from "lucide-react";
 import Link from "next/link";
-import { dataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
+import { docDataClient, deleteSource, syncSource, deleteDocument } from "@/lib/api";
 import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -87,9 +87,9 @@ export default function DocumentsPage() {
 
       // Fetch documents, analytics and sources in parallel
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
-        dataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
-        dataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
-        dataClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
+        docDataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
+        docDataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
+        docDataClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
       ]);
 
       // Process sources response
@@ -249,7 +249,7 @@ export default function DocumentsPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await dataClient.delete<{ success: boolean; message: string }>(`/api/v1/documents/${docId}`, headers);
+      const resp = await docDataClient.delete<{ success: boolean; message: string }>(`/api/v1/documents/${docId}`, headers);
       if (resp.success) {
         toast({
           title: "Document deleted",

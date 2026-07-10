@@ -7,11 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     // Define services to check
     const services = [
-      { name: 'data-connector', url: SERVICE_URLS.dataConnector },
+      { name: 'doc-data-con', url: SERVICE_URLS.docDataCon },
+      { name: 'repo-data-con', url: SERVICE_URLS.repoDataCon },
       { name: 'auth-middleware', url: SERVICE_URLS.auth },
       { name: 'unified-processor', url: SERVICE_URLS.unifiedProcessor },
-      { name: 'embeddings-service', url: SERVICE_URLS.embeddingsService },
-      { name: 'mcp-server', url: SERVICE_URLS.mcpServer }
+      { name: 'embeddings-service', url: SERVICE_URLS.embeddingsService }
     ]
 
     // Check health of all services

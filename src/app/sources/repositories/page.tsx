@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/DropdownMenu";
 import { ConnectRepositoryDialog } from "./components/ConnectRepositoryDialog";
 import { ChangeBranchDialog } from "./components/ChangeBranchDialog";
-import { dataApiClient, ApiResponse } from '@/lib/api';
+import { dataApiClient, repoDataClient, docDataClient, ApiResponse } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import { AuthGuard } from "@/app/auth/components/AuthGuard";
 
@@ -89,7 +89,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await dataApiClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
+      const resp = await repoDataClient.get<ApiResponse<{ repositories: Repository[] }>>('/api/repositories', headers);
       console.log('[fetchRepositories] API response:', resp);
       if (resp.success && resp.data?.repositories) {
         const uniqueRepos: Repository[] = [];
@@ -124,7 +124,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await dataApiClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
+      const resp = await docDataClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
       if (resp && resp.sources) {
         const repoDataSources = resp.sources.filter((ds: DataSource) =>
           ['github', 'bitbucket'].includes(ds.type)
@@ -157,7 +157,7 @@ export default function RepositoriesPage() {
       const tokenHeader: Record<string, string> = {};
       if (token) tokenHeader['Authorization'] = `Bearer ${token}`;
       if (user?.id) tokenHeader['x-user-id'] = user.id;
-      const resp = await dataApiClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
+      const resp = await repoDataClient.delete<ApiResponse>(`/api/repositories/${selectedRepoId}`, tokenHeader);
 
       console.log('Delete response:', resp);
 
@@ -188,7 +188,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await dataApiClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
+      const resp = await docDataClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
         source_id: repo.source_id,
         force_reprocess: true,
         exclude_patterns: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__'],

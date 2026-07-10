@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiClient, dataApiClient, ApiResponse } from '@/lib/api';
+import { apiClient, repoDataClient, ApiResponse } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 
 interface ChangeBranchDialogProps {
@@ -75,7 +75,7 @@ export function ChangeBranchDialog({
       const tokenHeader: Record<string, string> = {};
       if (token) tokenHeader['Authorization'] = `Bearer ${token}`;
       if (user?.id) tokenHeader['x-user-id'] = user.id;
-      const resp = await dataApiClient.patch<ApiResponse>(
+      const resp = await repoDataClient.patch<ApiResponse>(
         `/api/repositories/${repositoryId}`,
         { branch: selectedBranch },
         tokenHeader

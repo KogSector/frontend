@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Loader2, File, Folder, ChevronRight, ArrowLeft, FileText, FileSpreadsheet, Image as ImageIcon, FileCode, FileArchive, Search } from "lucide-react";
-import { dataApiClient } from "@/lib/api";
+import { docDataClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
@@ -65,7 +65,7 @@ export function CloudFileBrowser({ open, onOpenChange, provider, onFilesSelected
   const fetchFiles = async (folderId: string) => {
     setLoading(true);
     try {
-      const response = await dataApiClient.get<{ data: CloudFile[] }>(`/api/v1/external/browse/${provider}?path=${folderId}`);
+      const response = await docDataClient.get<{ data: CloudFile[] }>(`/api/v1/external/browse/${provider}?path=${folderId}`);
       if (response && (response as any).data) {
         setFiles((response as any).data);
       } else {

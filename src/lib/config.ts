@@ -7,7 +7,8 @@
 
 export const SERVICE_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_URL as string,
-  dataConnector: process.env.NEXT_PUBLIC_DATA_CONNECTOR_URL as string,
+  docDataCon: process.env.NEXT_PUBLIC_DOC_DATA_CON_URL as string,
+  repoDataCon: process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string,
   unifiedProcessor: process.env.NEXT_PUBLIC_UNIFIED_PROCESSOR_URL as string,
   embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL as string,
   clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string,
@@ -19,7 +20,7 @@ export const SERVICE_URLS = {
  * during migration. Maps to data-connector as the default service.
  */
 export const API_CONFIG = {
-  baseUrl: SERVICE_URLS.dataConnector,
+  baseUrl: SERVICE_URLS.docDataCon,
   timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT as string, 10) || 10000,
   retries: parseInt(process.env.NEXT_PUBLIC_API_RETRIES as string, 10) || 3,
   retryDelay: parseInt(process.env.NEXT_PUBLIC_API_RETRY_DELAY as string, 10) || 1000,

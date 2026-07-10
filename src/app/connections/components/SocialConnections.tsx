@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, RefreshCw, Plus, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { authClient, dataClient, unwrapResponse } from '@/lib/api';
+import { authClient, docDataClient, unwrapResponse } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import { useToggles } from '@/contexts/toggle';
 import Link from 'next/link';
@@ -159,7 +159,7 @@ export function SocialConnections() {
           if (!noAutoSyncProviders.includes(data.provider)) {
             try {
               const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
-              await dataClient.post('/api/v1/sources', {
+              await docDataClient.post('/api/v1/sources', {
                 type: data.provider,
                 name: `${platformName} Connection`,
                 uri: `oauth://${data.provider}`,
@@ -272,7 +272,7 @@ export function SocialConnections() {
 
         // Auto-register data source
         try {
-          await dataClient.post('/api/v1/sources', {
+          await docDataClient.post('/api/v1/sources', {
             type: platform,
             name: `${platformName} Connection`,
             uri: `oauth://${platform}`,
@@ -352,7 +352,7 @@ export function SocialConnections() {
 
         // Auto-register data source
         try {
-          await dataClient.post('/api/v1/sources', {
+          await docDataClient.post('/api/v1/sources', {
             type: 'custom',
             name: appName,
             uri: `custom://${appName.toLowerCase().replace(/\s+/g, '-')}`,

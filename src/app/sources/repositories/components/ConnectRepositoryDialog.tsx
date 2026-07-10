@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { dataApiClient, authClient, apiClient, ApiResponse, unwrapResponse, isToggleEnabled } from '@/lib/api';
+import { dataApiClient, repoDataClient, docDataClient, authClient, apiClient, ApiResponse, unwrapResponse, isToggleEnabled } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -283,7 +283,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
         if (token) headers['Authorization'] = `Bearer ${token}`;
         if (user?.id) headers['x-user-id'] = user.id;
 
-        result = await dataApiClient.post('/api/repositories/fetch-branches', {
+        result = await repoDataClient.post('/api/repositories/fetch-branches', {
           repoUrl: repositoryUrl.trim(),
           credentials: Object.keys(fetchCredentials).length > 0 ? fetchCredentials : null
         }, headers);
@@ -395,7 +395,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await dataApiClient.post<any>('/api/v1/sources', payload, headers);
+      const resp = await docDataClient.post<any>('/api/v1/sources', payload, headers);
       if (resp && resp.id) {
         const backendAlreadyStartedSync = resp?.syncStarted === true;
         if (backendAlreadyStartedSync) {
@@ -418,7 +418,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
             };
 
             // Fire sync in background - don't block the UI
-            dataApiClient.post('/api/sources/repositories/sync', syncPayload, headers)
+            docDataClient.post('/api/sources/repositories/sync', syncPayload, headers)
               .then((syncResp: any) => {
                 if (syncResp && (syncResp.success || syncResp.job_id)) {
                   console.log('[ConnectRepo] Auto-sync completed/started:', syncResp);

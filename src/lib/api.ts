@@ -284,8 +284,11 @@ export class ApiClient {
 /** Auth middleware service (login, token validation, RBAC) */
 export const authClient = new ApiClient(SERVICE_URLS.auth, 'auth');
 
-/** Data connector service (sources, agents, documents, URLs, repos, dashboard) */
-export const dataClient = new ApiClient(SERVICE_URLS.dataConnector, 'data-connector');
+/** Document data connector service (sources, documents, URLs) */
+export const docDataClient = new ApiClient(SERVICE_URLS.docDataCon, 'doc-data-con');
+
+/** Repo data connector service (repositories) */
+export const repoDataClient = new ApiClient(SERVICE_URLS.repoDataCon, 'repo-data-con');
 
 /** Unified processor service (document/code processing, embeddings) */
 export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'unified-processor');
@@ -303,10 +306,10 @@ export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector,
 export const frontendClient = new ApiClient('', 'frontend');
 
 /**
- * @deprecated Use dataClient, graphClient, processorClient, etc. instead.
- * Kept for backward-compat during migration. Points to data-connector.
+ * @deprecated Use docDataClient, repoDataClient, processorClient, etc. instead.
+ * Kept for backward-compat during migration. Points to doc-data-con.
  */
-export const apiClient = dataClient;
+export const apiClient = docDataClient;
 
 // =============================================================================
 // Data Connector API (agents, documents, URLs, repos, dashboard, sources)
@@ -314,31 +317,31 @@ export const apiClient = dataClient;
 
 // -- URLs --
 export async function createUrl(data: { url: string; title?: string; description?: string; tags?: string[] }): Promise<ApiResponse> {
-  return dataClient.post('/api/v1/external/urls', data);
+  return docDataClient.post('/api/v1/external/urls', data);
 }
 export async function getUrls(): Promise<ApiResponse> {
-  return dataClient.get('/api/v1/external/urls');
+  return docDataClient.get('/api/v1/external/urls');
 }
 export async function deleteUrl(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/v1/external/urls/${id}`);
+  return docDataClient.delete(`/api/v1/external/urls/${id}`);
 }
 export async function updateUrl(id: string, data: { title?: string; description?: string; tags?: string[] }): Promise<ApiResponse> {
-  return dataClient.put(`/api/v1/external/urls/${id}`, data);
+  return docDataClient.put(`/api/v1/external/urls/${id}`, data);
 }
 
 // -- Documents --
 export async function createDocument(data: { name: string; source: string; doc_type: string; size?: string; tags?: string[] }): Promise<ApiResponse<DocumentRecord>> {
-  return dataClient.post('/api/v1/documents', data);
+  return docDataClient.post('/api/v1/documents', data);
 }
 export async function getDocuments(search?: string): Promise<ApiResponse<{ data: DocumentRecord[], total: number }>> {
   const params = search ? `?search=${encodeURIComponent(search)}` : '';
-  return dataClient.get(`/api/v1/documents${params}`);
+  return docDataClient.get(`/api/v1/documents${params}`);
 }
 export async function deleteDocument(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/v1/documents/${encodeURIComponent(id)}`);
+  return docDataClient.delete(`/api/v1/documents/${encodeURIComponent(id)}`);
 }
 export async function getDocumentAnalytics(): Promise<ApiResponse> {
-  return dataClient.get('/api/v1/documents/analytics');
+  return docDataClient.get('/api/v1/documents/analytics');
 }
 
 // -- Agents --
@@ -421,27 +424,27 @@ export async function getLandingFeatures(): Promise<ApiResponse> {
 
 // -- Sources --
 export async function getSources(): Promise<ApiResponse> {
-  return dataClient.get('/api/v1/sources');
+  return docDataClient.get('/api/v1/sources');
 }
 export async function createSource(data: unknown): Promise<ApiResponse> {
-  return dataClient.post('/api/v1/sources', data);
+  return docDataClient.post('/api/v1/sources', data);
 }
 export async function deleteSource(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/v1/sources/${id}`);
+  return docDataClient.delete(`/api/v1/sources/${id}`);
 }
 export async function syncSource(id: string): Promise<ApiResponse> {
-  return dataClient.post(`/api/v1/sources/${id}/sync`, {});
+  return docDataClient.post(`/api/v1/sources/${id}/sync`, {});
 }
 
 // -- Repositories --
 export async function getRepositories(): Promise<ApiResponse> {
-  return dataClient.get('/api/repositories');
+  return repoDataClient.get('/api/repositories');
 }
 export async function createRepository(data: unknown): Promise<ApiResponse> {
-  return dataClient.post('/api/repositories', data);
+  return repoDataClient.post('/api/repositories', data);
 }
 export async function deleteRepository(id: string): Promise<ApiResponse> {
-  return dataClient.delete(`/api/repositories/${id}`);
+  return repoDataClient.delete(`/api/repositories/${id}`);
 }
 
 // =============================================================================
@@ -474,7 +477,7 @@ export async function importDocumentFromProvider(data: {
   mime_type?: string;
   size?: number;
 }): Promise<ApiResponse> {
-  return dataClient.post('/api/data/documents/import', data);
+  return docDataClient.post('/api/data/documents/import', data);
 }
 
 
@@ -554,6 +557,6 @@ export async function isToggleEnabled(name: string): Promise<boolean> {
 }
 
 /**
- * @deprecated Use dataClient directly. Kept for backward compat.
+ * @deprecated Use docDataClient directly. Kept for backward compat.
  */
-export const dataApiClient = dataClient;
+export const dataApiClient = docDataClient;

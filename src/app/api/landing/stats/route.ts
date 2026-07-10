@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { dataClient, authClient } from '@/lib/api'
+import { repoDataClient, authClient } from '@/lib/api'
 
 // Type definitions for API responses
 interface APIResponse<T = any> {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   try {
     // Get public stats for landing page (no auth required)
     const [reposResponse, usersResponse] = await Promise.allSettled([
-      dataClient.get('/api/repositories/public'),
+      repoDataClient.get('/api/repositories/public'),
       authClient.get('/api/users/public-stats')
     ])
 
