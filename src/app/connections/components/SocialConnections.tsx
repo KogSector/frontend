@@ -159,7 +159,7 @@ export function SocialConnections() {
           if (!noAutoSyncProviders.includes(data.provider)) {
             try {
               const platformName = PLATFORM_CONFIGS[data.provider as keyof typeof PLATFORM_CONFIGS]?.name || data.provider;
-              await docDataClient.post('/api/v1/sources', {
+              await docDataClient.post('/api/sources', {
                 type: data.provider,
                 name: `${platformName} Connection`,
                 uri: `oauth://${data.provider}`,
@@ -272,7 +272,7 @@ export function SocialConnections() {
 
         // Auto-register data source
         try {
-          await docDataClient.post('/api/v1/sources', {
+          await docDataClient.post('/api/sources', {
             type: platform,
             name: `${platformName} Connection`,
             uri: `oauth://${platform}`,
@@ -352,7 +352,7 @@ export function SocialConnections() {
 
         // Auto-register data source
         try {
-          await docDataClient.post('/api/v1/sources', {
+          await docDataClient.post('/api/sources', {
             type: 'custom',
             name: appName,
             uri: `custom://${appName.toLowerCase().replace(/\s+/g, '-')}`,

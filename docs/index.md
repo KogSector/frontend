@@ -185,7 +185,7 @@ const apiClient = {
 
 // Example API call
 const fetchSources = async () => {
-  const response = await apiClient.dataConnector.get('/api/v1/sources');
+  const response = await apiClient.dataConnector.get('/api/sources');
   return response.data;
 };
 ```

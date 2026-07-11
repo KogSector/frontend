@@ -89,7 +89,7 @@ export default function DocumentsPage() {
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
         docDataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
         docDataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
-        docDataClient.get<{ sources: any[]; total: number }>('/api/v1/sources', headers)
+        docDataClient.get<{ sources: any[]; total: number }>('/api/sources', headers)
       ]);
 
       // Process sources response

@@ -124,7 +124,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await repoDataClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
+      const resp = await repoDataClient.get<{ sources: DataSource[] }>('/api/sources', headers);
       if (resp && resp.sources) {
         const repoDataSources = resp.sources.filter((ds: DataSource) =>
           ['github', 'bitbucket'].includes(ds.type)
@@ -370,11 +370,6 @@ export default function RepositoriesPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openChangeBranchDialog(repo.id, 'main')}>
-                              <GitPullRequest className="w-4 h-4 mr-2" />
-                              Change Branch
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-red-500"
                               onClick={() => {

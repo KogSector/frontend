@@ -104,7 +104,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
           uri: `oauth://${provider}/${file.id}`,
           metadata: { item_ids: [file.id] }
         };
-        return docDataClient.post("/api/v1/sources", payload);
+        return docDataClient.post("/api/sources", payload);
       });
 
       const [localResults, cloudResults] = await Promise.all([
