@@ -87,8 +87,8 @@ export default function DocumentsPage() {
 
       // Fetch documents, analytics and sources in parallel
       const [docsResp, analyticsResp, sourcesResp] = await Promise.allSettled([
-        docDataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/v1/documents', headers),
-        docDataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/v1/documents/analytics', headers),
+        docDataClient.get<{ success: boolean; data: DocumentRecord[]; total: number }>('/api/documents', headers),
+        docDataClient.get<{ success: boolean; data: DocumentAnalytics }>('/api/documents/analytics', headers),
         docDataClient.get<{ sources: any[]; total: number }>('/api/sources', headers)
       ]);
 
@@ -249,7 +249,7 @@ export default function DocumentsPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await docDataClient.delete<{ success: boolean; message: string }>(`/api/v1/documents/${docId}`, headers);
+      const resp = await docDataClient.delete<{ success: boolean; message: string }>(`/api/documents/${docId}`, headers);
       if (resp.success) {
         toast({
           title: "Document deleted",

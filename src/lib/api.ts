@@ -331,17 +331,17 @@ export async function updateUrl(id: string, data: { title?: string; description?
 
 // -- Documents --
 export async function createDocument(data: { name: string; source: string; doc_type: string; size?: string; tags?: string[] }): Promise<ApiResponse<DocumentRecord>> {
-  return docDataClient.post('/api/v1/documents', data);
+  return docDataClient.post('/api/documents', data);
 }
 export async function getDocuments(search?: string): Promise<ApiResponse<{ data: DocumentRecord[], total: number }>> {
   const params = search ? `?search=${encodeURIComponent(search)}` : '';
-  return docDataClient.get(`/api/v1/documents${params}`);
+  return docDataClient.get(`/api/documents${params}`);
 }
 export async function deleteDocument(id: string): Promise<ApiResponse> {
-  return docDataClient.delete(`/api/v1/documents/${encodeURIComponent(id)}`);
+  return docDataClient.delete(`/api/documents/${encodeURIComponent(id)}`);
 }
 export async function getDocumentAnalytics(): Promise<ApiResponse> {
-  return docDataClient.get('/api/v1/documents/analytics');
+  return docDataClient.get('/api/documents/analytics');
 }
 
 // -- Agents --

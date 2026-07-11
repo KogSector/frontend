@@ -94,7 +94,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         const formData = new FormData();
         formData.append("files", file);
         formData.append("source_name", file.name);
-        return docDataClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/v1/documents/upload", formData);
+        return docDataClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/documents/upload", formData);
       });
 
       const cloudPromises = selectedCloudFiles.map(async ({ file, provider }) => {

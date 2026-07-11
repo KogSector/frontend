@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Aggregate data from multiple services with a 1500ms timeout
     const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
       withTimeout(repoDataClient.get('/api/repositories', headers), 1500),
-      withTimeout(docDataClient.get('/api/v1/documents', headers), 1500),
+      withTimeout(docDataClient.get('/api/documents', headers), 1500),
       withTimeout(docDataClient.get('/api/v1/external/urls', headers), 1500),
       withTimeout(authClient.get('/api/users/stats', headers), 1500),
       withTimeout(docDataClient.get('/api/v1/jobs?limit=5', headers), 1500)
