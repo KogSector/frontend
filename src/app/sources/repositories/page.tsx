@@ -124,7 +124,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await docDataClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
+      const resp = await repoDataClient.get<{ sources: DataSource[] }>('/api/v1/sources', headers);
       if (resp && resp.sources) {
         const repoDataSources = resp.sources.filter((ds: DataSource) =>
           ['github', 'bitbucket'].includes(ds.type)
@@ -188,7 +188,7 @@ export default function RepositoriesPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await docDataClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
+      const resp = await repoDataClient.post<{ job_id: string; status: string; message: string }>('/api/v1/ingest', {
         source_id: repo.source_id,
         force_reprocess: true,
         exclude_patterns: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__'],
