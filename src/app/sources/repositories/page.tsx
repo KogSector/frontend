@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { Footer } from "@/components/layout/footer";
-import { ArrowLeft, GitBranch, Plus, Settings, ExternalLink, Star, GitFork, RefreshCw, MoreHorizontal, Trash2, GitPullRequest, Clock } from "lucide-react";
+import { ArrowLeft, GitBranch, Plus, Settings, ExternalLink, Star, GitFork, RefreshCw, Trash2, GitPullRequest, Clock } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -18,13 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/AlertDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/DropdownMenu";
+
 import { ConnectRepositoryDialog } from "./components/ConnectRepositoryDialog";
 import { ChangeBranchDialog } from "./components/ChangeBranchDialog";
 import { dataApiClient, repoDataClient, docDataClient, ApiResponse } from '@/lib/api';
@@ -363,25 +357,18 @@ export default function RepositoriesPage() {
                             {syncStatus[repo.id]?.message}
                           </span>
                         )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="text-red-500"
-                              onClick={() => {
-                                setSelectedRepoId(repo.id);
-                                setShowDeleteConfirm(true);
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-500 border-border hover:bg-red-500/10 hover:text-red-500"
+                          onClick={() => {
+                            setSelectedRepoId(repo.id);
+                            setShowDeleteConfirm(true);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   </Card>
