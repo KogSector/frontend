@@ -126,12 +126,19 @@ export default function Dashboard() {
       // Extract sources for the "Connected Sources" list
       let sources: SourceItem[] = [];
       if (sourcesResp && sourcesResp.success) {
-        sources = (sourcesResp as any).sources || (sourcesResp as any).data || [];
+        const potentialSources = (sourcesResp as any).sources || (sourcesResp as any).data || [];
+        sources = Array.isArray(potentialSources) ? potentialSources : 
+                  (Array.isArray(potentialSources.documents) ? potentialSources.documents : []);
+      }
+
+      if (!Array.isArray(sources)) {
+        sources = [];
       }
 
       // Merge in repositories if needed for the recent list
       if (reposResp && (reposResp as any).success) {
-        const repos = (reposResp as any).data?.repositories || (reposResp as any).repositories || [];
+        const reposData = (reposResp as any).data?.repositories || (reposResp as any).repositories || (reposResp as any).data || [];
+        const repos = Array.isArray(reposData) ? reposData : [];
         const repoSources = repos.map((repo: any) => ({
           id: repo.id,
           name: repo.name || repo.url,
