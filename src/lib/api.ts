@@ -424,16 +424,16 @@ export async function getLandingFeatures(): Promise<ApiResponse> {
 
 // -- Sources --
 export async function getSources(): Promise<ApiResponse> {
-  return docDataClient.get('/api/sources');
+  return docDataClient.get('/api/documents');
 }
 export async function createSource(data: unknown): Promise<ApiResponse> {
-  return docDataClient.post('/api/sources', data);
+  return docDataClient.post('/api/documents', data);
 }
 export async function deleteSource(id: string): Promise<ApiResponse> {
-  return docDataClient.delete(`/api/sources/${id}`);
+  return docDataClient.delete(`/api/documents/${id}`);
 }
 export async function syncSource(id: string): Promise<ApiResponse> {
-  return docDataClient.post(`/api/sources/${id}/sync`, {});
+  return docDataClient.post(`/api/documents/${id}/sync`, {});
 }
 
 // -- Repositories --
