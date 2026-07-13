@@ -1,7 +1,7 @@
 # =============================================================================
 # Frontend - Dockerfile
 # Port: 3000
-# Role: Next.js 14 frontend application
+# Role: Next.js 16 frontend application
 # =============================================================================
 
 # Multi-stage build for Next.js frontend
