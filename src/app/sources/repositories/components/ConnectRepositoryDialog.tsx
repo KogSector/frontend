@@ -99,6 +99,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
   const [availableFileExtensions, setAvailableFileExtensions] = useState<string[]>(DEFAULT_FILE_EXTENSIONS);
   const [needsSocialConnect, setNeedsSocialConnect] = useState<string | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  const [tokenRestricted, setTokenRestricted] = useState(false);
 
   const [isTesting, setIsTesting] = useState(false);
   useEffect(() => {
@@ -222,8 +223,8 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/').filter(Boolean);
       if (pathParts.length >= 2) {
-        const owner = pathParts[pathParts.length - 2];
-        const repo = pathParts[pathParts.length - 1].replace('.git', '');
+        const owner = pathParts[0];
+        const repo = pathParts[1].replace('.git', '');
         return `${owner}/${repo}`;
       }
       return url;
@@ -326,6 +327,11 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
         // Update available extensions for the UI badges
         setAvailableFileExtensions(inferredExtensions);
         setIsValidated(true);
+        if (responseData.token_restricted) {
+          setTokenRestricted(true);
+        } else {
+          setTokenRestricted(false);
+        }
       }
     } catch (err: unknown) {
       console.error('[FRONTEND] Branch fetching error:', err);
@@ -364,7 +370,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       // Just to update the UI warning if they aren't connected, but don't block.
       await ensureProviderConnected();
       let finalCredentials = { ...credentials };
-      if (!finalCredentials.access_token) {
+      if (!finalCredentials.access_token && !tokenRestricted) {
         try {
           const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
           const tokenResp = await authClient.get<{ success?: boolean; access_token?: string }>(`/api/auth/connections/${provider}/token`, headers);
@@ -478,6 +484,7 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
     setNeedsSocialConnect(null);
     setIsValidated(false);
     setFetchBranchesError(null);
+    setTokenRestricted(false);
   };
 
   const renderCredentialFields = () => {
