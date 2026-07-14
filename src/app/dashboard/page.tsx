@@ -104,7 +104,7 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async (isAutoRefresh = false) => {
     if (!isAuthenticated) return;
-    
+
     try {
       if (!isAutoRefresh) {
         setLoading(true);
@@ -127,8 +127,8 @@ export default function Dashboard() {
       let sources: SourceItem[] = [];
       if (sourcesResp && sourcesResp.success) {
         const potentialSources = (sourcesResp as any).sources || (sourcesResp as any).data || [];
-        sources = Array.isArray(potentialSources) ? potentialSources : 
-                  (Array.isArray(potentialSources.documents) ? potentialSources.documents : []);
+        sources = Array.isArray(potentialSources) ? potentialSources :
+          (Array.isArray(potentialSources.documents) ? potentialSources.documents : []);
       }
 
       if (!Array.isArray(sources)) {
@@ -194,7 +194,7 @@ export default function Dashboard() {
   }, [fetchData, isAuthenticated]);
 
   const [copied, setCopied] = useState(false);
-  const mcpUrl = toggles.enableDeployedUrls !== false 
+  const mcpUrl = toggles.enableDeployedUrls !== false
     ? `${process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL || "https://client-connector.onrender.com"}/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`
     : `http://localhost:3020/api/v1/mcp/sse${user?.id ? `?userId=${user.id}` : ''}`;
 
@@ -355,85 +355,85 @@ export default function Dashboard() {
                   <h2 className="text-2xl font-semibold text-foreground mb-6">Overview</h2>
                   <div className="flex flex-col xl:flex-row gap-6 items-start">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 flex-1 w-full">
-                    {initialLoading ? (
-                      Array.from({ length: 4 }).map((_, i) => (
-                        <Card key={i} className="animate-pulse bg-card/50 border-border h-[104px] flex flex-col justify-between p-5">
-                          <div className="flex justify-between items-center">
-                            <div className="h-4 w-20 bg-muted rounded"></div>
-                            <div className="w-4 h-4 bg-muted rounded"></div>
-                          </div>
-                          <div className="h-8 w-12 bg-muted rounded mt-2"></div>
-                        </Card>
-                      ))
-                    ) : (
-                      <>
-                        {toggles.enableRepositories !== false && (
+                      {initialLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <Card key={i} className="animate-pulse bg-card/50 border-border h-[104px] flex flex-col justify-between p-5">
+                            <div className="flex justify-between items-center">
+                              <div className="h-4 w-20 bg-muted rounded"></div>
+                              <div className="w-4 h-4 bg-muted rounded"></div>
+                            </div>
+                            <div className="h-8 w-12 bg-muted rounded mt-2"></div>
+                          </Card>
+                        ))
+                      ) : (
+                        <>
+                          {toggles.enableRepositories !== false && (
+                            <Card className="bg-card border-border">
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                  Repositories
+                                </CardTitle>
+                                <GitBranch className="w-4 h-4 text-primary" />
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.repositories}</div>
+                                <p className="text-xs text-muted-foreground">
+                                  Connected repos
+                                </p>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {toggles.enableDocuments !== false && (
+                            <Card className="bg-card border-border">
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                  Documents
+                                </CardTitle>
+                                <FileText className="w-4 h-4 text-primary" />
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.documents}</div>
+                                <p className="text-xs text-muted-foreground">
+                                  Indexed documents
+                                </p>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {toggles.enableURLs !== false && (
+                            <Card className="bg-card border-border">
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                  URLs
+                                </CardTitle>
+                                <LinkIcon className="w-4 h-4 text-primary" />
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
+                                <p className="text-xs text-muted-foreground">
+                                  Connected URLs
+                                </p>
+                              </CardContent>
+                            </Card>
+                          )}
+
                           <Card className="bg-card border-border">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                               <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Repositories
+                                Context Requests
                               </CardTitle>
-                              <GitBranch className="w-4 h-4 text-primary" />
+                              <Activity className="w-4 h-4 text-primary-glow" />
                             </CardHeader>
                             <CardContent>
-                              <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.repositories}</div>
+                              <div className="text-2xl font-bold text-foreground">{loading ? '...' : (stats.context_requests || 0).toLocaleString()}</div>
                               <p className="text-xs text-muted-foreground">
-                                Connected repos
+                                Last 24 hours
                               </p>
                             </CardContent>
                           </Card>
-                        )}
-
-                        {toggles.enableDocuments !== false && (
-                          <Card className="bg-card border-border">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                              <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Documents
-                              </CardTitle>
-                              <FileText className="w-4 h-4 text-primary" />
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.documents}</div>
-                              <p className="text-xs text-muted-foreground">
-                                Indexed documents
-                              </p>
-                            </CardContent>
-                          </Card>
-                        )}
-
-                        {toggles.enableURLs !== false && (
-                          <Card className="bg-card border-border">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                              <CardTitle className="text-sm font-medium text-muted-foreground">
-                                URLs
-                              </CardTitle>
-                              <LinkIcon className="w-4 h-4 text-primary" />
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
-                              <p className="text-xs text-muted-foreground">
-                                Connected URLs
-                              </p>
-                            </CardContent>
-                          </Card>
-                        )}
-
-                        <Card className="bg-card border-border">
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                              Context Requests
-                            </CardTitle>
-                            <Activity className="w-4 h-4 text-primary-glow" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-foreground">{loading ? '...' : (stats.context_requests || 0).toLocaleString()}</div>
-                            <p className="text-xs text-muted-foreground">
-                              Last 24 hours
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </>
-                    )}
+                        </>
+                      )}
                     </div>
 
                     <div className="shrink-0 w-full xl:w-auto xl:min-w-[320px]">
@@ -631,9 +631,6 @@ export default function Dashboard() {
                   {/* Native HTTP Card */}
                   <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-5 flex flex-col">
                     <h4 className="text-blue-500 font-semibold mb-3">Native (type: http)</h4>
-                    <p className="text-sm text-muted-foreground mb-4 flex-1">
-                      Commonly used by <strong>VS Code</strong> native settings for remote connections.
-                    </p>
                     <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
                       {`{
   "servers": {
@@ -649,9 +646,6 @@ export default function Dashboard() {
                   {/* Native SSE Card */}
                   <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-5 flex flex-col">
                     <h4 className="text-emerald-500 font-semibold mb-3">Native (type: sse)</h4>
-                    <p className="text-sm text-muted-foreground mb-4 flex-1">
-                      Commonly used by <strong>Windsurf</strong> in their config files.
-                    </p>
                     <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
                       {`{
   "mcpServers": {
@@ -667,9 +661,6 @@ export default function Dashboard() {
                   {/* Stdio Proxy Card */}
                   <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-5 flex flex-col">
                     <h4 className="text-purple-500 font-semibold mb-3">Stdio Proxy (CLI)</h4>
-                    <p className="text-sm text-muted-foreground mb-4 flex-1">
-                      Required for <strong>Cursor</strong> or <strong>AntiGravity</strong> which only support local scripts.
-                    </p>
                     <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
                       {`{
   "mcpServers": {
