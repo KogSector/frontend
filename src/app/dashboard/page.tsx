@@ -633,7 +633,7 @@ export default function Dashboard() {
                     <h4 className="text-blue-500 font-semibold mb-3">Native (type: http)</h4>
                     <pre className="bg-background/80 p-3 rounded-md text-xs font-mono overflow-x-auto border border-border/50">
                       {`{
-  "servers": {
+  "mcpServers": {
     "ConFuse": {
       "url": "${mcpUrl}",
       "type": "http"
