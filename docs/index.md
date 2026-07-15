@@ -176,7 +176,7 @@ src/
 ```typescript
 // API client configuration
 const apiClient = {
-  authMiddleware: createApiClient('https://auth-middleware-k3bb.onrender.com'),
+  authMiddleware: createApiClient('https://auth-middleware-fcg0.onrender.com'),
   dataConnector: createApiClient('https://data-connector-y472.onrender.com'),
   clientConnector: createApiClient('https://client-connector.onrender.com'),
   dataVent: createApiClient('https://data-vent.onrender.com'),
@@ -382,7 +382,7 @@ NEXT_PUBLIC_AUTH0_AUDIENCE=https://api.confuse.dev
 
 # Service URLs
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth-middleware-k3bb.onrender.com
+NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth-middleware-fcg0.onrender.com
 NEXT_PUBLIC_DOC_DATA_CON_URL=https://doc-data-con.onrender.com
 NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://client-connector.onrender.com
 NEXT_PUBLIC_DATA_VENT_URL=https://data-vent.onrender.com
