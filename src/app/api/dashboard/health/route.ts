@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
       { name: 'doc-data-con', url: SERVICE_URLS.docDataCon },
       { name: 'repo-data-con', url: SERVICE_URLS.repoDataCon },
       { name: 'auth-middleware', url: SERVICE_URLS.auth },
-      { name: 'unified-processor', url: SERVICE_URLS.unifiedProcessor },
+      { name: 'doc-uni-proc', url: SERVICE_URLS.docUniProc },
+      { name: 'repo-uni-proc', url: SERVICE_URLS.repoUniProc },
       { name: 'embeddings-service', url: SERVICE_URLS.embeddingsService }
     ]
 

@@ -290,8 +290,11 @@ export const docDataClient = new ApiClient(SERVICE_URLS.docDataCon, 'doc-data-co
 /** Repo data connector service (repositories) */
 export const repoDataClient = new ApiClient(SERVICE_URLS.repoDataCon, 'repo-data-con');
 
-/** Unified processor service (document/code processing, embeddings) */
-export const processorClient = new ApiClient(SERVICE_URLS.unifiedProcessor, 'unified-processor');
+/** Doc unified processor service (document processing) */
+export const docProcessorClient = new ApiClient(SERVICE_URLS.docUniProc, 'doc-uni-proc');
+
+/** Repo unified processor service (code processing) */
+export const repoProcessorClient = new ApiClient(SERVICE_URLS.repoUniProc, 'repo-uni-proc');
 
 /** Data vent service (semantic search and graph queries) */
 export const dataVentClient = new ApiClient(SERVICE_URLS.dataVent, 'data-vent');
