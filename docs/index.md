@@ -177,7 +177,8 @@ src/
 // API client configuration
 const apiClient = {
   authMiddleware: createApiClient('https://auth-middleware-fcg0.onrender.com'),
-  dataConnector: createApiClient('https://data-connector-y472.onrender.com'),
+  docDataCon: createApiClient('https://doc-data-con.onrender.com'),
+  repoDataCon: createApiClient('https://repo-data-con.onrender.com'),
   clientConnector: createApiClient('https://client-connector.onrender.com'),
   dataVent: createApiClient('https://data-vent.onrender.com'),
   featureToggle: createApiClient('http://localhost:3099')
@@ -185,7 +186,7 @@ const apiClient = {
 
 // Example API call
 const fetchSources = async () => {
-  const response = await apiClient.dataConnector.get('/api/sources');
+  const response = await apiClient.docDataCon.get('/api/sources');
   return response.data;
 };
 ```
@@ -384,6 +385,7 @@ NEXT_PUBLIC_AUTH0_AUDIENCE=https://api.confuse.dev
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth-middleware-fcg0.onrender.com
 NEXT_PUBLIC_DOC_DATA_CON_URL=https://doc-data-con.onrender.com
+NEXT_PUBLIC_REPO_DATA_CON_URL=https://repo-data-con.onrender.com
 NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://client-connector.onrender.com
 NEXT_PUBLIC_DATA_VENT_URL=https://data-vent.onrender.com
 NEXT_PUBLIC_FEATURE_TOGGLE_URL=http://localhost:3099
@@ -416,6 +418,7 @@ NEXT_PUBLIC_AUTH0_AUDIENCE=https://api.confuse.dev
 NEXT_PUBLIC_API_BASE_URL=https://api.confuse.dev
 NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth.confuse.dev
 NEXT_PUBLIC_DOC_DATA_CON_URL=https://data.confuse.dev
+NEXT_PUBLIC_REPO_DATA_CON_URL=https://repo-data.confuse.dev
 NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://agents.confuse.dev
 NEXT_PUBLIC_DATA_VENT_URL=https://export.confuse.dev
 NEXT_PUBLIC_FEATURE_TOGGLE_URL=https://features.confuse.dev
