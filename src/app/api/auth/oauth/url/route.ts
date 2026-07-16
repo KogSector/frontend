@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const provider = searchParams.get('provider') || 'github'
-  const authServiceUrl = process.env.AUTH_SERVICE_URL || process.env.NEXT_PUBLIC_AUTH_SERVICE_URL
+  const authServiceUrl = process.env.AUTH_SERVICE_URL || process.env.NEXT_PUBLIC_AUTH_URL
   
   try {
     // Forward the request to the auth backend service

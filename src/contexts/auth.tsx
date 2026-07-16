@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 2000)
 
-      const authBase = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
+      const authBase = process.env.NEXT_PUBLIC_AUTH_URL;
       const response = await fetch(`${authBase}/api/auth/verify`, {
         method: 'POST',
         headers: {
