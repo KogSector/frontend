@@ -9,11 +9,8 @@ export const SERVICE_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_URL as string,
   docDataCon: process.env.NEXT_PUBLIC_DOC_DATA_CON_URL as string,
   repoDataCon: process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string,
-  docUniProc: process.env.NEXT_PUBLIC_DOC_UNI_PROC_URL as string,
-  repoUniProc: process.env.NEXT_PUBLIC_REPO_UNI_PROC_URL as string,
-  embeddingsService: process.env.NEXT_PUBLIC_EMBEDDINGS_SERVICE_URL as string,
+
   clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string,
-  dataVent: process.env.NEXT_PUBLIC_DATA_VENT_URL as string,
 } as const;
 
 /**

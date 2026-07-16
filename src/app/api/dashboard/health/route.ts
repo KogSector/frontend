@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
     const services = [
       { name: 'doc-data-con', url: SERVICE_URLS.docDataCon },
       { name: 'repo-data-con', url: SERVICE_URLS.repoDataCon },
-      { name: 'auth-middleware', url: SERVICE_URLS.auth },
-      { name: 'doc-uni-proc', url: SERVICE_URLS.docUniProc },
-      { name: 'repo-uni-proc', url: SERVICE_URLS.repoUniProc },
-      { name: 'embeddings-service', url: SERVICE_URLS.embeddingsService }
+      { name: 'auth-middleware', url: SERVICE_URLS.auth }
     ]
 
     // Check health of all services

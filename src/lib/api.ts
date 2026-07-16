@@ -290,17 +290,8 @@ export const docDataClient = new ApiClient(SERVICE_URLS.docDataCon, 'doc-data-co
 /** Repo data connector service (repositories) */
 export const repoDataClient = new ApiClient(SERVICE_URLS.repoDataCon, 'repo-data-con');
 
-/** Doc unified processor service (document processing) */
-export const docProcessorClient = new ApiClient(SERVICE_URLS.docUniProc, 'doc-uni-proc');
 
-/** Repo unified processor service (code processing) */
-export const repoProcessorClient = new ApiClient(SERVICE_URLS.repoUniProc, 'repo-uni-proc');
 
-/** Data vent service (semantic search and graph queries) */
-export const dataVentClient = new ApiClient(SERVICE_URLS.dataVent, 'data-vent');
-
-/** Embeddings service */
-export const embeddingsClient = new ApiClient(SERVICE_URLS.embeddingsService, 'embeddings-service');
 
 
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
@@ -454,12 +445,7 @@ export async function deleteRepository(id: string): Promise<ApiResponse> {
 // Relation Graph API (search)
 // =============================================================================
 
-export async function hybridSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
-  return dataVentClient.post('/api/v1/search', { query, ...options });
-}
-export async function vectorSearch(query: string, options: Record<string, unknown> = {}): Promise<ApiResponse> {
-  return dataVentClient.post('/api/v1/temporal-search', { query, ...options });
-}
+
 
 // =============================================================================
 // Auth API
