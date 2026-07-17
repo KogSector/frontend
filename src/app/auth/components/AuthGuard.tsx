@@ -33,7 +33,7 @@ export function AuthGuard({
       if (!isAuthenticated) {
         router.push(redirectTo)
       }
-    }, 5000)
+    }, 15000)
 
     return () => clearTimeout(timeout)
   }, [requireAuth, isAuthenticated, redirectTo, router])
