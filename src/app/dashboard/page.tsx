@@ -310,7 +310,7 @@ export default function Dashboard() {
                           btnColor: "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
                         },
                         {
-                          toggleId: "enableAgentRules",
+                          toggleId: "agentRules",
                           href: "/agents/rules",
                           icon: Network,
                           label: "Agent Rules",
