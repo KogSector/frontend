@@ -1,12 +1,14 @@
 'use client'
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
-
 import { useAuth } from '@/contexts/auth';
+import { DemoModal } from "./DemoModal";
 
 export function HeroSection() {
   const { isAuthenticated } = useAuth();
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -62,11 +64,17 @@ export function HeroSection() {
             <Button
               variant="outline"
               className="h-12 px-8 border-border hover:bg-muted transition-colors rounded-none font-medium text-base"
+              onClick={() => setIsDemoOpen(true)}
             >
               <Play className="w-4 h-4 mr-2" />
               Watch Demo
             </Button>
           </div>
+
+          <DemoModal
+            isOpen={isDemoOpen}
+            onClose={() => setIsDemoOpen(false)}
+          />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 pt-16 border-t border-border">
             <div className="space-y-1">
