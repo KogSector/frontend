@@ -9,68 +9,61 @@ export function PricingPage() {
   const plans = [
     {
       name: "Free",
-      price: "$0",
+      price: "₹0",
       period: "forever",
-      description: "Perfect for individual developers and small projects",
+      description: "Perfect for individual developers and small personal projects",
       features: [
-        "Up to 3 sources (repos/docs/URLs)",
-        "2 AI agent connections",
-        "Basic context sharing",
-        "Community support",
-        "Standard security"
+        "Up to 2 repos and 4 documents",
+        "Max 256 MB storage (processing stops when limit is reached)",
+        "80,000 requests per month",
+        "Strong security (TLS 1.3, CSP, token blacklisting)"
       ],
-      popular: false
+      popular: false,
+      buyUrl: "/billing"
     },
     {
       name: "Pro",
-      price: "$29",
+      price: "₹800",
       period: "per month",
-      description: "Ideal for growing teams and multiple projects",
+      description: "Ideal for power developers needing higher storage and queries",
       features: [
-        "Unlimited sources",
-        "Unlimited AI agents",
-        "Advanced context routing",
-        "Priority support",
-        "Enhanced security",
-        "Team collaboration",
-        "Custom integrations",
-        "Analytics dashboard"
+        "5 repos, 10 documents",
+        "512 MB max space",
+        "160,000 requests per month",
+        "Strong security (TLS 1.3, CSP, token blacklisting)"
       ],
-      popular: true
+      popular: true,
+      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/dc2fe0c0-8fc8-4b14-8bc8-42b1b93d6610"
     },
     {
       name: "Team",
-      price: "$99",
+      price: "₹2,300",
       period: "per month",
-      description: "Perfect for established teams with advanced collaboration needs",
+      description: "Perfect for engineering teams with shared database access",
       features: [
-        "Everything in Pro",
-        "Up to 25 team members",
-        "Advanced team permissions",
-        "Team analytics & insights",
-        "Priority phone support",
-        "API access",
-        "Custom workflows",
-        "Advanced integrations"
+        "10 repos, 16 documents",
+        "1,024 MB (1 GB) max space",
+        "Max of 3 users can connect to database (READ-ONLY ONLY)",
+        "320,000 requests/mo (main user)",
+        "Advanced security & RBAC token permissions"
       ],
-      popular: false
+      popular: false,
+      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/fc9e1c35-1284-4e66-90c5-b8fd06e24fb5"
     },
     {
       name: "Enterprise",
-      price: "Custom",
-      period: "contact us",
-      description: "For large organizations with specific requirements",
+      price: "₹4,000+",
+      period: "per month",
+      description: "For high-scale organizations needing custom quotas & SLA",
       features: [
-        "Everything in Team",
-        "Unlimited team members",
-        "SSO integration",
-        "Advanced compliance",
-        "Dedicated support",
-        "Custom deployment",
-        "SLA guarantees",
-        "White-label options"
+        "Custom / Unlimited repos and documents",
+        "Dedicated Storage Quota (> 5 GB+)",
+        "Custom High-Throughput (1,000,000+ req/mo)",
+        "Unlimited Read Seats & Multi-User Admin Write Roles",
+        "Enterprise Security (SAML/SSO, Custom VPC/IP Isolation, Dedicated SLA)"
       ],
-      popular: false
+      popular: false,
+      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/85924e78-5dae-40b2-bc55-9d7dac547e1d"
     }
   ];
 
@@ -79,30 +72,28 @@ export function PricingPage() {
       <Navbar />
       
       <main className="pt-20">
-        {}
         <section className="py-24 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <Badge variant="secondary" className="w-fit mx-auto mb-4">
-              Simple Pricing
+              Simple & Transparent Pricing
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Choose Your
-              <span className="text-primary"> Plan</span>
+              <span className="text-primary"> Subscription Plan</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Connect your repositories, docs, and URLs. Start free, scale as you grow. No hidden fees, no surprises.
+              Powered by LemonSqueezy. Connect your repositories and documents seamlessly with defined quotas and rock-solid security.
             </p>
           </div>
         </section>
 
-        {}
         <section className="py-16 -mt-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
               {plans.map((plan, index) => (
                 <Card 
                   key={index} 
-                  className={`relative bg-card border-border ${
+                  className={`relative bg-card border-border flex flex-col justify-between ${
                     plan.popular ? 'ring-2 ring-primary shadow-primary' : ''
                   }`}
                 >
@@ -124,33 +115,33 @@ export function PricingPage() {
                         {plan.period}
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-4">
+                    <p className="text-sm text-muted-foreground mt-4 min-h-[40px]">
                       {plan.description}
                     </p>
                   </CardHeader>
                   
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
+                  <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
+                    <ul className="space-y-3 text-left">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center text-sm">
-                          <Check className="w-4 h-4 text-accent mr-3 flex-shrink-0" />
-                          <span className="text-muted-foreground">{feature}</span>
+                        <li key={i} className="flex items-start text-sm">
+                          <Check className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground text-xs leading-relaxed">{feature}</span>
                         </li>
                       ))}
                     </ul>
                     
-                    <Button 
-                      className={`w-full ${
-                        plan.popular 
-                          ? 'bg-primary hover:bg-primary/90' 
-                          : ''
-                      }`}
-                      variant={plan.popular ? 'default' : 'outline'}
-                    >
-                      {plan.name === 'Free' ? 'Get Started' : 
-                       plan.name === 'Enterprise' ? 'Contact Sales' : 
-                       'Start Free Trial'}
-                    </Button>
+                    <a href={plan.buyUrl} target={plan.buyUrl.startsWith('http') ? '_blank' : '_self'} rel="noreferrer">
+                      <Button 
+                        className={`w-full ${
+                          plan.popular 
+                            ? 'bg-primary hover:bg-primary/90' 
+                            : ''
+                        }`}
+                        variant={plan.popular ? 'default' : 'outline'}
+                      >
+                        {plan.name === 'Free' ? 'Get Started' : `Subscribe to ${plan.name}`}
+                      </Button>
+                    </a>
                   </CardContent>
                 </Card>
               ))}
@@ -158,7 +149,6 @@ export function PricingPage() {
           </div>
         </section>
 
-        {}
         <section className="py-16 bg-muted/20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -166,27 +156,27 @@ export function PricingPage() {
                 Frequently Asked Questions
               </h2>
               <p className="text-muted-foreground">
-                Everything you need to know about ConFuse pricing
+                Everything you need to know about ConFuse LemonSqueezy payments
               </p>
             </div>
             
             <div className="grid gap-6">
               {[
                 {
-                  question: "Can I change plans anytime?",
-                  answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+                  question: "How are payments processed?",
+                  answer: "All payments and subscription checkouts are securely handled via LemonSqueezy."
                 },
                 {
-                  question: "Is there a free trial for paid plans?",
-                  answer: "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
+                  question: "What happens when storage size is reached?",
+                  answer: "On the Free tier (256 MB max) or paid tiers, processing automatically stops when the max storage limit is reached until space is freed or plan upgraded."
                 },
                 {
-                  question: "What happens to my data if I cancel?",
-                  answer: "Your data remains accessible for 30 days after cancellation, giving you time to export if needed."
+                  question: "How do Team Tier database read-only connections work?",
+                  answer: "Team tier allows up to 3 connected users to read from your database. Connected users are strictly restricted to READ-ONLY mode and cannot execute write operations."
                 },
                 {
-                  question: "Do you offer discounts for students or nonprofits?",
-                  answer: "Yes, we offer 50% discounts for students and qualifying nonprofit organizations."
+                  question: "Can I upgrade or manage my subscription later?",
+                  answer: "Yes, you can manage, pause, or update your subscription anytime via the LemonSqueezy Customer Portal link in your billing dashboard."
                 }
               ].map((faq, index) => (
                 <Card key={index} className="bg-card border-border">
@@ -194,7 +184,7 @@ export function PricingPage() {
                     <h3 className="font-semibold text-foreground mb-2">
                       {faq.question}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {faq.answer}
                     </p>
                   </CardContent>

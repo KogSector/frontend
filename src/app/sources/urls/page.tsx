@@ -223,11 +223,12 @@ export default function UrlsPage() {
                           <div className="flex items-center gap-1">
                             <Tag className="w-3 h-3" />
                             <div className="flex gap-1">
-                              {url.tags.map((tag) => (
+                              {url.tags.map((tag: string) => (
                                 <Badge key={tag} variant="secondary" className="text-xs">
                                   {tag}
                                 </Badge>
                               ))}
+
                             </div>
                           </div>
                         )}

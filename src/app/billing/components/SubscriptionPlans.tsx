@@ -5,9 +5,8 @@ import { useAuth } from '@/contexts/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Star, Zap, Building } from 'lucide-react'
+import { Check, Star, Zap, Building, Crown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { apiClient } from '@/lib/api'
 
 interface SubscriptionPlan {
   id: string
@@ -15,19 +14,19 @@ interface SubscriptionPlan {
   description: string
   tier: string
   price_monthly: number
-  price_yearly?: number
-  features: Record<string, any>
+  formatted_price?: string
+  features: string[] | Record<string, any>
   limits: Record<string, any>
-  is_active: boolean
 }
 
 export function SubscriptionPlans() {
   const { user, token } = useAuth()
   const { toast } = useToast()
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
-  const [currentSubscription, setCurrentSubscription] = useState<any>(null)
+  const [currentSubData, setCurrentSubData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [subscribing, setSubscribing] = useState<string | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
 
   useEffect(() => {
     fetchPlans()
@@ -36,8 +35,11 @@ export function SubscriptionPlans() {
 
   const fetchPlans = async () => {
     try {
-      const plansData = await apiClient.get<SubscriptionPlan[]>('/api/billing/plans')
-      setPlans(plansData)
+      const response = await fetch('/api/billing/plans')
+      if (response.ok) {
+        const plansData = await response.json()
+        setPlans(plansData)
+      }
     } catch (error) {
       console.error('Failed to fetch plans:', error)
     }
@@ -49,8 +51,8 @@ export function SubscriptionPlans() {
       if (token) headers['Authorization'] = `Bearer ${token}`
       const response = await fetch('/api/billing/subscription', { headers })
       if (response.ok) {
-        const subscription = await response.json()
-        setCurrentSubscription(subscription)
+        const result = await response.json()
+        setCurrentSubData(result.data)
       }
     } catch (error) {
       console.error('Failed to fetch subscription:', error)
@@ -59,32 +61,37 @@ export function SubscriptionPlans() {
     }
   }
 
-  const handleSubscribe = async (planId: string) => {
-    setSubscribing(planId)
+  const handleSubscribe = async (tier: string) => {
+    if (tier === 'free') return
+    setSubscribing(tier)
     try {
-      const response = await fetch('/api/billing/subscription', {
+      const response = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ plan_id: planId }),
+        body: JSON.stringify({ tier }),
       })
 
       if (response.ok) {
-        toast({
-          title: 'Subscription Updated',
-          description: 'Your subscription has been updated successfully.',
-        })
-        fetchCurrentSubscription()
-      } else {
-        const error = await response.json()
-        toast({
-          title: 'Subscription Failed',
-          description: error.error || 'Failed to update subscription',
-          variant: 'destructive',
-        })
+        const resData = await response.json()
+        const checkoutUrl = resData?.data?.checkoutUrl
+        if (checkoutUrl) {
+          toast({
+            title: 'Redirecting to LemonSqueezy Checkout',
+            description: 'Please complete your subscription payment.',
+          })
+          window.location.href = checkoutUrl
+          return
+        }
       }
+
+      toast({
+        title: 'Checkout Failed',
+        description: 'Could not generate checkout link. Please try again.',
+        variant: 'destructive',
+      })
     } catch (error) {
       toast({
         title: 'Error',
@@ -96,105 +103,64 @@ export function SubscriptionPlans() {
     }
   }
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true)
+    try {
+      const response = await fetch('/api/billing/portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      if (response.ok) {
+        const resData = await response.json()
+        const portalUrl = resData?.data?.portalUrl
+        if (portalUrl) {
+          window.location.href = portalUrl
+          return
+        }
+      }
+      window.location.href = 'https://tryconfuse.lemonsqueezy.com/billing'
+    } catch {
+      window.location.href = 'https://tryconfuse.lemonsqueezy.com/billing'
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
   const getPlanIcon = (tier: string) => {
     switch (tier) {
       case 'free':
-        return <Star className="h-6 w-6" />
-      case 'personal':
-        return <Zap className="h-6 w-6" />
+        return <Star className="h-6 w-6 text-blue-400" />
+      case 'pro':
+        return <Zap className="h-6 w-6 text-amber-500" />
       case 'team':
-        return <Building className="h-6 w-6" />
+        return <Building className="h-6 w-6 text-emerald-500" />
       case 'enterprise':
-        return <Building className="h-6 w-6 text-purple-500" />
+        return <Crown className="h-6 w-6 text-purple-500" />
       default:
-        return <Star className="h-6 w-6" />
+        return <Star className="h-6 w-6 text-blue-400" />
     }
   }
 
-  const isCurrentPlan = (planId: string) => {
-    return currentSubscription?.plan?.id === planId
+  const userTier = currentSubData?.subscription?.tier || user?.subscription_tier || 'free'
+
+  const isCurrentPlan = (tier: string) => {
+    return userTier === tier
   }
 
-  const getFeatureList = (features: Record<string, any>) => {
-    const featureList = []
-    
-    if (features.repositories) {
-      featureList.push(`${features.repositories === 'unlimited' ? 'Unlimited' : features.repositories} repositories`)
+  const renderFeatureList = (plan: SubscriptionPlan) => {
+    if (Array.isArray(plan.features)) {
+      return plan.features
     }
-    if (features.ai_queries) {
-      featureList.push(`${features.ai_queries === 'unlimited' ? 'Unlimited' : features.ai_queries} AI queries/month`)
-    }
-    if (features.storage_gb) {
-      featureList.push(`${features.storage_gb}GB storage`)
-    }
-    if (features.support) {
-      featureList.push(`${features.support} support`)
-    }
-    if (features.advanced_search) {
-      featureList.push('Advanced search')
-    }
-    if (features.team_collaboration) {
-      featureList.push('Team collaboration')
-    }
-    if (features.github_apps) {
-      featureList.push('GitHub Apps integration')
-    }
-    if (features.sso) {
-      featureList.push('Single Sign-On (SSO)')
-    }
-    if (features.audit_logs) {
-      featureList.push('Audit logs')
-    }
-    if (features.custom_integrations) {
-      featureList.push('Custom integrations')
-    }
-
-    if (features.context_routing) {
-      featureList.push('Advanced context routing')
-    }
-    if (features.priority_support) {
-      featureList.push('Priority support')
-    }
-    if (features.analytics_dashboard) {
-      featureList.push('Analytics dashboard')
-    }
-    if (features.team_members) {
-      featureList.push(`Up to ${features.team_members} team members`)
-    }
-    if (features.team_permissions) {
-      featureList.push('Advanced team permissions')
-    }
-    if (features.analytics_insights) {
-      featureList.push('Team analytics & insights')
-    }
-    if (features.phone_support) {
-      featureList.push('Priority phone support')
-    }
-    if (features.api_access) {
-      featureList.push('API access')
-    }
-    if (features.custom_workflows) {
-      featureList.push('Custom workflows')
-    }
-    if (features.advanced_integrations) {
-      featureList.push('Advanced integrations')
-    }
-    if (features.compliance) {
-      featureList.push('Advanced compliance')
-    }
-    if (features.dedicated_support) {
-      featureList.push('Dedicated support')
-    }
-    if (features.custom_deployment) {
-      featureList.push('Custom deployment')
-    }
-    if (features.sla) {
-      featureList.push('SLA guarantees')
-    }
-    if (features.white_label) {
-      featureList.push('White-label options')
-    }
-
+    const featureList: string[] = []
+    if (plan.features?.repositories) featureList.push(plan.features.repositories)
+    if (plan.features?.documents) featureList.push(plan.features.documents)
+    if (plan.features?.storage) featureList.push(plan.features.storage)
+    if (plan.features?.requests) featureList.push(plan.features.requests)
+    if (plan.features?.connected_users) featureList.push(plan.features.connected_users)
+    if (plan.features?.security) featureList.push(plan.features.security)
     return featureList
   }
 
@@ -224,7 +190,7 @@ export function SubscriptionPlans() {
       <div className="text-center">
         <h2 className="text-2xl font-bold">Choose Your Plan</h2>
         <p className="text-muted-foreground mt-2">
-          Select the perfect plan for your development needs
+          Connect LemonSqueezy for seamless payments and scaled access
         </p>
       </div>
 
@@ -232,13 +198,18 @@ export function SubscriptionPlans() {
         {plans.map((plan) => (
           <Card 
             key={plan.id} 
-            className={`relative ${
-              plan.tier === 'team' ? 'border-primary shadow-lg' : ''
-            } ${isCurrentPlan(plan.id) ? 'ring-2 ring-primary' : ''}`}
+            className={`relative flex flex-col justify-between ${
+              plan.tier === 'pro' ? 'border-primary shadow-lg ring-1 ring-primary' : ''
+            } ${isCurrentPlan(plan.tier) ? 'ring-2 ring-emerald-500 border-emerald-500' : ''}`}
           >
             {plan.tier === 'pro' && (
-              <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
                 Most Popular
+              </Badge>
+            )}
+            {isCurrentPlan(plan.tier) && (
+              <Badge className="absolute -top-3 right-4 bg-emerald-500 text-white">
+                Active Plan
               </Badge>
             )}
             
@@ -247,42 +218,36 @@ export function SubscriptionPlans() {
                 {getPlanIcon(plan.tier)}
               </div>
               <CardTitle className="text-xl">{plan.name}</CardTitle>
-              <CardDescription>{plan.description}</CardDescription>
-              <div className="text-3xl font-bold">
-                ${plan.price_monthly}
-                <span className="text-sm font-normal text-muted-foreground">/month</span>
+              <CardDescription className="min-h-[40px] text-xs mt-1">{plan.description}</CardDescription>
+              <div className="text-3xl font-bold mt-2">
+                {plan.formatted_price || (plan.price_monthly === 0 ? '₹0/month' : `₹${plan.price_monthly.toLocaleString()}/month`)}
               </div>
-              {plan.price_yearly && (
-                <p className="text-sm text-muted-foreground">
-                  or ${plan.price_yearly}/year (save 17%)
-                </p>
-              )}
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <ul className="space-y-2">
-                {getFeatureList(plan.features).map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    {feature}
+            <CardContent className="space-y-4 flex-1 flex flex-col justify-between">
+              <ul className="space-y-2 text-left">
+                {renderFeatureList(plan).map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground text-xs leading-relaxed">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Button
-                className="w-full"
-                variant={isCurrentPlan(plan.id) ? 'secondary' : 'default'}
-                disabled={isCurrentPlan(plan.id) || subscribing === plan.id}
-                onClick={() => handleSubscribe(plan.id)}
+                className="w-full mt-4"
+                variant={isCurrentPlan(plan.tier) ? 'secondary' : plan.tier === 'pro' ? 'default' : 'outline'}
+                disabled={isCurrentPlan(plan.tier) || subscribing === plan.tier}
+                onClick={() => handleSubscribe(plan.tier)}
               >
-                {subscribing === plan.id ? (
+                {subscribing === plan.tier ? (
                   'Processing...'
-                ) : isCurrentPlan(plan.id) ? (
+                ) : isCurrentPlan(plan.tier) ? (
                   'Current Plan'
                 ) : plan.tier === 'free' ? (
-                  'Downgrade'
+                  'Free Tier'
                 ) : (
-                  'Upgrade'
+                  `Subscribe (${plan.name})`
                 )}
               </Button>
             </CardContent>
@@ -290,29 +255,32 @@ export function SubscriptionPlans() {
         ))}
       </div>
 
-      {currentSubscription && (
-        <Card>
+      {currentSubData && (
+        <Card className="border border-border">
           <CardHeader>
-            <CardTitle>Current Subscription</CardTitle>
+            <CardTitle className="text-lg">Subscription Overview</CardTitle>
             <CardDescription>
-              You are currently on the {currentSubscription?.plan?.name ?? 'N/A'}
+              Current Active Plan: <span className="font-semibold text-foreground uppercase">{userTier}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">
-                  Next billing: {currentSubscription?.subscription?.current_period_end ? new Date(currentSubscription.subscription.current_period_end).toLocaleDateString() : 'N/A'}
+                <p className="text-sm font-medium">
+                  Status: <span className="text-emerald-500 capitalize">{currentSubData?.subscription?.status || 'Active'}</span>
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Status: {currentSubscription?.subscription?.status ?? 'N/A'}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Storage Used: {currentSubData?.usage?.storageUsedMb || 0} MB / {currentSubData?.limits?.maxStorageMb || 256} MB
                 </p>
               </div>
-              {currentSubscription?.subscription?.status === 'active' && (
-                <Button variant="outline" size="sm">
-                  Manage Subscription
-                </Button>
-              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={portalLoading}
+                onClick={handleManageSubscription}
+              >
+                {portalLoading ? 'Loading Portal...' : 'Manage Subscription'}
+              </Button>
             </div>
           </CardContent>
         </Card>
