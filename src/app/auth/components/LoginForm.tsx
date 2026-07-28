@@ -1,16 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/contexts/auth'
-
-// Restore your actual project UI components
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LogoOrbit } from '@/components/auth/LogoOrbit'
 
 // ----------------------------------------------------------------------
-// BRAND LOGOS
+// GOOGLE LOGO SVG
 // ----------------------------------------------------------------------
 
 const GoogleLogo = ({ className }: { className?: string }) => (
@@ -22,6 +20,17 @@ const GoogleLogo = ({ className }: { className?: string }) => (
   </svg>
 )
 
+// ----------------------------------------------------------------------
+// SOCIAL LOGIN BUTTONS
+// ----------------------------------------------------------------------
+
+interface SocialLoginButtonsProps {
+  mode: 'login' | 'register'
+  onSocialLogin: (provider: string) => void
+  disabled?: boolean
+  showMicrosoft?: boolean
+}
+
 const MicrosoftLogo = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
     <path fill="#f25022" d="M0 0h10v10H0z" />
@@ -31,25 +40,17 @@ const MicrosoftLogo = ({ className }: { className?: string }) => (
   </svg>
 )
 
-// --- Internal Component: SocialLoginButtons ---
-interface SocialLoginButtonsProps {
-  mode: 'login' | 'register'
-  onSocialLogin: (provider: string) => void
-  disabled?: boolean
-  showMicrosoft?: boolean
-}
-
 function SocialLoginButtons({ mode, onSocialLogin, disabled, showMicrosoft }: SocialLoginButtonsProps) {
   return (
-    <div className="flex flex-col gap-4">
-      {/* Google Button - Top */}
+    <div className="flex flex-col gap-3">
+      {/* Google Button */}
       <Button
         type="button"
         onClick={() => onSocialLogin('google-oauth2')}
         disabled={disabled}
-        className="w-full bg-white text-black hover:bg-gray-200 border-none h-11 text-base font-normal transition-transform transform hover:scale-[1.02] shadow-lg"
+        className="w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 rounded-lg text-base font-medium transition-all hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
       >
-        <GoogleLogo className="mr-3 h-6 w-6" />
+        <GoogleLogo className="mr-3 h-5 w-5 flex-shrink-0" />
         Continue with Google
       </Button>
 
@@ -59,9 +60,9 @@ function SocialLoginButtons({ mode, onSocialLogin, disabled, showMicrosoft }: So
           type="button"
           onClick={() => onSocialLogin('windowslive')}
           disabled={disabled}
-          className="w-full h-11 bg-white text-black hover:bg-gray-200 border-none text-base font-normal transition-transform transform hover:scale-[1.02] shadow-lg"
+          className="w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 rounded-lg text-base font-medium transition-all hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
         >
-          <MicrosoftLogo className="mr-3 h-6 w-6" />
+          <MicrosoftLogo className="mr-3 h-5 w-5 flex-shrink-0" />
           Continue with Microsoft
         </Button>
       )}
@@ -69,20 +70,22 @@ function SocialLoginButtons({ mode, onSocialLogin, disabled, showMicrosoft }: So
   )
 }
 
-// Named Export (helps if you import as { LoginForm })
+// ----------------------------------------------------------------------
+// MAIN LOGIN FORM
+// ----------------------------------------------------------------------
+
 export function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showMicrosoft, setShowMicrosoft] = useState(false)
 
-  // Use our custom Auth0 hook
   const { loginWithRedirect } = useAuth()
 
   React.useEffect(() => {
     import('@/lib/api').then(api => {
-      api.isToggleEnabled('enableMicrosoftAuth').then(setShowMicrosoft).catch(console.error);
-    });
-  }, []);
+      api.isToggleEnabled('enableMicrosoftAuth').then(setShowMicrosoft).catch(console.error)
+    })
+  }, [])
 
   const handleSocialLogin = async (provider: string) => {
     console.log('🔘 Social login button clicked:', provider)
@@ -90,7 +93,6 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      // Use provider name directly as connection
       console.log('🔄 Calling loginWithRedirect with provider:', provider)
       await loginWithRedirect(provider)
       console.log('✅ loginWithRedirect completed')
@@ -102,28 +104,126 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden font-sans">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <div className="flex min-h-screen bg-background">
+      {/* ================================================================ */}
+      {/* LEFT PANEL — Branding (hidden on mobile)                       */}
+      {/* ================================================================ */}
+      <div className="hidden md:flex md:w-[45%] lg:w-[48%] flex-col bg-[#0a0a0a] relative overflow-hidden">
+        {/* Subtle grid texture */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
+        <div className="relative z-10 flex flex-col h-full p-12 lg:p-16">
+          {/* Top: Logo + Wordmark */}
+          <div className="flex items-center gap-3">
+            <Image
+              src="/favicon.svg"
+              alt="ConFuse"
+              width={32}
+              height={32}
+              className="opacity-90"
+            />
+            <span className="text-lg font-semibold tracking-tight text-white/90">
+              ConFuse
+            </span>
+          </div>
 
-      <div className="relative z-10 w-full max-w-md mx-4">
-        <Card className="backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
-          <CardHeader className="space-y-4 text-center pb-8 flex flex-col items-center">
-            <CardTitle className="text-3xl font-bold text-white">Welcome</CardTitle>
-            {isLoading && (
-              <div className="w-6 h-6 border-2 border-white/30 border-t-purple-400 rounded-full animate-spin"></div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-6">
+          {/* Middle: Content area — pushed down */}
+          <div className="flex-1 flex flex-col justify-center max-w-lg">
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1] mb-6">
+              Your context,<br />
+              finally understood.
+            </h1>
 
+            <p className="text-base lg:text-lg text-white/60 leading-relaxed max-w-md">
+              ConFuse connects your GitHub, Notion, BitBucket, docs and many more into one
+              knowledge layer your AI agents can actually understand. Ask
+              questions in natural language from any IDE — no vendor lock-in.
+            </p>
+          </div>
+
+          {/* Logo Orbit — decorative */}
+          <div className="flex justify-center py-8">
+            <LogoOrbit />
+          </div>
+
+          {/* Bottom footer */}
+          <p className="text-xs text-white/30 mt-auto pt-8">
+            Building a microservice architecture?{' '}
+            <a
+              href="/docs"
+              className="text-white/50 hover:text-white/70 underline underline-offset-2 transition-colors"
+            >
+              Read the docs
+            </a>
+          </p>
+        </div>
+      </div>
+
+      {/* ================================================================ */}
+      {/* RIGHT PANEL — Auth Card                                        */}
+      {/* ================================================================ */}
+      <div className="w-full md:w-[55%] lg:w-[52%] flex items-center justify-center bg-white p-6 md:p-8">
+        <div className="w-full max-w-[420px]">
+          {/* Mobile: show compact logo + tagline */}
+          <div className="md:hidden mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Image
+                src="/favicon.svg"
+                alt="ConFuse"
+                width={28}
+                height={28}
+                className="invert opacity-80"
+              />
+              <span className="text-base font-semibold tracking-tight text-gray-900">
+                ConFuse
+              </span>
+            </div>
+            <p className="text-sm text-gray-500">
+              Your context, finally understood.
+            </p>
+          </div>
+
+          {/* Card */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 md:p-10">
+            {/* Card header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-6">
+                <Image
+                  src="/favicon.svg"
+                  alt="ConFuse"
+                  width={24}
+                  height={24}
+                  className="invert opacity-80"
+                />
+                <span className="text-sm font-semibold tracking-tight text-gray-900">
+                  ConFuse
+                </span>
+              </div>
+
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-1">
+                Log In
+              </h2>
+              <p className="text-sm text-gray-500">
+                Sign in to access your knowledge layer.
+              </p>
+            </div>
+
+            {/* Error message */}
             {error && (
-              <div className="p-4 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm">
+              <div className="mb-6 p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg">
                 {error}
               </div>
             )}
 
-            {/* Social Login Buttons - Now the main focus */}
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+                <div className="w-4 h-4 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin" />
+                Redirecting to Google...
+              </div>
+            )}
+
+            {/* Social Login */}
             <SocialLoginButtons
               mode="login"
               onSocialLogin={handleSocialLogin}
@@ -131,18 +231,29 @@ export function LoginForm() {
               showMicrosoft={showMicrosoft}
             />
 
-          </CardContent>
-        </Card>
+            {/* Divider text */}
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-400">
+                By continuing, you agree to our{' '}
+                <Link href="/terms" className="text-gray-600 underline underline-offset-2 hover:text-gray-900 transition-colors">
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="text-gray-600 underline underline-offset-2 hover:text-gray-900 transition-colors">
+                  Privacy Policy
+                </Link>
+              </p>
+            </div>
+          </div>
 
-        <div className="mt-4 flex justify-center">
-          <Button asChild className="bg-purple-600 text-white hover:bg-purple-500 px-8">
-            <Link href="/">Back</Link>
-          </Button>
+          {/* Copyright */}
+          <p className="mt-6 text-center text-xs text-gray-400">
+            &copy; 2025 ConFuse. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
   )
 }
 
-// Default Export (helps if you import as LoginForm)
 export default LoginForm
