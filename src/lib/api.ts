@@ -296,6 +296,9 @@ export const repoDataClient = new ApiClient(SERVICE_URLS.repoDataCon, 'repo-data
 
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 
+/** Feature toggle service */
+export const featureToggleClient = new ApiClient(SERVICE_URLS.featureToggle, 'feature-toggle');
+
 /** Frontend's own API routes */
 export const frontendClient = new ApiClient('', 'frontend');
 
@@ -501,11 +504,11 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  return frontendClient.get('/api/toggles');
+  return featureToggleClient.get('/api/toggles');
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return frontendClient.get(`/api/toggles/${encodeURIComponent(name)}`);
+  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
 }
 
 const toggleCache: {

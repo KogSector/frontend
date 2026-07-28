@@ -9,8 +9,8 @@ export const SERVICE_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_URL as string,
   docDataCon: process.env.NEXT_PUBLIC_DOC_DATA_CON_URL as string,
   repoDataCon: process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string,
-
   clientConnector: process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string,
+  featureToggle: process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL as string,
 } as const;
 
 /**
