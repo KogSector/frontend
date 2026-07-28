@@ -25,9 +25,24 @@ export function ToggleProvider({ children }: { children: React.ReactNode }) {
       if (response && response.success) {
         const tData = response.data || {};
         const normalized: ToggleState = {};
-        Object.keys(tData).forEach((key) => {
-          normalized[key] = tData[key]?.enabled ?? false;
-        });
+        if (Array.isArray(tData)) {
+          tData.forEach((item: any) => {
+            if (item && item.name) {
+              normalized[item.name] = Boolean(item.enabled);
+            }
+          });
+        } else if (typeof tData === 'object' && tData !== null) {
+          Object.keys(tData).forEach((key) => {
+            const val = (tData as Record<string, any>)[key];
+            if (typeof val === 'boolean') {
+              normalized[key] = val;
+            } else if (val && typeof val === 'object' && 'enabled' in val) {
+              normalized[key] = Boolean(val.enabled);
+            } else {
+              normalized[key] = Boolean(val);
+            }
+          });
+        }
         console.log('[ToggleProvider] Normalized toggles:', normalized);
         setToggles(normalized);
       }
