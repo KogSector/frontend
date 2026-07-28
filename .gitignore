@@ -12,3 +12,4 @@ coverage/
 npm-debug.log
 yarn-error.log
 logs/
+.pytest_cache/
