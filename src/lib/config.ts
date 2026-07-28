@@ -53,6 +53,7 @@ if (typeof window !== 'undefined') {
 
   if (process.env.NODE_ENV === 'development') {
     console.log('ConFuse Service URLs:', SERVICE_URLS);
+    console.log('NEXT_PUBLIC_FEATURE_TOGGLE_URL:', process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL);
   }
 }
 
