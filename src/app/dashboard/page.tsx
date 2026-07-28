@@ -328,7 +328,7 @@ export default function Dashboard() {
                           bgIcon: "bg-violet-500/10 text-violet-500",
                           btnColor: "bg-violet-500 hover:bg-violet-600 text-white shadow-violet-500/20"
                         }
-                      ].filter(action => action.toggleId ? toggles[action.toggleId] !== false : true).map((action, idx) => (
+                      ].filter(action => action.toggleId ? Boolean(toggles[action.toggleId]) : true).map((action, idx) => (
                         <Card key={idx} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border">
                           <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none`}></div>
                           <CardContent className="p-5 relative z-10 flex flex-col justify-between h-full space-y-4">
@@ -365,7 +365,7 @@ export default function Dashboard() {
                         ))
                       ) : (
                         <>
-                          {toggles.enableRepositories !== false && (
+                          {Boolean(toggles.enableRepositories) && (
                             <Card className="bg-card border-border">
                               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -382,7 +382,7 @@ export default function Dashboard() {
                             </Card>
                           )}
 
-                          {toggles.enableDocuments !== false && (
+                          {Boolean(toggles.enableDocuments) && (
                             <Card className="bg-card border-border">
                               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -399,7 +399,7 @@ export default function Dashboard() {
                             </Card>
                           )}
 
-                          {toggles.enableURLs !== false && (
+                          {Boolean(toggles.enableURLs) && (
                             <Card className="bg-card border-border">
                               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">

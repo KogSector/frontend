@@ -42,7 +42,7 @@ export async function GET() {
 
     try {
       const result = await client.query(
-        'SELECT name, enabled, description, category, category_type as "categoryType", metadata FROM public.toggles'
+        'SELECT name, enabled, description, category, category_type as "categoryType", metadata FROM feature_toggles.toggles'
       );
 
       const toggles: Record<string, any> = {};
