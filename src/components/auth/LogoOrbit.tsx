@@ -45,7 +45,7 @@ interface LogoOrbitProps {
 export function LogoOrbit({ className }: LogoOrbitProps) {
   const ringRotation = useRingRotation()
   // Counter-rotation computed once at top level (not inside map!)
-  const counterRotation = useTransform(ringRotation, (v) => -v)
+  const counterRotation = useTransform(ringRotation, (v: number) => -v)
 
   return (
     <div className={`relative flex items-center justify-center ${className ?? ''}`}>
