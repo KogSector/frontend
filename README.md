@@ -89,7 +89,7 @@ NEXT_PUBLIC_API_URL=https://unified-processor.onrender.com
 NEXT_PUBLIC_AUTH_URL=https://auth-middleware-fcg0.onrender.com
 
 # NextAuth configuration (if applicable)
-NEXTAUTH_URL=https://frontend-sandy-ten-76.vercel.app
+NEXTAUTH_URL=https://www.confuse.site
 
 # Features
 NEXT_PUBLIC_ENABLE_SEARCH=true
