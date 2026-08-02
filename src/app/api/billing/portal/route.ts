@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { portalUrl: 'https://tryconfuse.lemonsqueezy.com/billing' }
+      data: { portalUrl: '/billing' }
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch customer portal' }, { status: 500 });

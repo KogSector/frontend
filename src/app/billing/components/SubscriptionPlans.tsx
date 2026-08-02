@@ -79,7 +79,7 @@ export function SubscriptionPlans() {
         const checkoutUrl = resData?.data?.checkoutUrl
         if (checkoutUrl) {
           toast({
-            title: 'Redirecting to LemonSqueezy Checkout',
+            title: 'Redirecting to Checkout',
             description: 'Please complete your subscription payment.',
           })
           window.location.href = checkoutUrl
@@ -121,9 +121,9 @@ export function SubscriptionPlans() {
           return
         }
       }
-      window.location.href = 'https://tryconfuse.lemonsqueezy.com/billing'
+      window.location.href = '/billing'
     } catch {
-      window.location.href = 'https://tryconfuse.lemonsqueezy.com/billing'
+      window.location.href = '/billing'
     } finally {
       setPortalLoading(false)
     }
@@ -190,7 +190,7 @@ export function SubscriptionPlans() {
       <div className="text-center">
         <h2 className="text-2xl font-bold">Choose Your Plan</h2>
         <p className="text-muted-foreground mt-2">
-          Connect LemonSqueezy for seamless payments and scaled access
+          Choose a plan for scaled access and features
         </p>
       </div>
 

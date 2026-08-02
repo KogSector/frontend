@@ -33,7 +33,7 @@ export function PricingPage() {
         "Strong security (TLS 1.3, CSP, token blacklisting)"
       ],
       popular: true,
-      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/dc2fe0c0-8fc8-4b14-8bc8-42b1b93d6610"
+      buyUrl: "/billing"
     },
     {
       name: "Team",
@@ -48,7 +48,7 @@ export function PricingPage() {
         "Advanced security & RBAC token permissions"
       ],
       popular: false,
-      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/fc9e1c35-1284-4e66-90c5-b8fd06e24fb5"
+      buyUrl: "/billing"
     },
     {
       name: "Enterprise",
@@ -63,7 +63,7 @@ export function PricingPage() {
         "Enterprise Security (SAML/SSO, Custom VPC/IP Isolation, Dedicated SLA)"
       ],
       popular: false,
-      buyUrl: "https://tryconfuse.lemonsqueezy.com/checkout/buy/85924e78-5dae-40b2-bc55-9d7dac547e1d"
+      buyUrl: "/billing"
     }
   ];
 
@@ -82,7 +82,7 @@ export function PricingPage() {
               <span className="text-primary"> Subscription Plan</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powered by LemonSqueezy. Connect your repositories and documents seamlessly with defined quotas and rock-solid security.
+              Connect your repositories and documents seamlessly with defined quotas and rock-solid security.
             </p>
           </div>
         </section>
@@ -156,7 +156,7 @@ export function PricingPage() {
                 Frequently Asked Questions
               </h2>
               <p className="text-muted-foreground">
-                Everything you need to know about ConFuse LemonSqueezy payments
+                Everything you need to know about ConFuse payments and plans
               </p>
             </div>
             
@@ -164,7 +164,7 @@ export function PricingPage() {
               {[
                 {
                   question: "How are payments processed?",
-                  answer: "All payments and subscription checkouts are securely handled via LemonSqueezy."
+                  answer: "All payments and subscription checkouts are processed securely."
                 },
                 {
                   question: "What happens when storage size is reached?",
@@ -176,7 +176,7 @@ export function PricingPage() {
                 },
                 {
                   question: "Can I upgrade or manage my subscription later?",
-                  answer: "Yes, you can manage, pause, or update your subscription anytime via the LemonSqueezy Customer Portal link in your billing dashboard."
+                  answer: "Yes, you can manage, pause, or update your subscription anytime via your billing dashboard."
                 }
               ].map((faq, index) => (
                 <Card key={index} className="bg-card border-border">
