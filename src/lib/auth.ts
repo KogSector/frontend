@@ -18,19 +18,27 @@ function getData<T = unknown>(resp: unknown): T | undefined {
   return undefined
 }
 
+const auth0Domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
+const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
+const auth0Audience = process.env.NEXT_PUBLIC_AUTH0_AUDIENCE;
+const auth0ClientSecret = process.env.AUTH0_CLIENT_SECRET;
+const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    Auth0Provider({
-      clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!,
-      clientSecret: process.env.AUTH0_CLIENT_SECRET!,
-      issuer: process.env.NEXT_PUBLIC_AUTH0_DOMAIN!,
-      authorization: {
-        params: {
-          scope: "openid email profile",
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE!,
-        },
-      },
-    }),
+    ...(auth0Domain && auth0ClientId && auth0Audience
+      ? [Auth0Provider({
+          clientId: auth0ClientId,
+          clientSecret: auth0ClientSecret || '',
+          issuer: auth0Domain,
+          authorization: {
+            params: {
+              scope: "openid email profile",
+              audience: auth0Audience,
+            },
+          },
+        })]
+      : []),
   ],
   
   callbacks: {
@@ -116,7 +124,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 2 * 60 * 60, // 2 hours (matching existing auth timeout)
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: nextAuthSecret || 'dev-secret-change-me',
 }
 
 export default NextAuth(authOptions)

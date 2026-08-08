@@ -194,7 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 2000)
 
-      const authBase = process.env.NEXT_PUBLIC_AUTH_URL;
+      const authBase = process.env.NEXT_PUBLIC_AUTH_URL && !process.env.NEXT_PUBLIC_AUTH_URL.includes('auth.confuse.site')
+        ? process.env.NEXT_PUBLIC_AUTH_URL
+        : 'http://127.0.0.1:3010';
       const response = await fetch(`${authBase}/api/auth/verify`, {
         method: 'POST',
         headers: {
@@ -236,7 +238,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsSyncing(true)
 
       // Call ConFuse auth service to sync user
-      const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_URL;
+      const authServiceUrl = process.env.NEXT_PUBLIC_AUTH_URL && !process.env.NEXT_PUBLIC_AUTH_URL.includes('auth.confuse.site')
+        ? process.env.NEXT_PUBLIC_AUTH_URL
+        : 'http://127.0.0.1:3010';
       console.log('Calling auth service at:', authServiceUrl)
 
       const response = await fetch(`${authServiceUrl}/api/auth/login`, {
