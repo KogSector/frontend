@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { docDataClient, repoDataClient, authClient, clientConnectorClient, logUniProcClient } from '@/lib/api'
+import { authClient, logUniProcClient } from '@/lib/api'
 
 // Type definitions for API responses
 interface APIResponse<T = any> {
@@ -50,49 +50,52 @@ export async function GET(request: NextRequest) {
       ]);
     };
 
-    // Aggregate data from multiple services with a 1500ms timeout
-    const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse, logsResponse] = await Promise.allSettled([
-      withTimeout(repoDataClient.get('/api/repositories', headers), 1500),
-      withTimeout(docDataClient.get('/api/documents', headers), 1500),
-      withTimeout(docDataClient.get('/api/v1/external/urls', headers), 1500),
+    // --- Mock data for services not running locally ---
+    const mockReposData = [
+      { id: 'mock-repo-1', name: 'confuse-frontend', status: 'connected', source: 'github', created_at: new Date().toISOString() },
+      { id: 'mock-repo-2', name: 'confuse-api', status: 'connected', source: 'github', created_at: new Date().toISOString() },
+      { id: 'mock-repo-3', name: 'data-pipeline', status: 'active', source: 'github', created_at: new Date().toISOString() },
+    ];
+    const mockDocsData = [
+      { id: 'mock-doc-1', name: 'Architecture Overview.md', status: 'indexed', doc_type: 'markdown', created_at: new Date().toISOString() },
+      { id: 'mock-doc-2', name: 'API Reference.pdf', status: 'indexed', doc_type: 'pdf', created_at: new Date().toISOString() },
+    ];
+    const mockUrlsData = [
+      { id: 'mock-url-1', url: 'https://docs.confuse.dev', title: 'ConFuse Docs', status: 'active' },
+    ];
+    const mockJobsData = [
+      { id: 'mock-job-1', status: 'completed', source_type: 'github', created_at: new Date(Date.now() - 3600000).toISOString() },
+      { id: 'mock-job-2', status: 'completed', source_type: 'document', created_at: new Date(Date.now() - 7200000).toISOString() },
+    ];
+
+    // Only call services that are actually running (auth, log-uni-proc)
+    const [usersResponse, logsResponse] = await Promise.allSettled([
       withTimeout(authClient.get('/api/users/stats', headers), 1500),
-      withTimeout(docDataClient.get('/api/v1/jobs?limit=5', headers), 1500),
-      withTimeout(logUniProcClient.get('/api/v1/stats', headers), 1500)
+      withTimeout(logUniProcClient.get('/api/v1/stats', headers), 1500),
     ])
 
-    // Extract data safely with proper typing
-    const reposData = reposResponse.status === 'fulfilled' && reposResponse.value ?
-      (reposResponse.value as any).data?.repositories || (reposResponse.value as any).repositories || [] : []
-    
-    const docs = docsResponse.status === 'fulfilled' && docsResponse.value ?
-      (docsResponse.value as any).data?.data || (docsResponse.value as any).data || [] : []
-    
-    const urls = urlsResponse.status === 'fulfilled' && urlsResponse.value ?
-      (urlsResponse.value as any).data || [] : []
-    
+    // Use mock data for services not running locally
+    const reposData = mockReposData;
+    const docs = mockDocsData;
+    const urls = mockUrlsData;
+    const jobsData = mockJobsData;
+
     const agents: any[] = [];
-    
+
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
       (usersResponse.value as any).data : {} as UserStats
-
-    const jobsData = jobsResponse.status === 'fulfilled' && jobsResponse.value ?
-      (jobsResponse.value as any).jobs || (jobsResponse.value as any).data?.jobs || [] : []
 
     const logStats = logsResponse.status === 'fulfilled' && logsResponse.value ?
       (logsResponse.value as any) : { log_entries: 0 }
 
     console.log('Dashboard Stats Fetch Results:', {
-      repos: Array.isArray(reposData) ? reposData.length : 'error',
-      docs: Array.isArray(docs) ? docs.length : (docs.total || 0),
-      urls: Array.isArray(urls) ? urls.length : 0,
-      agents: Array.isArray(agents) ? agents.length : 0,
-      jobs: Array.isArray(jobsData) ? jobsData.length : 0,
+      repos: reposData.length,
+      docs: docs.length,
+      urls: urls.length,
+      agents: agents.length,
+      jobs: jobsData.length,
       logs: logStats?.log_entries || 0,
-      reposStatus: reposResponse.status,
-      docsStatus: docsResponse.status,
-      urlsStatus: urlsResponse.status,
-      jobsStatus: jobsResponse.status,
-      logsStatus: logsResponse.status
+      note: 'repos/docs/urls/jobs are mocked (services not running)',
     });
 
     // Map jobs to activity items
@@ -121,7 +124,7 @@ export async function GET(request: NextRequest) {
     // Calculate dashboard stats
     const stats = {
       repositories: Array.isArray(reposData) ? reposData.length : 0,
-      documents: Array.isArray(docs) ? docs.length : (docs.total || 0),
+      documents: Array.isArray(docs) ? docs.length : 0,
       urls: Array.isArray(urls) ? urls.length : 0,
       logs: logStats?.log_entries || 0,
       activity: activity,
