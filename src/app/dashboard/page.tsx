@@ -35,7 +35,8 @@ import {
   Link as LinkIcon,
   BookOpen,
   Globe,
-  PenTool
+  PenTool,
+  Terminal
 } from "lucide-react";
 
 interface SourceItem {
@@ -261,6 +262,16 @@ export default function Dashboard() {
                           btnColor: "bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20"
                         },
                         {
+                          toggleId: "enableCloudLogs",
+                          href: "/sources/logs",
+                          icon: Terminal,
+                          label: "Cloud Logs",
+                          buttonText: "Connect",
+                          gradient: "from-blue-600 to-indigo-700",
+                          bgIcon: "bg-blue-600/10 text-blue-600",
+                          btnColor: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20"
+                        },
+                        {
                           toggleId: "enableDocuments",
                           href: "/sources/documents",
                           icon: FileText,
@@ -411,6 +422,23 @@ export default function Dashboard() {
                                 <div className="text-2xl font-bold text-foreground">{loading ? '...' : stats.urls}</div>
                                 <p className="text-xs text-muted-foreground">
                                   Connected URLs
+                                </p>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {Boolean(toggles.enableCloudLogs) && (
+                            <Card className="bg-card border-border">
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                  Cloud Logs
+                                </CardTitle>
+                                <Terminal className="w-4 h-4 text-primary" />
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-foreground">{loading ? '...' : (stats.logs || 0).toLocaleString()}</div>
+                                <p className="text-xs text-muted-foreground">
+                                  Processed entries
                                 </p>
                               </CardContent>
                             </Card>

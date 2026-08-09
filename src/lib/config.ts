@@ -18,6 +18,8 @@ export const SERVICE_URLS = {
   repoDataCon: getLocalFallback(process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string, 'http://127.0.0.1:3036'),
   clientConnector: getLocalFallback(process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string, 'http://127.0.0.1:8000'),
   featureToggle: getLocalFallback(process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL as string, 'http://127.0.0.1:3099'),
+  logDataCon: getLocalFallback(process.env.NEXT_PUBLIC_LOG_DATA_CON_URL as string, 'http://127.0.0.1:3037'),
+  logUniProc: getLocalFallback(process.env.NEXT_PUBLIC_LOG_UNI_PROC_URL as string, 'http://127.0.0.1:8095'),
 } as const;
 
 /**

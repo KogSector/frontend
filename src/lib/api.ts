@@ -290,9 +290,11 @@ export const docDataClient = new ApiClient(SERVICE_URLS.docDataCon, 'doc-data-co
 /** Repo data connector service (repositories) */
 export const repoDataClient = new ApiClient(SERVICE_URLS.repoDataCon, 'repo-data-con');
 
+/** Log data connector service (cloud log ingestion) */
+export const logDataClient = new ApiClient(SERVICE_URLS.logDataCon, 'log-data-con');
 
-
-
+/** Log unified processor service (log graph DB & retention) */
+export const logUniProcClient = new ApiClient(SERVICE_URLS.logUniProc, 'log-uni-proc');
 
 export const clientConnectorClient = new ApiClient(SERVICE_URLS.clientConnector, 'client-connector');
 

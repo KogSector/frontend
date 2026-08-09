@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { docDataClient, repoDataClient, authClient, clientConnectorClient } from '@/lib/api'
+import { docDataClient, repoDataClient, authClient, clientConnectorClient, logUniProcClient } from '@/lib/api'
 
 // Type definitions for API responses
 interface APIResponse<T = any> {
@@ -51,12 +51,13 @@ export async function GET(request: NextRequest) {
     };
 
     // Aggregate data from multiple services with a 1500ms timeout
-    const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse] = await Promise.allSettled([
+    const [reposResponse, docsResponse, urlsResponse, usersResponse, jobsResponse, logsResponse] = await Promise.allSettled([
       withTimeout(repoDataClient.get('/api/repositories', headers), 1500),
       withTimeout(docDataClient.get('/api/documents', headers), 1500),
       withTimeout(docDataClient.get('/api/v1/external/urls', headers), 1500),
       withTimeout(authClient.get('/api/users/stats', headers), 1500),
-      withTimeout(docDataClient.get('/api/v1/jobs?limit=5', headers), 1500)
+      withTimeout(docDataClient.get('/api/v1/jobs?limit=5', headers), 1500),
+      withTimeout(logUniProcClient.get('/api/v1/stats', headers), 1500)
     ])
 
     // Extract data safely with proper typing
@@ -77,16 +78,21 @@ export async function GET(request: NextRequest) {
     const jobsData = jobsResponse.status === 'fulfilled' && jobsResponse.value ?
       (jobsResponse.value as any).jobs || (jobsResponse.value as any).data?.jobs || [] : []
 
+    const logStats = logsResponse.status === 'fulfilled' && logsResponse.value ?
+      (logsResponse.value as any) : { log_entries: 0 }
+
     console.log('Dashboard Stats Fetch Results:', {
       repos: Array.isArray(reposData) ? reposData.length : 'error',
       docs: Array.isArray(docs) ? docs.length : (docs.total || 0),
       urls: Array.isArray(urls) ? urls.length : 0,
       agents: Array.isArray(agents) ? agents.length : 0,
       jobs: Array.isArray(jobsData) ? jobsData.length : 0,
+      logs: logStats?.log_entries || 0,
       reposStatus: reposResponse.status,
       docsStatus: docsResponse.status,
       urlsStatus: urlsResponse.status,
-      jobsStatus: jobsResponse.status
+      jobsStatus: jobsResponse.status,
+      logsStatus: logsResponse.status
     });
 
     // Map jobs to activity items
@@ -117,6 +123,7 @@ export async function GET(request: NextRequest) {
       repositories: Array.isArray(reposData) ? reposData.length : 0,
       documents: Array.isArray(docs) ? docs.length : (docs.total || 0),
       urls: Array.isArray(urls) ? urls.length : 0,
+      logs: logStats?.log_entries || 0,
       activity: activity,
       connections: calculateConnections(reposData, urls),
       context_requests: userStatsData?.context_requests || 0,
@@ -141,6 +148,7 @@ export async function GET(request: NextRequest) {
       repositories: 0,
       documents: 0,
       urls: 0,
+      logs: 0,
       activity: [],
       connections: 0,
       context_requests: 0,
