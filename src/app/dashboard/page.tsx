@@ -519,8 +519,8 @@ export default function Dashboard() {
                         if (['figma', 'zeplin', 'design'].includes(type)) return toggles.enableDesign !== false;
                         return true;
                       }).map((source, index) => {
-                        const getIcon = (type: string) => {
-                          switch (type.toLowerCase()) {
+                        const getIcon = (type?: string) => {
+                          switch ((type || '').toLowerCase()) {
                             case 'github':
                             case 'gitlab':
                             case 'bitbucket':

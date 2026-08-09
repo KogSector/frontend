@@ -5,6 +5,7 @@
  * Each client targets a different microservice directly.
  */
 import { SERVICE_URLS, API_CONFIG } from './config';
+export { SERVICE_URLS, API_CONFIG };
 import logger, { TRACE_ID_HEADER, SPAN_ID_HEADER, REQUEST_ID_HEADER } from './logger';
 // =============================================================================
 // Types
