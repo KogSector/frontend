@@ -62,6 +62,7 @@ interface DashboardStats {
   repositories: number;
   documents: number;
   urls: number;
+  logs?: number;
   connections: number;
   context_requests: number;
   security_score: number;
@@ -88,6 +89,7 @@ export default function Dashboard() {
     repositories: 0,
     documents: 0,
     urls: 0,
+    logs: 0,
     connections: 0,
     context_requests: 0,
     security_score: 98,
@@ -163,6 +165,7 @@ export default function Dashboard() {
         repositories: dashboardStats.repositories || 0,
         documents: dashboardStats.documents || 0,
         urls: dashboardStats.urls || 0,
+        logs: dashboardStats.logs || 0,
         connections: dashboardStats.connections || (sources.length),
         context_requests: dashboardStats.context_requests || 0,
         security_score: dashboardStats.security_score || 98,
