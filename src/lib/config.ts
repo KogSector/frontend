@@ -11,12 +11,14 @@ const getLocalFallback = (value: string | undefined, fallback: string) => {
   if (value && DEPLOYED_URL_PATTERNS.some(pattern => value.includes(pattern))) {
     return value;
   }
-  // If no value is provided and not in a deployed environment, return fallback.
-  // Otherwise, if no value and in a deployed environment, return empty string to prevent fetch to non-existent local services.
-  if (!value && !DEPLOYED_URL_PATTERNS.some(pattern => window.location.origin.includes(pattern))) {
+  // Safely check window object for SSR / Node server environment
+  const isBrowser = typeof window !== 'undefined';
+  const isDeployedBrowser = isBrowser && DEPLOYED_URL_PATTERNS.some(pattern => window.location.origin.includes(pattern));
+
+  if (!value && !isDeployedBrowser) {
     return fallback;
   }
-  return value || '';
+  return value || fallback;
 };
 
 export const SERVICE_URLS = {
