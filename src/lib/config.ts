@@ -9,7 +9,7 @@ const DEPLOYED_URL_PATTERNS = ['.confuse.site', '.onrender.com', '.loca.lt'];
 
 const getLocalFallback = (value: string | undefined, fallback: string) => {
   if (value && DEPLOYED_URL_PATTERNS.some(pattern => value.includes(pattern))) {
-    return fallback;
+    return value;
   }
   return value || fallback;
 };
