@@ -3,7 +3,9 @@ import { Pool } from 'pg';
 
 const pool = process.env.DATABASE_URL 
   ? new Pool({ 
-      connectionString: process.env.DATABASE_URL,
+      connectionString: process.env.DATABASE_URL.includes('sslmode') 
+        ? process.env.DATABASE_URL 
+        : `${process.env.DATABASE_URL}?sslmode=verify-full`,
       ssl: { rejectUnauthorized: false }
     }) 
   : null;

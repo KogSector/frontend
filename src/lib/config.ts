@@ -11,7 +11,12 @@ const getLocalFallback = (value: string | undefined, fallback: string) => {
   if (value && DEPLOYED_URL_PATTERNS.some(pattern => value.includes(pattern))) {
     return value;
   }
-  return value || fallback;
+  // If no value is provided and not in a deployed environment, return fallback.
+  // Otherwise, if no value and in a deployed environment, return empty string to prevent fetch to non-existent local services.
+  if (!value && !DEPLOYED_URL_PATTERNS.some(pattern => window.location.origin.includes(pattern))) {
+    return fallback;
+  }
+  return value || '';
 };
 
 export const SERVICE_URLS = {
