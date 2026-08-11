@@ -126,15 +126,14 @@ export class ApiClient {
    * Token is expected to be stored by the auth flow (e.g. Auth0 SDK).
    */
   private getAuthHeaders(): Record<string, string> {
-    if (typeof window === 'undefined') return {};
+    if (typeof window === 'undefined') return { 'x-user-id': 'default_user' };
     const token = localStorage.getItem('confuse_auth_token');
-    const userId = localStorage.getItem('confuse_user_id');
-    const headers: Record<string, string> = {};
+    const userId = localStorage.getItem('confuse_user_id') || 'default_user';
+    const headers: Record<string, string> = {
+      'x-user-id': userId,
+    };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
-    if (userId) {
-      headers['x-user-id'] = userId;
     }
     return headers;
   }

@@ -30,10 +30,11 @@ export async function GET(request: NextRequest) {
   try {
     // Get user from auth header
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
-    const userIdHeader = request.headers.get('x-user-id')
-    const headers: Record<string, string> = {}
+    const userIdHeader = request.headers.get('x-user-id') || 'default_user'
+    const headers: Record<string, string> = {
+      'x-user-id': userIdHeader,
+    }
     if (authHeader) headers['Authorization'] = authHeader
-    if (userIdHeader) headers['x-user-id'] = userIdHeader
 
     // Helper function for timeout
     const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> => {
