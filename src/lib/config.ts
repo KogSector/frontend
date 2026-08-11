@@ -22,10 +22,10 @@ const getLocalFallback = (value: string | undefined, fallback: string) => {
 export const SERVICE_URLS = {
   auth: getLocalFallback(process.env.NEXT_PUBLIC_AUTH_URL as string, 'http://127.0.0.1:3010'),
   docDataCon: getLocalFallback(process.env.NEXT_PUBLIC_DOC_DATA_CON_URL as string, 'http://127.0.0.1:3030'),
-  repoDataCon: getLocalFallback(process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string, 'http://127.0.0.1:3031'),
-  clientConnector: getLocalFallback(process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string, 'http://127.0.0.1:8000'),
+  repoDataCon: getLocalFallback(process.env.NEXT_PUBLIC_REPO_DATA_CON_URL as string, 'http://127.0.0.1:3040'),
+  clientConnector: getLocalFallback(process.env.NEXT_PUBLIC_CLIENT_CONNECTOR_URL as string, 'http://127.0.0.1:3020'),
   featureToggle: getLocalFallback(process.env.NEXT_PUBLIC_FEATURE_TOGGLE_URL as string, 'http://127.0.0.1:3099'),
-  logDataCon: getLocalFallback(process.env.NEXT_PUBLIC_LOG_DATA_CON_URL as string, 'http://127.0.0.1:3032'),
+  logDataCon: getLocalFallback(process.env.NEXT_PUBLIC_LOG_DATA_CON_URL as string, 'http://127.0.0.1:3037'),
   logUniProc: getLocalFallback(process.env.NEXT_PUBLIC_LOG_UNI_PROC_URL as string, 'http://127.0.0.1:8095'),
 } as const;
 

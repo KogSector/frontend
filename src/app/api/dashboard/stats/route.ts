@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { authClient, logUniProcClient } from '@/lib/api'
+import { authClient, logUniProcClient, repoDataClient, docDataClient } from '@/lib/api'
 
 // Type definitions for API responses
 interface APIResponse<T = any> {
@@ -50,36 +50,42 @@ export async function GET(request: NextRequest) {
       ]);
     };
 
-    // --- Mock data for services not running locally ---
-    const mockReposData = [
-      { id: 'mock-repo-1', name: 'confuse-frontend', status: 'connected', source: 'github', created_at: new Date().toISOString() },
-      { id: 'mock-repo-2', name: 'confuse-api', status: 'connected', source: 'github', created_at: new Date().toISOString() },
-      { id: 'mock-repo-3', name: 'data-pipeline', status: 'active', source: 'github', created_at: new Date().toISOString() },
-    ];
-    const mockDocsData = [
-      { id: 'mock-doc-1', name: 'Architecture Overview.md', status: 'indexed', doc_type: 'markdown', created_at: new Date().toISOString() },
-      { id: 'mock-doc-2', name: 'API Reference.pdf', status: 'indexed', doc_type: 'pdf', created_at: new Date().toISOString() },
-    ];
-    const mockUrlsData = [
-      { id: 'mock-url-1', url: 'https://docs.confuse.dev', title: 'ConFuse Docs', status: 'active' },
-    ];
-    const mockJobsData = [
-      { id: 'mock-job-1', status: 'completed', source_type: 'github', created_at: new Date(Date.now() - 3600000).toISOString() },
-      { id: 'mock-job-2', status: 'completed', source_type: 'document', created_at: new Date(Date.now() - 7200000).toISOString() },
-    ];
-
-    // Only call services that are actually running (auth, log-uni-proc)
-    const [usersResponse, logsResponse] = await Promise.allSettled([
+    // Fetch live data from services in parallel
+    const [usersResponse, logsResponse, reposResponse, docsResponse, urlsResponse] = await Promise.allSettled([
       withTimeout(authClient.get('/api/users/stats', headers), 1500),
       withTimeout(logUniProcClient.get('/api/v1/stats', headers), 1500),
-    ])
+      withTimeout(repoDataClient.get('/api/repositories', headers), 1500),
+      withTimeout(docDataClient.get('/api/documents', headers), 1500),
+      withTimeout(docDataClient.get('/api/v1/external/urls', headers), 1500),
+    ]);
 
-    // Use mock data for services not running locally
-    const reposData = mockReposData;
-    const docs = mockDocsData;
-    const urls = mockUrlsData;
-    const jobsData = mockJobsData;
+    // Process repositories response
+    let reposData: any[] = [];
+    if (reposResponse.status === 'fulfilled' && reposResponse.value) {
+      const val = reposResponse.value as any;
+      if (Array.isArray(val?.repositories)) reposData = val.repositories;
+      else if (Array.isArray(val?.data?.repositories)) reposData = val.data.repositories;
+      else if (Array.isArray(val?.data)) reposData = val.data;
+    }
 
+    // Process documents response
+    let docs: any[] = [];
+    if (docsResponse.status === 'fulfilled' && docsResponse.value) {
+      const val = docsResponse.value as any;
+      if (Array.isArray(val?.data?.data)) docs = val.data.data;
+      else if (Array.isArray(val?.data)) docs = val.data;
+      else if (Array.isArray(val?.documents)) docs = val.documents;
+    }
+
+    // Process URLs response
+    let urls: any[] = [];
+    if (urlsResponse.status === 'fulfilled' && urlsResponse.value) {
+      const val = urlsResponse.value as any;
+      if (Array.isArray(val?.data)) urls = val.data;
+      else if (Array.isArray(val?.urls)) urls = val.urls;
+    }
+
+    const jobsData: any[] = [];
     const agents: any[] = [];
 
     const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
@@ -95,7 +101,7 @@ export async function GET(request: NextRequest) {
       agents: agents.length,
       jobs: jobsData.length,
       logs: logStats?.log_entries || 0,
-      note: 'repos/docs/urls/jobs are mocked (services not running)',
+      liveFetch: true,
     });
 
     // Map jobs to activity items

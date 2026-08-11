@@ -582,6 +582,13 @@ export async function isToggleEnabled(name: string): Promise<boolean> {
     toggleCache[name] = { enabled, timestamp: now };
     return enabled;
   } catch (error) {
+    const isNotFound = error instanceof Error && error.message.includes('not found');
+    if (isNotFound) {
+      // Toggle doesn't exist in feature toggle service - default to disabled (false) and cache it
+      toggleCache[name] = { enabled: false, timestamp: now };
+      return false;
+    }
+
     console.warn(`[isToggleEnabled] Database fetch failed for toggle "${name}". Falling back to stale cache.`, error);
     
     // 3. Fallback to expired cache if DB is down
