@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { docDataClient, listAuthConnections, unwrapResponse, ApiResponse, isToggleEnabled } from "@/lib/api";
+import { docDataClient, frontendClient, listAuthConnections, unwrapResponse, ApiResponse, isToggleEnabled } from "@/lib/api";
 import { Upload, Cloud, Loader2, CheckCircle2, XCircle, FolderOpen, FileText, HardDrive, Droplets, BookOpen } from "lucide-react";
 import { CloudFileBrowser, CloudFile } from "./CloudFileBrowser";
 
@@ -94,7 +94,7 @@ export function ConnectSourceModal({ open, onOpenChange, onSourceConnected }: Co
         const formData = new FormData();
         formData.append("files", file);
         formData.append("source_name", file.name);
-        return docDataClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/documents/upload", formData);
+        return frontendClient.postForm<ApiResponse<{ source_id?: string; files_processed?: number; files_received?: number; message?: string }>>("/api/documents/upload", formData);
       });
 
       const cloudPromises = selectedCloudFiles.map(async ({ file, provider }) => {
