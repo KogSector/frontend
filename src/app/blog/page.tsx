@@ -17,7 +17,7 @@ const posts = [
   },
   {
     slug: "cloud-log-ingestion",
-    title: "Streaming Cloud Logs to Your AI Agent",
+    title: "Streaming Logs to Your AI Agent",
     date: "April 2025",
     summary: "ConFuse can now ingest logs from AWS CloudWatch, GCP Logging, and any Kafka topic. Here's how we built the pipeline and what you can do with it.",
     tag: "Engineering",

@@ -12,7 +12,7 @@ export default function AboutPage() {
           </p>
 
           <p>
-            Modern AI agents are powerful, but they're blind to your specific codebase, your internal documents, your logs, and your team's history. ConFuse fixes that. We connect to your repositories, documents, cloud logs, and chat history, then expose everything through a single MCP-compatible endpoint your agent can query in real time.
+            Modern AI agents are powerful, but they're blind to your specific codebase, your internal documents, your logs, and your team's history. ConFuse fixes that. We connect to your repositories, documents, logs, and chat history, then expose everything through a single MCP-compatible endpoint your agent can query in real time.
           </p>
 
           <p>

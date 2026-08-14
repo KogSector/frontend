@@ -268,7 +268,7 @@ export default function Dashboard() {
                           toggleId: "enableCloudLogs",
                           href: "/sources/logs",
                           icon: Terminal,
-                          label: "Cloud Logs",
+                          label: "Logs",
                           buttonText: "Connect",
                           gradient: "from-blue-600 to-indigo-700",
                           bgIcon: "bg-blue-600/10 text-blue-600",
@@ -434,7 +434,7 @@ export default function Dashboard() {
                             <Card className="bg-card border-border">
                               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                                  Cloud Logs
+                                  Logs
                                 </CardTitle>
                                 <Terminal className="w-4 h-4 text-primary" />
                               </CardHeader>
