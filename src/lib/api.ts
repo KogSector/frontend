@@ -539,7 +539,8 @@ export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
-  return featureToggleClient.get(`/api/toggles/${encodeURIComponent(name)}`);
+  const response = await fetch(`/api/toggles/${encodeURIComponent(name)}`, { cache: 'no-store' });
+  return response.json();
 }
 
 const toggleCache: {

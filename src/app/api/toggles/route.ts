@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
-const pool = process.env.DATABASE_URL 
-  ? new Pool({ 
-      connectionString: process.env.DATABASE_URL.includes('sslmode') 
-        ? process.env.DATABASE_URL 
-        : `${process.env.DATABASE_URL}?sslmode=verify-full`,
+const rawUrl = process.env.DATABASE_URL?.replace(/^"|"$/g, '');
+const pool = rawUrl
+  ? new Pool({
+      connectionString: rawUrl.includes('sslmode') ? rawUrl : `${rawUrl}?sslmode=verify-full`,
       ssl: { rejectUnauthorized: false }
-    }) 
+    })
   : null;
 
 let cachedTogglePayload: { success: boolean; data: Record<string, any> } | null = null;

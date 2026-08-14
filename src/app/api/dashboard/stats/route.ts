@@ -1,69 +1,48 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { authClient, logUniProcClient, repoDataClient, docDataClient } from '@/lib/api'
 
-// Type definitions for API responses
-interface APIResponse<T = any> {
-  data?: T
-  success?: boolean
-  error?: string
-}
+const SVC = {
+  auth:    process.env.AUTH_SERVICE_URL        || 'http://localhost:3010',
+  repo:    process.env.REPO_DATA_CON_URL       || 'http://localhost:3031',
+  doc:     process.env.DOC_DATA_CON_URL        || 'http://localhost:3030',
+  logProc: process.env.LOG_UNI_PROC_URL        || 'http://localhost:8095',
+};
 
-interface UserStats {
-  context_requests?: number
-  security_score?: number
-  total_users?: number
-  active_users?: number
-  api_calls?: number
-  storage_used?: number
-  bandwidth_used?: number
-}
-
-interface DashboardStats {
-  repositories?: number
-  documents?: number
-  urls?: number
+async function safeFetch(url: string, headers: Record<string, string>, timeoutMs = 1500) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { headers, signal: controller.signal, cache: 'no-store' });
+    clearTimeout(id);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    clearTimeout(id);
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from auth header
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
     const userIdHeader = request.headers.get('x-user-id') || 'default_user'
-    const headers: Record<string, string> = {
-      'x-user-id': userIdHeader,
-    }
+    const headers: Record<string, string> = { 'x-user-id': userIdHeader }
     if (authHeader) headers['Authorization'] = authHeader
 
-    // Helper function for timeout
-    const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> => {
-      let timeoutId: NodeJS.Timeout;
-      const timeoutPromise = new Promise<null>((resolve) => {
-        timeoutId = setTimeout(() => resolve(null), timeoutMs);
-      });
-      return Promise.race([
-        promise.then(res => {
-          clearTimeout(timeoutId);
-          return res;
-        }),
-        timeoutPromise
-      ]);
-    };
-
     // Fetch live data from services in parallel
-    const [usersResponse, logsResponse, reposResponse, docsResponse, urlsResponse] = await Promise.allSettled([
-      withTimeout(authClient.get('/api/users/stats', headers), 1500),
-      withTimeout(logUniProcClient.get('/api/v1/stats', headers), 1500),
-      withTimeout(repoDataClient.get('/api/repositories', headers), 1500),
-      withTimeout(docDataClient.get('/api/documents', headers), 1500),
-      withTimeout(docDataClient.get('/api/v1/external/urls', headers), 1500),
+    const [usersResponse, logsResponse, reposResponse, docsResponse, urlsResponse] = await Promise.all([
+      safeFetch(`${SVC.auth}/api/users/stats`, headers),
+      safeFetch(`${SVC.logProc}/api/v1/stats`, headers),
+      safeFetch(`${SVC.repo}/api/repositories`, headers),
+      safeFetch(`${SVC.doc}/api/documents`, headers),
+      safeFetch(`${SVC.doc}/api/v1/external/urls`, headers),
     ]);
 
     // Process repositories response
     let reposData: any[] = [];
-    if (reposResponse.status === 'fulfilled' && reposResponse.value) {
-      const val = reposResponse.value as any;
+    if (reposResponse) {
+      const val = reposResponse as any;
       if (Array.isArray(val?.repositories)) reposData = val.repositories;
       else if (Array.isArray(val?.data?.repositories)) reposData = val.data.repositories;
       else if (Array.isArray(val?.data)) reposData = val.data;
@@ -71,8 +50,8 @@ export async function GET(request: NextRequest) {
 
     // Process documents response
     let docs: any[] = [];
-    if (docsResponse.status === 'fulfilled' && docsResponse.value) {
-      const val = docsResponse.value as any;
+    if (docsResponse) {
+      const val = docsResponse as any;
       if (Array.isArray(val?.data?.data)) docs = val.data.data;
       else if (Array.isArray(val?.data)) docs = val.data;
       else if (Array.isArray(val?.documents)) docs = val.documents;
@@ -80,53 +59,16 @@ export async function GET(request: NextRequest) {
 
     // Process URLs response
     let urls: any[] = [];
-    if (urlsResponse.status === 'fulfilled' && urlsResponse.value) {
-      const val = urlsResponse.value as any;
+    if (urlsResponse) {
+      const val = urlsResponse as any;
       if (Array.isArray(val?.data)) urls = val.data;
       else if (Array.isArray(val?.urls)) urls = val.urls;
     }
 
-    const jobsData: any[] = [];
-    const agents: any[] = [];
+    const userStatsData = (usersResponse as any)?.data || {};
+    const logStats = (logsResponse as any) || { log_entries: 0 };
 
-    const userStatsData = usersResponse.status === 'fulfilled' && usersResponse.value ?
-      (usersResponse.value as any).data : {} as UserStats
-
-    const logStats = logsResponse.status === 'fulfilled' && logsResponse.value ?
-      (logsResponse.value as any) : { log_entries: 0 }
-
-    console.log('Dashboard Stats Fetch Results:', {
-      repos: reposData.length,
-      docs: docs.length,
-      urls: urls.length,
-      agents: agents.length,
-      jobs: jobsData.length,
-      logs: logStats?.log_entries || 0,
-      liveFetch: true,
-    });
-
-    // Map jobs to activity items
-    const activity = jobsData.map((job: any) => {
-      const time = new Date(job.created_at).toLocaleDateString(undefined, { 
-        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-      });
-      
-      let action = "Processed source";
-      if (job.status === 'completed') action = "Completed sync";
-      if (job.status === 'failed') action = "Sync failed";
-      if (job.status === 'syncing') action = "Syncing data";
-
-      return {
-        id: job.id,
-        action: action,
-        source: job.source_type === 'github' ? 'Repository' : (job.source_type === 'url' ? 'URL' : 'Document'),
-        time: time,
-        type: job.source_type || 'processing',
-        status: job.status,
-        timestamp: job.created_at,
-        icon: job.source_type === 'github' ? 'Github' : 'FileText'
-      };
-    });
+    const activity: any[] = [];
 
     // Calculate dashboard stats
     const stats = {
