@@ -21,7 +21,7 @@ export function Footer() {
                 <li><Link prefetch={false} href="/features" className="hover:text-foreground transition-colors">Features</Link></li>
                 <li><Link prefetch={false} href="/billing" className="hover:text-foreground transition-colors">Pricing</Link></li>
                 <li><Link prefetch={false} href="/docs" target="_blank" className="hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><Link prefetch={false} href="/api" className="hover:text-foreground transition-colors">API</Link></li>
+                <li><Link prefetch={false} href="/docs" target="_blank" className="hover:text-foreground transition-colors">API Reference</Link></li>
               </ul>
             </div>
             <div className="space-y-3">

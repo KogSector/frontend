@@ -16,13 +16,16 @@ const CACHE_TTL_MS = 3000;
 
 // Hardcoded default toggles for local dev when DB/microservice is unavailable
 const DEFAULT_TOGGLES: Record<string, any> = {
-  enableDeployedUrls: { enabled: false, description: 'Use deployed URLs instead of localhost', category: 'infrastructure', categoryType: 'system' },
-  enableLogIngestion: { enabled: true, description: 'Enable cloud log ingestion pipeline', category: 'logging', categoryType: 'feature' },
-  enableLogRetention: { enabled: true, description: 'Enable automatic log retention cleanup', category: 'logging', categoryType: 'feature' },
-  enableDashboardStats: { enabled: true, description: 'Show dashboard statistics', category: 'ui', categoryType: 'feature' },
-  enableDocumentUpload: { enabled: true, description: 'Allow document uploads', category: 'documents', categoryType: 'feature' },
-  enableRepositorySync: { enabled: true, description: 'Allow repository syncing', category: 'repositories', categoryType: 'feature' },
-  deployedTesting: { enabled: false, description: 'Deployed testing mode', category: 'testing', categoryType: 'system' },
+  enableRepositories: { enabled: true, description: 'Enable repositories pipeline and feature', category: 'features', categoryType: 'userFacing' },
+  enableDocuments: { enabled: true, description: 'Enable documents pipeline and feature', category: 'features', categoryType: 'userFacing' },
+  enableURLs: { enabled: false, description: 'Enable URLs pipeline and feature', category: 'features', categoryType: 'userFacing' },
+  enableChats: { enabled: false, description: 'Enable chats pipeline and feature', category: 'features', categoryType: 'userFacing' },
+  enableDesign: { enabled: false, description: 'Enable design options feature', category: 'features', categoryType: 'userFacing' },
+  enableCloudLogs: { enabled: true, description: 'Enable cloud log ingestion and temporal retention', category: 'features', categoryType: 'userFacing' },
+  agentRules: { enabled: false, description: 'Enable Agent Rules configuration feature', category: 'features', categoryType: 'userFacing' },
+  deployedTesting: { enabled: false, description: 'Enable deployed testing limits and UI', category: 'features', categoryType: 'userFacing' },
+  enableDeployedUrls: { enabled: false, description: 'Use deployed production URLs for all services', category: 'features', categoryType: 'userFacing' },
+  enableMicrosoftAuth: { enabled: false, description: 'Enable Microsoft Authentication login option', category: 'features', categoryType: 'userFacing' },
 };
 
 function getCachedPayload() {

@@ -534,22 +534,8 @@ export interface ToggleState {
 }
 
 export async function getAllToggles(): Promise<ApiResponse<ToggleState>> {
-  try {
-    const res = await featureToggleClient.get<ApiResponse<ToggleState>>('/api/toggles');
-    if (res && res.success && res.data && Object.keys(res.data).length > 0) {
-      return res;
-    }
-    throw new Error('Feature toggle microservice returned empty data');
-  } catch (err) {
-    console.warn('[getAllToggles] Microservice fetch failed, falling back to internal /api/toggles:', err);
-    try {
-      const response = await fetch('/api/toggles', { cache: 'no-store' });
-      return await response.json();
-    } catch (fallbackErr) {
-      console.error('[getAllToggles] Fallback fetch failed:', fallbackErr);
-      throw fallbackErr;
-    }
-  }
+  const response = await fetch('/api/toggles', { cache: 'no-store' });
+  return response.json();
 }
 
 export async function getToggle(name: string): Promise<ApiResponse<FeatureToggle>> {
