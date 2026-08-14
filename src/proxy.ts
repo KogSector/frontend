@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const authToken = request.cookies.get('auth_token')?.value
 
   // If the user has an auth token and is trying to access the landing page,
