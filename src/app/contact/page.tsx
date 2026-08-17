@@ -22,7 +22,7 @@ export default function ContactPage() {
 
         <div className="border border-border rounded-xl p-6 bg-card">
           <h3 className="font-semibold text-foreground mb-4">Send a message</h3>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground block mb-1">Name</label>
