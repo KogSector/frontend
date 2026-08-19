@@ -8,17 +8,22 @@
 const DEPLOYED_URL_PATTERNS = ['.confuse.site'];
 
 const getLocalFallback = (value: string | undefined, fallback: string) => {
-  if (value && DEPLOYED_URL_PATTERNS.some(pattern => value.includes(pattern))) {
+  // If the environment variable is set and valid, use it
+  if (value && value.trim() !== '') {
     return value;
   }
+  
   // Safely check window object for SSR / Node server environment
   const isBrowser = typeof window !== 'undefined';
   const isDeployedBrowser = isBrowser && DEPLOYED_URL_PATTERNS.some(pattern => window.location.origin.includes(pattern));
 
-  if (!value && !isDeployedBrowser) {
+  // Only use fallback if we're not in a deployed environment
+  if (!isDeployedBrowser) {
     return fallback;
   }
-  return value || fallback;
+  
+  // In deployed environment without env var, return empty string (will be caught by validation)
+  return '';
 };
 
 export const SERVICE_URLS = {
