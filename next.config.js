@@ -20,6 +20,7 @@ const nextConfig = {
   env: publicEnv,
   reactStrictMode: false,
   experimental: {},
+  output: 'standalone', // Required for Docker deployment
   typescript: {
     ignoreBuildErrors: true, // Enable TypeScript checking during builds
   },
