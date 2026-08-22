@@ -201,10 +201,10 @@ export function LoginForm() {
               </div>
 
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-1">
-                Log In
+                Log In/Create Account
               </h2>
               <p className="text-sm text-gray-500">
-                Sign in to access your knowledge layer.
+                Sign in/up to access your knowledge layer.
               </p>
             </div>
 
