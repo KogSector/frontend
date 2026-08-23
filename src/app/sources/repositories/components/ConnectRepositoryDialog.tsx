@@ -384,8 +384,10 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       }
 
       const payload = {
-        type: provider,
         name: name || extractRepoName(repositoryUrl) || `${provider}-${Date.now()}`,
+        provider: provider,
+        type: provider,
+        url: repositoryUrl,
         uri: repositoryUrl,
         credentials: finalCredentials,
         branch: config.defaultBranch || 'main',
@@ -401,48 +403,9 @@ export function ConnectRepositoryDialog({ open, onOpenChange, onSuccess, current
       if (token) headers['Authorization'] = `Bearer ${token}`;
       if (user?.id) headers['x-user-id'] = user.id;
 
-      const resp = await repoDataClient.post<any>('/api/sources', payload, headers);
-      if (resp && resp.id) {
-        const backendAlreadyStartedSync = resp?.syncStarted === true;
-        if (backendAlreadyStartedSync) {
-          console.log('[ConnectRepo] Connection successful, backend started indexing');
-        } else {
-          // Backward compatibility: if backend didn't start sync, trigger it here
-          console.log('[ConnectRepo] Connection successful, triggering auto-sync (fallback)...');
-
-          try {
-            const headers: Record<string, string> = {};
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            if (user?.id) headers['x-user-id'] = user.id;
-            const syncPayload = {
-              repo_url: repositoryUrl,
-              branch: config.defaultBranch || 'main',
-              include_languages: null,
-              exclude_paths: ['node_modules', 'dist', 'build', '.git', 'target', '__pycache__', 'vendor', '.venv', 'venv'],
-              max_file_size_mb: 5,
-              file_extensions: config.fileExtensions || null,
-            };
-
-            // Fire sync in background - don't block the UI
-            docDataClient.post('/api/sources/repositories/sync', syncPayload, headers)
-              .then((syncResp: any) => {
-                if (syncResp && (syncResp.success || syncResp.job_id)) {
-                  console.log('[ConnectRepo] Auto-sync completed/started:', syncResp);
-                } else {
-                  console.warn('[ConnectRepo] Auto-sync failed:', syncResp?.error_message || syncResp?.error);
-                }
-              })
-              .catch((syncErr: any) => {
-                console.warn('[ConnectRepo] Auto-sync error:', syncErr);
-              });
-
-            console.log('[ConnectRepo] Auto-sync triggered in background');
-          } catch (syncError) {
-            // Don't fail the connection if sync fails - it can be retried
-            console.warn('[ConnectRepo] Failed to trigger auto-sync:', syncError);
-          }
-        }
-
+      const resp = await repoDataClient.post<any>('/api/repositories', payload, headers);
+      if (resp && (resp.id || resp.success || resp.data?.id)) {
+        console.log('[ConnectRepo] Connection successful, backend started indexing');
         onSuccess();
         onOpenChange(false);
         resetForm();
