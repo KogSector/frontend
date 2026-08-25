@@ -179,7 +179,7 @@ const apiClient = {
   authMiddleware: createApiClient('https://auth-middleware-fcg0.onrender.com'),
   docDataCon: createApiClient('https://doc-data-con.onrender.com'),
   repoDataCon: createApiClient('https://repo-data-con.onrender.com'),
-  clientConnector: createApiClient('https://client-connector.onrender.com'),
+  clientConnector: createApiClient('https://cln.confuse.site'),
   dataVent: createApiClient('https://data-vent.onrender.com'),
   featureToggle: createApiClient('http://localhost:3099')
 }
@@ -223,7 +223,7 @@ const useMCPClient = () => {
   const [client, setClient] = useState<MCPClient | null>(null);
   
   const connect = async (token: string) => {
-    const mcpClient = new MCPClient('wss://client-connector.onrender.com/ws', token);
+    const mcpClient = new MCPClient('wss://cln.confuse.site/ws', token);
     await mcpClient.initialize();
     setClient(mcpClient);
   };
@@ -386,7 +386,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth-middleware-fcg0.onrender.com
 NEXT_PUBLIC_DOC_DATA_CON_URL=https://doc-data-con.onrender.com
 NEXT_PUBLIC_REPO_DATA_CON_URL=https://repo-data-con.onrender.com
-NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://client-connector.onrender.com
+NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://cln.confuse.site
 NEXT_PUBLIC_DATA_VENT_URL=https://data-vent.onrender.com
 NEXT_PUBLIC_FEATURE_TOGGLE_URL=http://localhost:3099
 
@@ -419,7 +419,7 @@ NEXT_PUBLIC_API_BASE_URL=https://api.confuse.dev
 NEXT_PUBLIC_AUTH_MIDDLEWARE_URL=https://auth.confuse.dev
 NEXT_PUBLIC_DOC_DATA_CON_URL=https://data.confuse.dev
 NEXT_PUBLIC_REPO_DATA_CON_URL=https://repo-data.confuse.dev
-NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://agents.confuse.dev
+NEXT_PUBLIC_CLIENT_CONNECTOR_URL=https://cln.confuse.site
 NEXT_PUBLIC_DATA_VENT_URL=https://export.confuse.dev
 NEXT_PUBLIC_FEATURE_TOGGLE_URL=https://features.confuse.dev
 
