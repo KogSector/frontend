@@ -35,9 +35,9 @@ export const FeaturesSection = () => {
             <br />
             Built for developers.
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl font-medium">
+          <h3 className="text-xl text-muted-foreground max-w-2xl font-medium">
             Forget disjointed context windows. Give your entire team and tooling native understanding of the codebase structure.
-          </p>
+          </h3>
         </div>
 
         <div className="grid md:grid-cols-2 gap-px bg-border">
@@ -48,9 +48,9 @@ export const FeaturesSection = () => {
             >
               <div>
                 <div className="text-sm font-bold text-muted-foreground mb-8 font-mono">{feature.metric}</div>
-                <h3 className="text-2xl font-bold text-foreground mb-4 tracking-tight">
+                <h2 className="text-2xl font-bold text-foreground mb-4 tracking-tight">
                   {feature.title}
-                </h3>
+                </h2>
                 <p className="text-muted-foreground leading-relaxed font-medium">
                   {feature.description}
                 </p>

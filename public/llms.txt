@@ -1,0 +1,18 @@
+# ConFuse
+
+ConFuse is a developer platform that unifies your repositories with AI for better microservices development. It connects repositories, documentation, and external resources to give your development environment instant, complete understanding of your architecture.
+
+## Features
+
+- Multi-Source Connection: Integrate repositories and documentation natively
+- Immutable Context: Versioned, synced, and immutable architecture knowledge
+- Granular Security: Row-level security and explicit scoping
+- Low-Latency Retrieval: Sub-10ms response times for complex queries
+
+## Integrations
+
+50+ integrations including GitHub, GitLab, Bitbucket, Notion, Slack, Figma, Google Drive, and more.
+
+## Documentation
+
+Full documentation available at https://confuse.site/docs

@@ -44,13 +44,13 @@ export function HeroSection() {
 
           <div className="space-y-6">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-              Unify your <br />
+              ConFuse: Unify your <br />
               codebase context.
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed font-medium">
+            <h2 className="text-xl text-muted-foreground max-w-2xl leading-relaxed font-medium">
               Connect repositories, documentation, and external resources. 
               Give your development environment instant, complete understanding of your architecture.
-            </p>
+            </h2>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -76,7 +76,10 @@ export function HeroSection() {
             onClose={() => setIsDemoOpen(false)}
           />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 pt-16 border-t border-border">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground pt-16 pb-8 border-t border-border">
+            Trusted by developers worldwide
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
             <div className="space-y-1">
               <div className="text-3xl font-bold tracking-tight">1k+</div>
               <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Sources</div>

@@ -16,7 +16,7 @@ export function Footer() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1 lg:ml-12">
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Product</h3>
+              <h2 className="text-sm font-semibold">Product</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link prefetch={false} href="/features" className="hover:text-foreground transition-colors">Features</Link></li>
                 <li><Link prefetch={false} href="/billing" className="hover:text-foreground transition-colors">Pricing</Link></li>
@@ -25,7 +25,7 @@ export function Footer() {
               </ul>
             </div>
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Company</h3>
+              <h2 className="text-sm font-semibold">Company</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link prefetch={false} href="/about" className="hover:text-foreground transition-colors">About</Link></li>
                 <li><Link prefetch={false} href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
@@ -34,7 +34,7 @@ export function Footer() {
               </ul>
             </div>
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Resources</h3>
+              <h2 className="text-sm font-semibold">Resources</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link prefetch={false} href="/help" className="hover:text-foreground transition-colors">Help Center</Link></li>
                 <li><Link prefetch={false} href="/community" className="hover:text-foreground transition-colors">Community</Link></li>
@@ -43,7 +43,7 @@ export function Footer() {
               </ul>
             </div>
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Legal</h3>
+              <h2 className="text-sm font-semibold">Legal</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link prefetch={false} href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
                 <li><Link prefetch={false} href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
