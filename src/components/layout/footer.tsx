@@ -10,7 +10,7 @@ export function Footer() {
               <span className="text-xl font-bold tracking-tight text-foreground">ConFuse</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Empowering AI agents with the world&apos;s most intelligent knowledge layer.
+              An AI-powered platform that unifies repositories and documentation for development teams building microservices.
             </p>
           </div>
           

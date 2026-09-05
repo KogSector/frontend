@@ -11,10 +11,10 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'ConFuse - AI-powered repository unification for microservices',
-  description: 'ConFuse unifies your repositories with AI for better microservices development. Connect repositories, documentation, and external resources for instant architecture understanding.',
+  description: 'ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices.',
   openGraph: {
     title: 'ConFuse - AI-powered repository unification for microservices',
-    description: 'ConFuse unifies your repositories with AI for better microservices development. Connect repositories, documentation, and external resources for instant architecture understanding.',
+    description: 'ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices.',
     type: 'website',
     url: 'https://www.confuse.site',
     siteName: 'ConFuse',

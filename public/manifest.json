@@ -1,7 +1,7 @@
 {
   "name": "ConFuse",
   "short_name": "ConFuse",
-  "description": "ConFuse - AI-powered repository unification for microservices",
+  "description": "ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

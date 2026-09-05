@@ -48,7 +48,7 @@ export function HeroSection() {
               repository unification.
             </h1>
             <h2 className="text-xl text-muted-foreground max-w-2xl leading-relaxed font-medium">
-              Connect repositories, documentation, and external resources for instant architecture understanding.
+              An AI-powered platform that unifies repositories and documentation for development teams building microservices.
             </h2>
           </div>
 

@@ -1,6 +1,6 @@
 # ConFuse
 
-ConFuse is a developer platform that unifies your repositories with AI for better microservices development. It connects repositories, documentation, and external resources to give your development environment instant, complete understanding of your architecture.
+ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices.
 
 ## Features
 

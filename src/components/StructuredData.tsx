@@ -3,7 +3,7 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "ConFuse",
-    "description": "ConFuse - AI-powered repository unification for microservices. Connect repositories, documentation, and external resources for instant architecture understanding.",
+    "description": "ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices.",
     "url": "https://www.confuse.site",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web",
@@ -33,7 +33,7 @@ export function StructuredData() {
         "name": "What is ConFuse?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "ConFuse is a developer platform that provides AI-powered repository unification for microservices. It connects repositories, documentation, and external resources for instant architecture understanding."
+          "text": "ConFuse is an AI-powered platform that unifies repositories and documentation for development teams building microservices."
         }
       },
       {
