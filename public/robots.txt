@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://confuse.site/sitemap.xml
+Sitemap: https://www.confuse.site/sitemap.xml

@@ -44,12 +44,11 @@ export function HeroSection() {
 
           <div className="space-y-6">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-              ConFuse: Unify your <br />
-              codebase context.
+              ConFuse: AI-powered <br />
+              repository unification.
             </h1>
             <h2 className="text-xl text-muted-foreground max-w-2xl leading-relaxed font-medium">
-              Connect repositories, documentation, and external resources. 
-              Give your development environment instant, complete understanding of your architecture.
+              Connect repositories, documentation, and external resources for instant architecture understanding.
             </h2>
           </div>
 

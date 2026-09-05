@@ -1,7 +1,7 @@
 {
   "name": "ConFuse",
   "short_name": "ConFuse",
-  "description": "Unify your repositories with AI for better microservices development",
+  "description": "ConFuse - AI-powered repository unification for microservices",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
