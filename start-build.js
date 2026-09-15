@@ -5,9 +5,9 @@ const fs = require('fs');
 const { Pool } = require('pg');
 
 // Load environment variables from custom files
-const envMapPath = path.resolve(process.cwd(), '.env.map');
+const envMapPath = path.resolve(process.cwd(), '.map.env');
 const envLocalPath = path.resolve(process.cwd(), '.env.local');
-const envSecretPath = path.resolve(process.cwd(), '.env.secret');
+const envSecretPath = path.resolve(process.cwd(), '.secret.env');
 
 const mapEnv = fs.existsSync(envMapPath) ? dotenv.parse(fs.readFileSync(envMapPath)) : {};
 const localEnv = fs.existsSync(envLocalPath) ? dotenv.parse(fs.readFileSync(envLocalPath)) : {};
@@ -37,7 +37,7 @@ async function startBuild() {
 
     let mergedEnv;
     if (useDeployedUrls) {
-        console.log('🚀 DB Toggle (enableDeployedUrls) is ON: Loading custom environment variables for build, prioritizing .env.map (deployed URLs)');
+        console.log('🚀 DB Toggle (enableDeployedUrls) is ON: Loading custom environment variables for build, prioritizing .map.env (deployed URLs)');
         mergedEnv = {
             ...process.env,
             ...localEnv,
